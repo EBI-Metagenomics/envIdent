@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/EBI-Metagenomics/edna/master/nextflow_schema.json",
-    "title": "eDNA pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/EBI-Metagenomics/envident/master/nextflow_schema.json",
+    "title": "EnvIdent pipeline parameters",
     "description": "The coolest eDNA pipeline",
     "type": "object",
     "$defs": {
@@ -20,7 +20,7 @@
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/edna/usage#samplesheet-input).",
+                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/envident/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
@@ -40,45 +40,6 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
-                }
-            }
-        },
-        "reference_genome_options": {
-            "title": "Reference genome options",
-            "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
-            "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "igenomes_ignore": {
-                    "type": "boolean",
-                    "description": "Do not load the iGenomes reference config.",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
-                },
-                "igenomes_base": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "description": "The base path to the igenomes reference files",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "default": "s3://ngi-igenomes/igenomes/"
                 }
             }
         },
@@ -211,32 +172,28 @@
                     "format": "file-path",
                     "description": "Path to MIDORI database FASTA file",
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "help_text": "Path to the MIDORI COI reference database FASTA file used for taxonomic classification.",
-                    "default": "/hps/nobackup/rdf/metagenomics/service-team/collaborators/christina/MIDORI2_SINTAX_longest_sp/MIDORI2_LONGEST_NUC_SP_GB268_CO1_SINTAX_final.fasta"
+                    "help_text": "Path to the MIDORI COI reference database FASTA file used for taxonomic classification."
                 },
                 "midori_db_tax": {
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to MIDORI database taxonomy file",
                     "pattern": "^\\S+\\.txt$",
-                    "help_text": "Path to the MIDORI taxonomy file containing taxonomic information for the reference sequences.",
-                    "default": "/hps/nobackup/rdf/metagenomics/service-team/collaborators/christina/MIDORI2_SINTAX_longest_sp/taxonomy_MIDORI2.txt"
+                    "help_text": "Path to the MIDORI taxonomy file containing taxonomic information for the reference sequences."
                 },
                 "midori_db_otu": {
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to MIDORI database OTU file",
                     "pattern": "^\\S+\\.otu$",
-                    "help_text": "Path to the MIDORI OTU (Operational Taxonomic Unit) file for clustering analysis.",
-                    "default": "/hps/nobackup/rdf/metagenomics/service-team/ref-dbs/amplicon_pipeline/SILVA-SSU/138.1/SILVA-SSU.otu"
+                    "help_text": "Path to the MIDORI OTU (Operational Taxonomic Unit) file for clustering analysis."
                 },
                 "midori_db_mscluster": {
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to MIDORI database mscluster file",
                     "pattern": "^\\S+\\.mscluster$",
-                    "help_text": "Path to the MIDORI mscluster file used for sequence clustering operations.",
-                    "default": "/hps/nobackup/rdf/metagenomics/service-team/collaborators/christina/MIDORI2_SINTAX_longest_sp/MIDORI2_LONGEST_NUC_SP_GB268_CO1_SINTAX_final.fasta.mscluster"
+                    "help_text": "Path to the MIDORI mscluster file used for sequence clustering operations."
                 },
                 "midori_label": {
                     "type": "string",
@@ -280,7 +237,7 @@
                 "reads_percentage_threshold": {
                     "type": "number",
                     "description": "Percentage threshold for read filtering",
-                    "default": 0.80,
+                    "default": 0.10,
                     "minimum": 0,
                     "maximum": 1,
                     "help_text": "Percentage threshold used for filtering reads based on quality or other criteria."
@@ -295,7 +252,7 @@
                 "hmmsearch_seqs_per_chunk": {
                     "type": "integer",
                     "description": "Target sequences per chunk for optimal performance",
-                    "default": 10000,
+                    "default": 100000,
                     "minimum": 1,
                     "help_text": "Defines the target number of sequences to include in each chunk for HMM search processing to optimize performance and resource utilization."
                 },
@@ -396,9 +353,6 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
-        },
-        {
-            "$ref": "#/$defs/reference_genome_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"
