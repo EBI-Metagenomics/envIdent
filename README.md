@@ -8,7 +8,7 @@
 
 # EnvIdent - EBI-Metagenomics eDNA Analysis Pipeline
 
-This repository contains EnvIdent v1.0 - EBI-Metagenomics eDNA analysis pipeline. This pipeline is designed for the analysis of environmental DNA (eDNA) sequencing data, implementing a comprehensive workflow for quality control, primer identification, taxonomic profiling, and Amplicon Sequence Variant (ASV) calling using modern bioinformatics tools.
+This repository contains EnvIdent v1.0 - EBI-Metagenomic's eDNA analysis pipeline. This pipeline is designed for the analysis of environmental DNA (eDNA) sequencing data, implementing a comprehensive workflow for quality control, primer identification, taxonomic profiling, and Amplicon Sequence Variant (ASV) calling using modern bioinformatics tools.
 
 ## Pipeline Description
 
