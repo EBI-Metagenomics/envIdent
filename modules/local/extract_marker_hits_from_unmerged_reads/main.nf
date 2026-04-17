@@ -1,5 +1,5 @@
 
-process EXTRACT_RRNA_HITS_FROM_UNMERGED_READS {
+process EXTRACT_MARKER_HITS_FROM_UNMERGED_READS {
     tag "$meta.id"
     label 'process_medium'
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -15,7 +15,7 @@ process EXTRACT_RRNA_HITS_FROM_UNMERGED_READS {
 
     script:
     """ 
-    \$(zcat ${cmsearch_deoverlap_out} | tr -s ' ' | cut -d' ' -f1 | sed 's/_length.*//' > ${meta.id}_extracted_ids.txt)
+    \$(zcat ${cmsearch_deoverlap_out} | tr -s ' ' | cut -d' ' -f1 | sed 's/_length.*//' | grep -v '^#' > ${meta.id}_extracted_ids.txt)
 
     if [[ ${meta.single_end} = true ]]; then
         seqkit grep -f ${meta.id}_extracted_ids.txt ${reads} -o ${meta.id}_extracted_reads.fastq.gz
