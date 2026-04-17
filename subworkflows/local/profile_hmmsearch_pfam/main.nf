@@ -1,6 +1,6 @@
 include { FASTAEMBEDLENGTH } from '../../../modules/local/fastaembedlength/main'
-include { SEQKIT_TRANSLATE } from '../../../modules/nf-core/translate/main'
-include { HMMER_HMMSEARCH } from '../../../modules/nf-core/hmmsearch/main'
+include { SEQKIT_TRANSLATE } from '../../../modules/nf-core/seqkit/translate/main'
+include { HMMER_HMMSEARCH } from '../../../modules/nf-core/hmmer/hmmsearch/main'
 include { PARSEHMMSEARCHCOVERAGE } from '../../../modules/local/parsehmmsearchcoverage/main'
 include { COMBINEHMMSEARCHTBL } from '../../../modules/local/combinehmmsearchtbl/main'
 
@@ -13,10 +13,22 @@ workflow PROFILE_HMMSEARCH_PFAM {
 
     main:
     ch_versions = Channel.empty()
-    FASTAEMBEDLENGTH(reads_fasta, file("${projectDir}/bin/fastx_embed_length.py"))
+
+    read_counts = reads_json.map { meta, json_file ->
+        def json = new groovy.json.JsonSlurper().parseText(json_file.text)
+        tuple(meta, json["summary"]["after_filtering"]["total_reads"])
+    }
     
+    fasta_with_counts = reads_fasta
+        .join(read_counts, by: 0)
+        .map { meta, fasta, read_count ->
+            tuple(meta + ['read_count': read_count], fasta)
+        }
+
+    FASTAEMBEDLENGTH(fasta_with_counts, file("${projectDir}/bin/fastx_embed_length.py"))
+
     SEQKIT_TRANSLATE(FASTAEMBEDLENGTH.out.fasta)
-    
+
     /*
     * Adaptive FASTA chunking for HMMER parallelization
     * 
@@ -32,7 +44,7 @@ workflow PROFILE_HMMSEARCH_PFAM {
         .flatMap{ meta, fasta ->
             def totalSeqs = fasta.countFasta()
             def maxChunks = params.hmmsearch_max_chunks ?: 200
-            def idealSeqsPerChunk = params.hmmsearch_seqs_per_chunk ?: 1000
+            def idealSeqsPerChunk = params.hmmsearch_seqs_per_chunk ?: 100000
 
             // Adaptive strategy: ideal chunks for small files, larger chunks for big files
             def seqsPerChunk = (totalSeqs <= maxChunks * idealSeqsPerChunk) ? 
@@ -44,7 +56,7 @@ workflow PROFILE_HMMSEARCH_PFAM {
             chunks.collect{ chunk -> tuple(groupKey(meta, chunks.size()), chunk) }
         }
         .combine(pfam_db)
-        .map{ meta, reads, db -> [meta, db, reads, true, true, true] }
+        .map{ meta, reads, db -> [meta, db, reads, false, true, true] }
 
     HMMER_HMMSEARCH(ch_chunked_pfam_in)
     ch_versions = ch_versions.mix(HMMER_HMMSEARCH.out.versions)
@@ -53,12 +65,20 @@ workflow PROFILE_HMMSEARCH_PFAM {
         HMMER_HMMSEARCH.out.domain_summary.groupTuple()
     )
 
-    PARSEHMMSEARCHCOVERAGE(COMBINEHMMSEARCHTBL.out.concatenated_result.join(reads_json), file("${projectDir}/bin/hmmer_domtbl_parse_coverage.py"))
+    PARSEHMMSEARCHCOVERAGE(COMBINEHMMSEARCHTBL.out.concatenated_result, file("${projectDir}/bin/hmmer_domtbl_parse_coverage.py"))
+
+    def combined_hmm = COMBINEHMMSEARCHTBL.out.concatenated_result.map { meta, reads ->
+        [[id: meta.id, single_end: meta.single_end], reads]
+    }
+
+    def coverage_tsv = PARSEHMMSEARCHCOVERAGE.out.tsv.map { meta, reads ->
+        [[id: meta.id, single_end: meta.single_end], reads]
+    }
+
     ch_versions = ch_versions.mix(PARSEHMMSEARCHCOVERAGE.out.versions)
 
     emit:
-    profile  = PARSEHMMSEARCHCOVERAGE.out.tsv
-    domtbl   = COMBINEHMMSEARCHTBL.out.concatenated_result
+    profile  = coverage_tsv
+    domtbl   = combined_hmm
     versions = ch_versions                                   // channel: [ versions.yml ]
 }
-
