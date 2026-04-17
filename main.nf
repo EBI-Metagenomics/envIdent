@@ -1,11 +1,12 @@
 #!/usr/bin/env nextflow
+nextflow.enable.dsl=2
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    EBI-Metagenomics/edna
+    EBI-Metagenomics/envident
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/EBI-Metagenomics/edna
-    Website: https://nf-co.re/edna
-    Slack  : https://nfcore.slack.com/channels/edna
+    Github : https://github.com/EBI-Metagenomics/envident
+    Website: https://nf-co.re/envident
+    Slack  : https://nfcore.slack.com/channels/envident
 ----------------------------------------------------------------------------------------
 */
 
@@ -15,21 +16,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { EDNA                    } from './workflows/edna'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_edna_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_edna_pipeline'
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_edna_pipeline'
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    GENOME PARAMETER VALUES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
-params.fasta = getGenomeAttribute('fasta')
+include { ENVIDENT                    } from './workflows/envident'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_envident_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_envident_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,7 +30,7 @@ params.fasta = getGenomeAttribute('fasta')
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow NFCORE_EDNA {
+workflow ENVIDENT {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -51,11 +40,11 @@ workflow NFCORE_EDNA {
     //
     // WORKFLOW: Run pipeline
     //
-    EDNA (
+    ENVIDENT (
         samplesheet
     )
    // emit:
-   // multiqc_report = EDNA.out.multiqc_report // channel: /path/to/multiqc_report.html
+   // multiqc_report = ENVIDENT.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 */
 
@@ -83,7 +72,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    EDNA (
+    ENVIDENT (
         PIPELINE_INITIALISATION.out.samplesheet
     )
 
@@ -99,7 +88,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-       // NFCORE_EDNA.out.multiqc_report
+       // ENVIDENT.out.multiqc_report
     )
     */
 }
