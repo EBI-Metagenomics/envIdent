@@ -16,21 +16,11 @@ parser.add_argument('-o', "--output_fp", type=str,
 parser.add_argument('-s', "--stats_output_fp", type=str,
                     default='',
                     help="Output JSON filepath for recording mapping stats.")
-parser.add_argument('-j', "--json_fp", type=str, 
-                    required=False,
-                    help="fastp JSON file for total reads.")
+parser.add_argument('-t', "--total_reads", type=int, 
+                    required=True,
+                    help="total read count from fastp JSON file.")
 
 args = parser.parse_args()
-
-# --- Read total reads from fastp JSON ---
-with open(args.json_fp) as f:
-    fastp_data = json.load(f)
-total_reads = fastp_data.get("summary", {}).get("after_filtering", {}).get("total_reads", None)
-
-if total_reads is None:
-    sys.stderr.write("[ERROR] Could not find after_filtering.total_reads in fastp JSON.\n")
-    sys.exit(1)
-
 
 cols = [
     'target_name',
@@ -143,7 +133,7 @@ if __name__ == '__main__':
             'count': hmm_hit_count[k],
             'expected_breadth': expected,
             'ratio': breadth/expected,
-            'norm_count' : hmm_hit_count[k] / total_reads if total_reads > 0 else 0
+            'norm_count' : hmm_hit_count[k] / args.total_reads if args.total_reads > 0 else 0
         }
 
     outfile = sys.stdout if args.output_fp=='-' else open(args.output_fp, 'wt')
@@ -160,4 +150,3 @@ if __name__ == '__main__':
         }
         with open(args.stats_output_fp, 'wt') as f:
             json.dump(stats, f)
-
