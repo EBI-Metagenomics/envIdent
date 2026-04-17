@@ -7,7 +7,7 @@ process PARSEHMMSEARCHCOVERAGE {
         : 'quay.io/biocontainers/python:3.13'}"
 
     input:
-    tuple val(meta), path(domtbl_file), path(fastp_json)
+    tuple val(meta), path(domtbl_file)
     path script
 
     output:
@@ -17,8 +17,9 @@ process PARSEHMMSEARCHCOVERAGE {
     script:
     def args = task.ext.args ?: ''
     out_fp = "${meta.id}_pfam_coverage.tsv"
+    read_count = "$meta.read_count"
     """
-    gunzip -c ${domtbl_file} | python ${script} ${args} -j ${fastp_json} -i - -o ${out_fp}
+    gunzip -c ${domtbl_file} | python ${script} ${args} -i - -o ${out_fp} -t ${read_count}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
