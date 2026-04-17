@@ -20,14 +20,14 @@ workflow MAPSEQ_ASV_KRONA {
                         }
         MAPSEQ(
             mapseq_input,
-            tuple(krona_tuple[0], krona_tuple[1], krona_tuple[3])
+            tuple(krona_tuple[0], krona_tuple[1], krona_tuple[2])
         )
         ch_versions = ch_versions.mix(MAPSEQ.out.versions.first())
 
 
         MAPSEQ2ASVTABLE(
             MAPSEQ.out.mseq,
-            krona_tuple[4] // db_label
+            krona_tuple[3] // db_label
         )
         ch_versions = ch_versions.mix(MAPSEQ2ASVTABLE.out.versions.first())
 
@@ -45,7 +45,7 @@ workflow MAPSEQ_ASV_KRONA {
       
         MAKE_ASV_COUNT_TABLES(
             final_asv_count_table_input,
-            krona_tuple[4]
+            krona_tuple[3]
         )
         ch_versions = ch_versions.mix(MAKE_ASV_COUNT_TABLES.out.versions.first())
 
