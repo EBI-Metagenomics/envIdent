@@ -1,4 +1,4 @@
-# EBI-Metagenomics/edna: Output
+# EBI-Metagenomics/envident: Output
 
 ## Introduction
 
