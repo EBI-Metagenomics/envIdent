@@ -19,7 +19,7 @@ input:
         type: map
         description: |
           Groovy Map containing sample information
-          e.g. [ id:'test', single_end:false ]
+          e.g. [ id:'test', single_end:false, read_count:12345 ]
     - hmmfile:
         type: file
         description: One or more HMM profiles created with hmmbuild
