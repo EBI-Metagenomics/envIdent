@@ -1,13 +1,13 @@
-id: "EBI-Metagenomics-edna-methods-description"
+id: "EBI-Metagenomics-envident-methods-description"
 description: "Suggested text and references to use when describing pipeline usage within the methods section of a publication."
-section_name: "EBI-Metagenomics/edna Methods Description"
-section_href: "https://github.com/EBI-Metagenomics/edna"
+section_name: "EBI-Metagenomics/envident Methods Description"
+section_href: "https://github.com/EBI-Metagenomics/envident"
 plot_type: "html"
 ## TODO EBI-Metagenomics: Update the HTML below to your preferred methods description, e.g. add publication citation for this pipeline
 ## You inject any metadata in the Nextflow '${workflow}' object
 data: |
   <h4>Methods</h4>
-  <p>Data was processed using EBI-Metagenomics/edna v${workflow.manifest.version} ${doi_text} of the EBI-Metagenomics collection of workflows, utilising reproducible software environments from the Bioconda (<a href="https://doi.org/10.1038/s41592-018-0046-7">Grüning <em>et al.</em>, 2018</a>) and Biocontainers (<a href="https://doi.org/10.1093/bioinformatics/btx192">da Veiga Leprevost <em>et al.</em>, 2017</a>) projects.</p>
+  <p>Data was processed using EBI-Metagenomics/envident v${workflow.manifest.version} ${doi_text} of the EBI-Metagenomics collection of workflows, utilising reproducible software environments from the Bioconda (<a href="https://doi.org/10.1038/s41592-018-0046-7">Grüning <em>et al.</em>, 2018</a>) and Biocontainers (<a href="https://doi.org/10.1093/bioinformatics/btx192">da Veiga Leprevost <em>et al.</em>, 2017</a>) projects.</p>
   <p>The pipeline was executed with Nextflow v${workflow.nextflow.version} (<a href="https://doi.org/10.1038/nbt.3820">Di Tommaso <em>et al.</em>, 2017</a>) with the following command:</p>
   <pre><code>${workflow.commandLine}</code></pre>
   <p>${tool_citations}</p>

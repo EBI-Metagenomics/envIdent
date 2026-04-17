@@ -1,4 +1,4 @@
-# EBI-Metagenomics/edna: Citations
+# EBI-Metagenomics/envident: Citations
 
 ## [EBI-Metagenomics](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

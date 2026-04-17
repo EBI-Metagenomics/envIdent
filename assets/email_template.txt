@@ -4,15 +4,15 @@
   |\\ | |__  __ /  ` /  \\ |__) |__         }  {
   | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,
                                         `._,._,'
-  EBI-Metagenomics/edna ${version}
+  EBI-Metagenomics/envident ${version}
 ----------------------------------------------------
 Run Name: $runName
 
 <% if (success){
-    out << "## EBI-Metagenomics/edna execution completed successfully! ##"
+    out << "## EBI-Metagenomics/envident execution completed successfully! ##"
 } else {
     out << """####################################################
-## EBI-Metagenomics/edna execution completed unsuccessfully! ##
+## EBI-Metagenomics/envident execution completed unsuccessfully! ##
 ####################################################
 The exit status of the task that caused the workflow execution to fail was: $exitStatus.
 The full error message was:
@@ -35,5 +35,5 @@ Pipeline Configuration:
 <% out << summary.collect{ k,v -> " - $k: $v" }.join("\n") %>
 
 --
-EBI-Metagenomics/edna
-https://github.com/EBI-Metagenomics/edna
+EBI-Metagenomics/envident
+https://github.com/EBI-Metagenomics/envident
