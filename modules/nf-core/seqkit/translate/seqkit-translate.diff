@@ -1,0 +1,359 @@
+Changes in component 'nf-core/seqkit/translate'
+'modules/nf-core/seqkit/translate/environment.yml' is unchanged
+Changes in 'seqkit/translate/main.nf':
+--- modules/nf-core/seqkit/translate/main.nf
++++ modules/nf-core/seqkit/translate/main.nf
+@@ -12,7 +12,7 @@
+ 
+     output:
+     tuple val(meta), path("${prefix}.*"), emit: fastx
+-    tuple val("${task.process}"), val('seqkit'), eval("seqkit version | sed 's/^.*v//'"), emit: versions_seqkit, topic: versions
++    path "versions.yml", emit: versions
+ 
+     when:
+     task.ext.when == null || task.ext.when
+@@ -38,6 +38,11 @@
+         ${fastx} \\
+         ${call_gzip} \\
+         > ${prefix}.${extension}
++
++    cat <<-END_VERSIONS > versions.yml
++    "${task.process}":
++        seqkit: \$(seqkit version | cut -d' ' -f2)
++    END_VERSIONS
+     """
+ 
+     stub:
+@@ -52,5 +57,10 @@
+     }
+     """
+     touch ${prefix}.${extension}
++
++    cat <<-END_VERSIONS > versions.yml
++    "${task.process}":
++        seqkit: \$(seqkit version | cut -d' ' -f2)
++    END_VERSIONS
+     """
+ }
+
+Changes in 'seqkit/translate/meta.yml':
+--- modules/nf-core/seqkit/translate/meta.yml
++++ modules/nf-core/seqkit/translate/meta.yml
+@@ -25,11 +25,9 @@
+         type: file
+         description: Input fasta/fastq file
+         pattern: "*.{fna,fsa,fas,fa,fasta,fastq,fq}[.gz]"
+-        ontologies:
+-          - edam: http://edamontology.org/format_1930 # FASTQ
+ output:
+-  fastx:
+-    - - meta:
++  - fastx:
++      - meta:
+           type: map
+           description: |
+             Groovy Map containing sample information
+@@ -38,29 +36,11 @@
+           type: file
+           description: Translated fasta/fastq file
+           pattern: "*.{fna,fsa,fas,fa,fasta,fastq,fq}[.gz]"
+-          ontologies:
+-            - edam: http://edamontology.org/format_1930 # FASTQ
+-  versions_seqkit:
+-    - - ${task.process}:
+-          type: string
+-          description: The name of the process
+-      - seqkit:
+-          type: string
+-          description: The name of the tool
+-      - seqkit version | sed 's/^.*v//':
+-          type: eval
+-          description: The expression to obtain the version of the tool
+-topics:
+-  versions:
+-    - - ${task.process}:
+-          type: string
+-          description: The name of the process
+-      - seqkit:
+-          type: string
+-          description: The name of the tool
+-      - seqkit version | sed 's/^.*v//':
+-          type: eval
+-          description: The expression to obtain the version of the tool
++  - versions:
++      - versions.yml:
++          type: file
++          description: File containing software versions
++          pattern: "versions.yml"
+ authors:
+   - "@delfiterradas"
+ maintainers:
+
+'modules/nf-core/seqkit/translate/tests/main.nf.test' is unchanged
+Changes in 'seqkit/translate/tests/main.nf.test.snap':
+--- modules/nf-core/seqkit/translate/tests/main.nf.test.snap
++++ modules/nf-core/seqkit/translate/tests/main.nf.test.snap
+@@ -11,11 +11,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
+                 ],
+                 "fastx": [
+                     [
+@@ -25,20 +21,16 @@
+                         "test.fasta:md5,bbd96f0e48a0ef530d8535dd2e9dda2d"
+                     ]
+                 ],
+-                "versions_seqkit": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
+-                ]
+-            }
+-        ],
+-        "timestamp": "2026-03-12T13:13:10.881614314",
+-        "meta": {
+-            "nf-test": "0.9.4",
+-            "nextflow": "25.10.4"
+-        }
++                "versions": [
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.2",
++            "nextflow": "24.10.3"
++        },
++        "timestamp": "2025-01-15T15:20:41.567935"
+     },
+     "sarscov2 - bam - stub": {
+         "content": [
+@@ -53,11 +45,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
+                 ],
+                 "fastx": [
+                     [
+@@ -68,20 +56,16 @@
+                         "test.fastq:md5,d41d8cd98f00b204e9800998ecf8427e"
+                     ]
+                 ],
+-                "versions_seqkit": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
+-                ]
+-            }
+-        ],
+-        "timestamp": "2026-03-12T13:13:38.668257955",
+-        "meta": {
+-            "nf-test": "0.9.4",
+-            "nextflow": "25.10.4"
+-        }
++                "versions": [
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.2",
++            "nextflow": "24.10.3"
++        },
++        "timestamp": "2025-01-15T15:20:58.701122"
+     },
+     "sarscov2-genome_fasta-stub": {
+         "content": [
+@@ -95,11 +79,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
+                 ],
+                 "fastx": [
+                     [
+@@ -109,20 +89,16 @@
+                         "test.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                     ]
+                 ],
+-                "versions_seqkit": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
+-                ]
+-            }
+-        ],
+-        "timestamp": "2026-03-12T13:13:51.693366456",
+-        "meta": {
+-            "nf-test": "0.9.4",
+-            "nextflow": "25.10.4"
+-        }
++                "versions": [
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.2",
++            "nextflow": "24.10.3"
++        },
++        "timestamp": "2025-01-15T15:21:05.989858"
+     },
+     "sarscov2 - transcriptome_fasta": {
+         "content": [
+@@ -136,11 +112,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
+                 ],
+                 "fastx": [
+                     [
+@@ -150,20 +122,16 @@
+                         "test.fasta:md5,8ace22c911902152e71043cf62661f1f"
+                     ]
+                 ],
+-                "versions_seqkit": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
+-                ]
+-            }
+-        ],
+-        "timestamp": "2026-03-12T13:13:31.948682073",
+-        "meta": {
+-            "nf-test": "0.9.4",
+-            "nextflow": "25.10.4"
+-        }
++                "versions": [
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.2",
++            "nextflow": "24.10.3"
++        },
++        "timestamp": "2025-01-15T15:20:54.543009"
+     },
+     "sarscov2 - genome_fasta_gz": {
+         "content": [
+@@ -177,11 +145,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
+                 ],
+                 "fastx": [
+                     [
+@@ -191,20 +155,16 @@
+                         "test.fasta.gz:md5,bbd96f0e48a0ef530d8535dd2e9dda2d"
+                     ]
+                 ],
+-                "versions_seqkit": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
+-                ]
+-            }
+-        ],
+-        "timestamp": "2026-03-12T13:13:17.669157085",
+-        "meta": {
+-            "nf-test": "0.9.4",
+-            "nextflow": "25.10.4"
+-        }
++                "versions": [
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.2",
++            "nextflow": "24.10.3"
++        },
++        "timestamp": "2025-01-15T15:20:45.963348"
+     },
+     "sarscov2 - test_1_fastq_gz": {
+         "content": [
+@@ -218,11 +178,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
+                 ],
+                 "fastx": [
+                     [
+@@ -232,19 +188,15 @@
+                         "test.fastq.gz:md5,c80e171f26a8c1f81c3b3f004d861b7a"
+                     ]
+                 ],
+-                "versions_seqkit": [
+-                    [
+-                        "SEQKIT_TRANSLATE",
+-                        "seqkit",
+-                        "2.9.0"
+-                    ]
+-                ]
+-            }
+-        ],
+-        "timestamp": "2026-03-12T13:13:25.021002049",
+-        "meta": {
+-            "nf-test": "0.9.4",
+-            "nextflow": "25.10.4"
+-        }
++                "versions": [
++                    "versions.yml:md5,b69861a1b516ab124aa52e238ef3755c"
++                ]
++            }
++        ],
++        "meta": {
++            "nf-test": "0.9.2",
++            "nextflow": "24.10.3"
++        },
++        "timestamp": "2025-01-15T15:20:50.35833"
+     }
+ }
+************************************************************
