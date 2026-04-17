@@ -1,44 +1,45 @@
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 
 def reads_merged_input_prep( reads_qc, cutadapt_channel ) {
 
     def dada2_input = reads_qc
-        .mix(cutadapt_channel)                           // Combine fastp + cutadapt reads
-        .map { meta, reads -> 
-            [ groupKey(meta.subMap('id', 'single_end'), 2), meta, reads ]
-        }
-        .groupTuple(by: 0)                               // Group per sample (fastp + cutadapt)
-        .map { key, metas, reads_list ->
-
-            def meta = metas[0]                          // Take first meta
-
-            //rename fastp_reads file names replacing the fastp extension
-            // otherwise the READS_QC_MERGE_BEFOREHMM:FASTP fails because the input output name is the same
-            def fastp_reads = reads_list[0] instanceof List
-                ? reads_list[0].collect { file ->
-                    def path = file instanceof Path ? file : Paths.get(file.toString())
-                    def name = path.getFileName().toString().replaceFirst(/\.fastp/, '')
-                    path.getParent().resolve(name)
-                }
-                : [ // for single-end reads, not a list
-                    {
-                        def path = reads_list[0] instanceof Path ? reads_list[0] : Paths.get(reads_list[0].toString())
-                        def name = path.getFileName().toString().replaceFirst(/\.fastp/, '')
-                        path.getParent().resolve(name)
-                    }()
-                ]
-            
-            def cutadapt_reads = reads_list[1] 
+        .map { meta, reads -> [ meta.subMap('id', 'single_end'), reads ] }
+        .join(
+            cutadapt_channel.map { meta, reads -> [ meta.subMap('id', 'single_end'), reads ] },
+            by: 0
+        )
+        .map { meta, fastp_reads, cutadapt_reads ->
 
             // Detect if cutadapt reads exist (SE vs PE check)
-            def cutadapt_read_size = meta.single_end 
-                                        ? cutadapt_reads.size() 
+            def cutadapt_read_size = meta.single_end
+                                        ? cutadapt_reads.size()
                                         : cutadapt_reads[0].size()
 
-            // Select reads: cutadapt > fastp
-            def final_reads = (cutadapt_read_size > 0) 
-                                ? cutadapt_reads 
-                                : fastp_reads
+            // If cutadapt reads are empty, stage fastp reads into a temp directory
+            // to avoid filename collision when the next fastp process runs
+            def final_reads
+            if (cutadapt_read_size > 0) {
+                final_reads = cutadapt_reads
+            } else {
+                def staging_dir = Files.createTempDirectory("fastp_staging")
+                final_reads = fastp_reads instanceof List
+                    ? fastp_reads.collect { file ->
+                        def path = file instanceof Path ? file : Paths.get(file.toString())
+                        def name = path.getFileName().toString().replaceFirst(/\.fastp/, '')
+                        def newPath = staging_dir.resolve(name)
+                        Files.createSymbolicLink(newPath, path)
+                        newPath
+                    }
+                    : {
+                        def path = fastp_reads instanceof Path ? fastp_reads : Paths.get(fastp_reads.toString())
+                        def name = path.getFileName().toString().replaceFirst(/\.fastp/, '')
+                        def newPath = staging_dir.resolve(name)
+                        Files.createSymbolicLink(newPath, path)
+                        [ newPath ]
+                    }()
+            }
 
             [ meta, final_reads ]
         }
