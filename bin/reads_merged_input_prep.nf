@@ -10,39 +10,21 @@ def reads_merged_input_prep( reads_qc, cutadapt_channel ) {
             cutadapt_channel.map { meta, reads -> [ meta.subMap('id', 'single_end'), reads ] },
             by: 0
         )
+
         .map { meta, fastp_reads, cutadapt_reads ->
 
-            // Detect if cutadapt reads exist (SE vs PE check)
             def cutadapt_read_size = meta.single_end
-                                        ? cutadapt_reads.size()
-                                        : cutadapt_reads[0].size()
-
-            // If cutadapt reads are empty, stage fastp reads into a temp directory
-            // to avoid filename collision when the next fastp process runs
-            def final_reads
-            if (cutadapt_read_size > 0) {
-                final_reads = cutadapt_reads
-            } else {
-                def staging_dir = Files.createTempDirectory("fastp_staging")
-                final_reads = fastp_reads instanceof List
-                    ? fastp_reads.collect { file ->
-                        def path = file instanceof Path ? file : Paths.get(file.toString())
-                        def name = path.getFileName().toString().replaceFirst(/\.fastp/, '')
-                        def newPath = staging_dir.resolve(name)
-                        Files.createSymbolicLink(newPath, path)
-                        newPath
-                    }
-                    : {
-                        def path = fastp_reads instanceof Path ? fastp_reads : Paths.get(fastp_reads.toString())
-                        def name = path.getFileName().toString().replaceFirst(/\.fastp/, '')
-                        def newPath = staging_dir.resolve(name)
-                        Files.createSymbolicLink(newPath, path)
-                        [ newPath ]
-                    }()
-            }
-
+                ? cutadapt_reads.size()
+                : cutadapt_reads[0].size()
+        
+            def final_reads = (cutadapt_read_size > 0)
+                ? cutadapt_reads
+                : meta.single_end
+                    ? fastp_reads.parent.resolve("${meta.id}_final.fastq.gz").tap { Files.createSymbolicLink(it, fastp_reads) }
+                    : fastp_reads.collect { f -> f.parent.resolve("${meta.id}_final_${f.name}").tap { link -> Files.createSymbolicLink(link, f) } }
+        
             [ meta, final_reads ]
-        }
+    }
 
     return dada2_input
 }
