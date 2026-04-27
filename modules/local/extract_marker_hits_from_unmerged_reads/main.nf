@@ -7,7 +7,7 @@ process EXTRACT_MARKER_HITS_FROM_UNMERGED_READS {
         'biocontainers/seqkit:2.9.0--h9ee0642_0' }"
 
     input:
-    tuple val(meta), path(reads), path(cmsearch_deoverlap_out)
+    tuple val(meta), path(reads), path(marker_search_deoverlap_out)
 
     output:
     tuple val(meta), path("*_extracted_read*.fastq.gz"), emit: extracted_reads
@@ -15,7 +15,7 @@ process EXTRACT_MARKER_HITS_FROM_UNMERGED_READS {
 
     script:
     """ 
-    \$(zcat ${cmsearch_deoverlap_out} | tr -s ' ' | cut -d' ' -f1 | sed 's/_length.*//' | grep -v '^#' > ${meta.id}_extracted_ids.txt)
+    \$(zcat ${marker_search_deoverlap_out} | tr -s ' ' | cut -d' ' -f1 | sed 's/_length.*//' | grep -v '^#' > ${meta.id}_extracted_ids.txt)
 
     if [[ ${meta.single_end} = true ]]; then
         seqkit grep -f ${meta.id}_extracted_ids.txt ${reads} -o ${meta.id}_extracted_reads.fastq.gz

@@ -7,7 +7,7 @@ workflow DADA2_SWF {
     
     take:
         dada2_input
-        cmsearch_deoverlap_out
+        marker_search_deoverlap_out
 
 
     main:
@@ -18,9 +18,9 @@ workflow DADA2_SWF {
                       .map{ meta, reads ->
                         [ meta.subMap('id', 'single_end'), meta['var_region'], meta['var_regions_size'], reads ]
                        }
-                      .join(cmsearch_deoverlap_out, by: [0])
-                      .map{meta, var_region, var_regions_size, reads, cmsearch_deoverlap_out ->
-                        [meta + ["var_region": var_region, "var_regions_size": var_regions_size], reads, cmsearch_deoverlap_out]
+                      .join(marker_search_deoverlap_out, by: [0])
+                      .map{meta, var_region, var_regions_size, reads, marker_search_deoverlap_out ->
+                        [meta + ["var_region": var_region, "var_regions_size": var_regions_size], reads, marker_search_deoverlap_out]
                       }
 
         EXTRACT_MARKER_HITS_FROM_UNMERGED_READS(seqkit_input)
