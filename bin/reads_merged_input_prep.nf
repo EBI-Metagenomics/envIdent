@@ -17,11 +17,7 @@ def reads_merged_input_prep( reads_qc, cutadapt_channel ) {
                 ? cutadapt_reads.size()
                 : cutadapt_reads[0].size()
         
-            def final_reads = (cutadapt_read_size > 0)
-                ? cutadapt_reads
-                : meta.single_end
-                    ? fastp_reads.parent.resolve("${meta.id}_final.fastq.gz").tap { Files.createSymbolicLink(it, fastp_reads) }
-                    : fastp_reads.collect { f -> f.parent.resolve("${meta.id}_final_${f.name}").tap { link -> Files.createSymbolicLink(link, f) } }
+            def final_reads = cutadapt_read_size > 0 ? cutadapt_reads : fastp_reads
         
             [ meta, final_reads ]
     }
