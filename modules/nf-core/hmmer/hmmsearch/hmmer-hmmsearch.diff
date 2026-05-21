@@ -1,0 +1,115 @@
+Changes in component 'nf-core/hmmer/hmmsearch'
+'modules/nf-core/hmmer/hmmsearch/environment.yml' is unchanged
+Changes in 'hmmer/hmmsearch/main.nf':
+--- modules/nf-core/hmmer/hmmsearch/main.nf
++++ modules/nf-core/hmmer/hmmsearch/main.nf
+@@ -21,8 +21,13 @@
+     task.ext.when == null || task.ext.when
+ 
+     script:
+-    def args       = task.ext.args   ?: ''
+-    def prefix     = task.ext.prefix ?: "${meta.id}"
++    def extra_args = ''
++    if(meta.read_count) {
++        extra_args = "-Z ${meta.read_count}"
++    }
++    def args = (task.ext.args ?: '') + " " + extra_args
++    def prefix = task.ext.prefix ?: "${meta.id}"
++
+     output         = "${prefix}.txt"
+     alignment      = write_align     ? "-A ${prefix}.sto" : ''
+     target_summary = write_target    ? "--tblout ${prefix}.tbl" : ''
+
+Changes in 'hmmer/hmmsearch/meta.yml':
+--- modules/nf-core/hmmer/hmmsearch/meta.yml
++++ modules/nf-core/hmmer/hmmsearch/meta.yml
+@@ -19,17 +19,15 @@
+         type: map
+         description: |
+           Groovy Map containing sample information
+-          e.g. [ id:'test', single_end:false ]
++          e.g. [ id:'test', single_end:false, read_count:12345 ]
+     - hmmfile:
+         type: file
+         description: One or more HMM profiles created with hmmbuild
+         pattern: "*.{hmm,hmm.gz}"
+-        ontologies: []
+     - seqdb:
+         type: file
+         description: Database of sequences in FASTA format
+         pattern: "*.{fasta,fna,faa,fa,fasta.gz,fna.gz,faa.gz,fa.gz}"
+-        ontologies: []
+     - write_align:
+         type: boolean
+         description: Flag to save optional alignment output. Specify with 'true' to
+@@ -43,8 +41,8 @@
+         description: Flag to save optional per domain summary. Specify with 'true' to
+           save.
+ output:
+-  output:
+-    - - meta:
++  - output:
++      - meta:
+           type: map
+           description: |
+             Groovy Map containing sample information
+@@ -53,9 +51,8 @@
+           type: file
+           description: Human readable output summarizing hmmsearch results
+           pattern: "*.{txt.gz}"
+-          ontologies: []
+-  alignments:
+-    - - meta:
++  - alignments:
++      - meta:
+           type: map
+           description: |
+             Groovy Map containing sample information
+@@ -64,9 +61,8 @@
+           type: file
+           description: Optional multiple sequence alignment (MSA) in Stockholm format
+           pattern: "*.{sto.gz}"
+-          ontologies: []
+-  target_summary:
+-    - - meta:
++  - target_summary:
++      - meta:
+           type: map
+           description: |
+             Groovy Map containing sample information
+@@ -75,9 +71,8 @@
+           type: file
+           description: Optional tabular (space-delimited) summary of per-target output
+           pattern: "*.{tbl.gz}"
+-          ontologies: []
+-  domain_summary:
+-    - - meta:
++  - domain_summary:
++      - meta:
+           type: map
+           description: |
+             Groovy Map containing sample information
+@@ -86,14 +81,11 @@
+           type: file
+           description: Optional tabular (space-delimited) summary of per-domain output
+           pattern: "*.{domtbl.gz}"
+-          ontologies: []
+-  versions:
+-    - versions.yml:
+-        type: file
+-        description: File containing software versions
+-        pattern: "versions.yml"
+-        ontologies:
+-          - edam: http://edamontology.org/format_3750 # YAML
++  - versions:
++      - versions.yml:
++          type: file
++          description: File containing software versions
++          pattern: "versions.yml"
+ authors:
+   - "@Midnighter"
+ maintainers:
+
+'modules/nf-core/hmmer/hmmsearch/tests/main.nf.test' is unchanged
+'modules/nf-core/hmmer/hmmsearch/tests/main.nf.test.snap' is unchanged
+************************************************************

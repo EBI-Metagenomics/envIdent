@@ -19,7 +19,7 @@ include { FASTQC as FASTQC_CLEAN       } from '../modules/nf-core/fastqc/main'
 include { paramsSummaryMap             } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc         } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML       } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText       } from '../subworkflows/local/utils_nfcore_edna_pipeline'
+include { methodsDescriptionText       } from '../subworkflows/local/utils_nfcore_envident_pipeline'
 include { PRIMER_IDENTIFICATION        } from '../subworkflows/local/primer_identification_swf.nf'
 include { CONCAT_PRIMER_CUTADAPT       } from '../subworkflows/local/concat_primer_cutadapt.nf'
 include { PROFILE_HMMSEARCH_PFAM       } from '../subworkflows/local/profile_hmmsearch_pfam/main'
@@ -40,7 +40,7 @@ include { reads_merged_input_prep      } from '../bin/reads_merged_input_prep.nf
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow EDNA {
+workflow ENVIDENT {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -49,7 +49,6 @@ workflow EDNA {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-     
      /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         INITIALISE REFERENCE DATABASE INPUT TUPLES
@@ -60,7 +59,6 @@ workflow EDNA {
     dada2_krona_bold_tuple = tuple(
         file(params.bold_db_fasta, checkIfExists: true),
         file(params.bold_db_tax, checkIfExists: true),
-        file(params.bold_db_otu, checkIfExists: true),
         file(params.bold_db_mscluster, checkIfExists: true),
         params.dada2_bold_label
     )
@@ -68,7 +66,6 @@ workflow EDNA {
     dada2_krona_midori_tuple = tuple(
         file(params.midori_db_fasta, checkIfExists: true),
         file(params.midori_db_tax, checkIfExists: true),
-        file(params.midori_db_otu, checkIfExists: true),
         file(params.midori_db_mscluster, checkIfExists: true),
         params.dada2_midori_label
     )
@@ -93,7 +90,7 @@ workflow EDNA {
 
     // Sanity checking and quality control of reads //
     READS_QC_MERGE(
-        false, 
+        true, 
         samplesheet,
         true // merge
     )
@@ -115,15 +112,6 @@ workflow EDNA {
                                 }
                                 .set { extended_reads_qc }
 
-    FASTQC_CLEAN(
-        READS_QC_MERGE.out.reads.map { meta, reads -> 
-            def new_meta = meta.clone()
-            new_meta.id = meta.id + "_clean"
-            [new_meta, reads]
-        }
-    )
-    ch_versions = ch_versions.mix(FASTQC_CLEAN.out.versions.first())
-
     // Identify whether primers exist or not in reads, separated by different amplified regions if more than one exists in a run //
     PRIMER_IDENTIFICATION(
         extended_reads_qc.qc_pass,
@@ -137,9 +125,18 @@ workflow EDNA {
         READS_QC.out.reads
     )
     ch_versions = ch_versions.mix(CONCAT_PRIMER_CUTADAPT.out.versions)
-     
+
     reads_merge_input = reads_merged_input_prep(READS_QC.out.reads, CONCAT_PRIMER_CUTADAPT.out.cutadapt_out)
-    
+
+    FASTQC_CLEAN(
+        reads_merge_input.map { meta, reads ->
+            def new_meta = meta.clone()
+            new_meta.id = meta.id + "_clean"
+            [new_meta, reads]
+        }
+    )
+    ch_versions = ch_versions.mix(FASTQC_CLEAN.out.versions.first())
+
     READS_QC_MERGE_BEFOREHMM(
         false, 
         reads_merge_input,
@@ -164,7 +161,7 @@ workflow EDNA {
     // Filter samples based on reads_percentage threshold and get filtered domtbl
     ch_passed_samples = PROFILE_HMMSEARCH_PFAM.out.profile
         .filter { meta, tsv_file ->
-            def threshold = params.reads_percentage_threshold ?: 0.70
+            def threshold = params.reads_percentage_threshold ?: 0.10
             
             try {
                 def lines = tsv_file.readLines()
@@ -224,7 +221,7 @@ workflow EDNA {
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name: 'edna_software_'  + 'mqc_'  + 'versions.yml',
+            name: 'envident_software_'  + 'mqc_'  + 'versions.yml',
             sort: true,
             newLine: true
         ).set { ch_collated_versions }

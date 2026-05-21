@@ -14,7 +14,7 @@ process COMBINEHMMSEARCHTBL {
 
     """
     export inputs=\$(find -L inputs -name "*tbl.gz")
-    export first_file=\$(echo \$inputs | head -n 1)
+    export first_file=\$(echo \$inputs | cut -d' ' -f1)
     gunzip -c \${first_file} | grep '#' > header.txt || true
     cat \$inputs | gunzip | grep -v '#' > without_header.txt || true
     cat header.txt without_header.txt | gzip > ${output_name} || true

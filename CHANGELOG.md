@@ -1,16 +1,25 @@
-# EBI-Metagenomics/edna: Changelog
+# EBI-Metagenomics/envident: Changelog
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## v0.0.1 - [date]
 
-## v1.0.0dev - [date]
-
-Initial release of EBI-Metagenomics/edna, created with the [EBI-Metagenomics](https://nf-co.re/) template.
+Initial release of EBI-Metagenomics/envident.
 
 ### `Added`
 
+Added support for hmmsearch to use read counts
+Added params to fastp
+Updated pimento to latest version, using multiple threads
+Adjusted minimum reads percentage threshold
+Readme, configs and json files updated
+Updated hmmsearch and seqkit modules
+Renamed to EnvIdent
+
 ### `Fixed`
 
-### `Dependencies`
+Bug fix for primer splitting
+Bug fix to ensure cutadapt is run on the correct reads
 
 ### `Deprecated`
+
+Removed igenomes
+Removed unused modules and subworkflows

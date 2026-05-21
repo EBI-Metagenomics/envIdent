@@ -21,8 +21,13 @@ process HMMER_HMMSEARCH {
     task.ext.when == null || task.ext.when
 
     script:
-    def args       = task.ext.args   ?: ''
-    def prefix     = task.ext.prefix ?: "${meta.id}"
+    def extra_args = ''
+    if(meta.read_count) {
+        extra_args = "-Z ${meta.read_count}"
+    }
+    def args = (task.ext.args ?: '') + " " + extra_args
+    def prefix = task.ext.prefix ?: "${meta.id}"
+
     output         = "${prefix}.txt"
     alignment      = write_align     ? "-A ${prefix}.sto" : ''
     target_summary = write_target    ? "--tblout ${prefix}.tbl" : ''

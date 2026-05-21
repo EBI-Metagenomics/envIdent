@@ -6,23 +6,23 @@
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
-# EBI-Metagenomics eDNA Analysis Pipeline
+# EnvIdent - EBI-Metagenomics eDNA Analysis Pipeline
 
-This repository contains the v1.0 EBI-Metagenomics eDNA analysis pipeline. This pipeline is designed for the analysis of environmental DNA (eDNA) sequencing data, implementing a comprehensive workflow for quality control, primer identification, taxonomic profiling, and Amplicon Sequence Variant (ASV) calling using modern bioinformatics tools.
+This repository contains EnvIdent v1.0 - EBI-Metagenomic's eDNA analysis pipeline. This pipeline is designed for the analysis of environmental DNA (eDNA) sequencing data, implementing a comprehensive workflow for quality control, primer identification, taxonomic profiling, and Amplicon Sequence Variant (ASV) calling using modern bioinformatics tools.
 
 ## Pipeline Description
 
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/edna_schema.png">
-    <img alt="EBI-Metagenomics/edna" src="docs/images/edna_schema.png" style="width: 80%;">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/envident_schema.png">
+    <img alt="EBI-Metagenomics/envident" src="docs/images/envident_schema.png" style="width: 80%;">
   </picture>
 </h1>
 
 
 ### Features
 
-The eDNA analysis pipeline v1.0 implements the following key features:
+EnvIdent v1.0 implements the following key features:
 
 **Quality Control and Preprocessing:**
 - Raw reads quality assessment using FastQC
@@ -37,7 +37,7 @@ The eDNA analysis pipeline v1.0 implements the following key features:
 
 **Taxonomic Profiling:**
 - Pfam-based COI (Cytochrome c Oxidase subunit I) profiling using HMMER
-- Reads percentage threshold filtering for quality control
+- Reads percentage threshold filtering for marker gene identification
 - Profile-based taxonomic classification
 
 **ASV Analysis:**
@@ -93,11 +93,13 @@ sample,fastq_1,fastq_2,single_end
 sample1,/path/to/sample1_R1.fastq.gz,/path/to/sample1_R2.fastq.gz,false
 sample2,/path/to/sample2.fastq.gz,,true
 ```
+> [!NOTE]
+> EnvIdent has not yet been optimised for single-end reads, the parameters used as default may not be optimal
 
 ### Basic execution
 
 ```bash
-nextflow run EBI-Metagenomics/edna \
+nextflow run EBI-Metagenomics/envident \
     -r main \
     -profile codon_slurm \
     --input samplesheet.csv \
@@ -109,7 +111,7 @@ nextflow run EBI-Metagenomics/edna \
 | **Parameter** | **Default** | **Description** |
 |----------------|-------------|-----------------|
 | `--min_read_count` | `5000` | Minimum number of reads required per sample |
-| `--reads_percentage_threshold` | `0.80` | Minimum percentage of reads matching COI profile |
+| `--reads_percentage_threshold` | `0.10` | Minimum percentage of reads matching COI profile |
 | `--std_primer_library` | `[]` | Custom primer library for PIMENTO |
 | `--pfam_coi_db` | `Default path` | Path to Pfam COI HMM database |
 
@@ -147,7 +149,7 @@ results/
 │   ├── execution_timeline_YYYY-MM-DD_HH-mm-ss.html
 │   ├── execution_trace_YYYY-MM-DD_HH-mm-ss.txt
 │   ├── pipeline_dag_YYYY-MM-DD_HH-mm-ss.html
-│   └── edna_software_mqc_versions.yml
+│   └── envident_software_mqc_versions.yml
 ├── multiqc_report.html
 ├── qc_passed_runs.csv
 └── qc_failed_runs.csv
