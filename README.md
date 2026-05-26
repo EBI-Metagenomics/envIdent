@@ -8,7 +8,9 @@
 
 # EnvIdent - EBI-Metagenomics eDNA Analysis Pipeline
 
-This repository contains EnvIdent v1.0 - EBI-Metagenomic's eDNA analysis pipeline. This pipeline is designed for the analysis of environmental DNA (eDNA) sequencing data, implementing a comprehensive workflow for quality control, primer identification, taxonomic profiling, and Amplicon Sequence Variant (ASV) calling using modern bioinformatics tools.
+This repository contains EnvIdent v0.1 - EBI-Metagenomic's eDNA analysis pipeline. This pipeline is designed for the analysis of environmental DNA (eDNA) sequencing data, implementing a comprehensive workflow for quality control, primer identification, Amplicon Sequence Variant (ASV) calling and taxonomic profiling using modern bioinformatics tools.
+
+Currently the pipeline supports analysis of COI metabarcoding reads.
 
 ## Pipeline Description
 
@@ -22,12 +24,11 @@ This repository contains EnvIdent v1.0 - EBI-Metagenomic's eDNA analysis pipelin
 
 ### Features
 
-EnvIdent v1.0 implements the following key features:
+EnvIdent v0.1 implements the following key features:
 
 **Quality Control and Preprocessing:**
 - Raw reads quality assessment using FastQC
 - Reads quality control and filtering using fastp
-- Automatic read merging for single-end analysis
 - Minimum read count filtering (configurable threshold)
 
 **Primer Analysis:**
@@ -36,9 +37,8 @@ EnvIdent v1.0 implements the following key features:
 - Primer validation and reporting
 
 **Taxonomic Profiling:**
-- Pfam-based COI (Cytochrome c Oxidase subunit I) profiling using HMMER
-- Reads percentage threshold filtering for marker gene identification
-- Profile-based taxonomic classification
+- Pfam-based COI (Cytochrome C Oxidase subunit I) profiling using HMMER
+- Reads percentage threshold filtering for marker gene identification (configurable threshold)
 
 **ASV Analysis:**
 - Amplicon Sequence Variant (ASV) calling using DADA2
@@ -54,15 +54,19 @@ EnvIdent v1.0 implements the following key features:
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| [fastp](https://github.com/OpenGene/fastp)  | 0.24.0 | Read quality control and filtering |
-| [PIMENTO](https://github.com/EBI-Metagenomics/PIMENTO)  | 1.0.2 | Primer identification and inference |
 | [cutadapt](https://cutadapt.readthedocs.io/en/stable/)  | 4.6 | Primer trimming |
-| [HMMER](http://hmmer.org/) | 3.4 | Profile HMM searching for COI sequences |
 | [DADA2](https://benjjneb.github.io/dada2/index.html)   | 1.30.0 | ASV calling and denoising |
-| [MAPseq](https://github.com/meringlab/MAPseq)  | 2.1.1 | Taxonomic classification of ASVs |
+| [fastp](https://github.com/OpenGene/fastp)  | 0.23.4 | Read quality control and filtering |
+| [FastQC](https://github.com/s-andrews/fastqc) | 0.12.1 | Read quality control |
+| [HMMER](http://hmmer.org/) | 3.4 | Profile HMM searching for COI sequences |
 | [Krona](https://github.com/marbl/Krona)  | 2.8.1 | Interactive taxonomic visualization |
-| [MultiQC](https://github.com/MultiQC/MultiQC) | 1.27 | Aggregated quality control reporting |
+| [MAPseq](https://github.com/meringlab/MAPseq)  | 2.1.1b | Taxonomic classification of ASVs |
 | [mgnify-pipelines-toolkit](https://github.com/EBI-Metagenomics/mgnify-pipelines-toolkit) | 1.0.4 | Toolkit containing various in-house processing scripts |
+| [MultiQC](https://github.com/MultiQC/MultiQC) | 1.27 | Aggregated quality control reporting |
+| [PIMENTO](https://github.com/EBI-Metagenomics/PIMENTO)  | 1.0.3 | Primer identification and inference |
+| [SeqFu](https://telatin.github.io/seqfu2/) | 1.20.3 | FASTQ validity check |
+| [SeqKit](https://bioinf.shenwei.me/seqkit/) | 2.9.0 | Read extraction and protein tranlsation |
+| [Seqtk](https://github.com/lh3/seqtk) | 1.3 | Converting FASTQ to FASTA |
 
 ## Reference Databases
 
@@ -71,6 +75,7 @@ This pipeline uses the following reference databases:
 | Database | Purpose | Default Location |
 |----------|---------|------------------|
 | BOLD | COI taxonomic classification and popular COI primers | Configurable via parameters |
+| MIDORI2 | COI taxonomic classification | Configurable via parameters |
 
 > [!NOTE]
 > Database paths can be configured in the pipeline parameters. Contact the development team for access to preprocessed databases.
@@ -83,6 +88,7 @@ The pipeline requires:
 - Nextflow (≥24.04.2)
 - Docker, Singularity, or Conda for software management
 - Access to reference databases
+- Primer database formatted for PIMENTO - a FASTA file with contig ids ending with F for forward primers and R for reverse primers. See [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_primers/V3-V5.fasta) for an example
 
 ### Input Format
 
@@ -101,7 +107,7 @@ sample2,/path/to/sample2.fastq.gz,,true
 ```bash
 nextflow run EBI-Metagenomics/envident \
     -r main \
-    -profile codon_slurm \
+    -profile example_slurm \
     --input samplesheet.csv \
     --outdir results
 ```
@@ -120,34 +126,41 @@ nextflow run EBI-Metagenomics/envident \
 
 ### Output directory structure
 
-Example output structure for a sample (sample1):
+Example output structure for a sample (sample1). The qc passed/failed csvs are only present if you have samples that passed or failed:
 ```bash
 results/
 ├── sample1/
 │   ├── asv/
 │   │   ├── sample1_DADA2-BOLD_asv_read_counts.tsv
+│   │   ├── sample1_DADA2-MIDORI_asv_read_counts.tsv
 │   │   └── sample1_dada2_stats.tsv
+│   │   └── sample1_asvs.fasta
 │   ├── hmmsearch-COI/
 │   │   ├── sample1_Pfam-A.domtbl
 │   │   └── sample1_Pfam-A.txt
 │   ├── primer-identification/
 │   │   └── sample1.cutadapt.json
-│   ├── fastaembedlength/
-│   │   └── sample1.seqtk-seq.fastq.renamed.gz
 │   ├── qc/
-│   │   ├── sample1_dada2_errors.txt
 │   │   ├── sample1_seqfu.tsv
-│   │   ├── sample1.fastp.fastq.gz
 │   │   └── sample1.fastp.json
+│   │   └── sample1.merged.fastq.gz
+│   │   └── sample1_suffix_header_err.json
 │   ├── taxonomy-summary/
 │   │   ├── DADA2-BOLD/
 │   │   |   ├── ERR8441464_DADA2-BOLD_asv_krona_counts.txt
+│   │   |   ├── ERR8441464_DADA2-BOLD_asv_taxa.tsv
 │   │   |   ├── ERR8441464_DADA2-BOLD.html
 │   │   |   └── ERR8441464_DADA2-BOLD.mseq
+│   │   ├── DADA2-MIDORI/
+│   │   |   ├── ERR8441464_DADA2-MIDORI_asv_krona_counts.txt
+│   │   |   ├── ERR8441464_DADA2-MIDORI_asv_taxa.tsv
+│   │   |   ├── ERR8441464_DADA2-MIDORI.html
+│   │   |   └── ERR8441464_DADA2-MIDORI.mseq
 ├── pipeline_info/
 │   ├── execution_report_YYYY-MM-DD_HH-mm-ss.html
 │   ├── execution_timeline_YYYY-MM-DD_HH-mm-ss.html
 │   ├── execution_trace_YYYY-MM-DD_HH-mm-ss.txt
+│   ├── params_YYYY-MM-DD_HH-mm-ss.json
 │   ├── pipeline_dag_YYYY-MM-DD_HH-mm-ss.html
 │   └── envident_software_mqc_versions.yml
 ├── multiqc_report.html
@@ -165,12 +178,12 @@ results/
 
 ### Configuration Profiles
 
-The pipeline includes several pre-configured profiles:
+The pipeline includes pre-configured profiles:
 
 * docker: Use Docker containers
 * singularity: Use Singularity containers
 * conda: Use Conda environments
-* codon_slurm: Optimized for SLURM clusters
+* example_slurm: Optimized for SLURM clusters
 * test: Small test dataset for validation
 
 ## Citations
