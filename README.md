@@ -126,7 +126,7 @@ nextflow run EBI-Metagenomics/envident \
 
 ### Output directory structure
 
-Example output structure for a sample (sample1). The qc passed/failed csvs are only present if you have samples that passed or failed:
+Example output structure for a sample (sample1). The qc_passed and qc_failed csvs are only present if you have samples that passed or failed:
 ```bash
 results/
 ├── sample1/
