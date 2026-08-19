@@ -359,6 +359,15 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/ref_dbs"
+        },
+        {
+            "$ref": "#/$defs/bold_database_options"
+        },
+        {
+            "$ref": "#/$defs/midori_database_options"
         }
     ]
 }
