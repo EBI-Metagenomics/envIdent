@@ -1,0 +1,93 @@
+Changes in component 'nf-core/multiqc'
+Changes in 'multiqc/environment.yml':
+--- modules/nf-core/multiqc/environment.yml
++++ modules/nf-core/multiqc/environment.yml
+@@ -2,4 +2,4 @@
+   - conda-forge
+   - bioconda
+ dependencies:
+-  - bioconda::multiqc=1.27
++  - bioconda::multiqc=1.35
+
+Changes in 'multiqc/main.nf':
+--- modules/nf-core/multiqc/main.nf
++++ modules/nf-core/multiqc/main.nf
+@@ -1,10 +1,10 @@
+ process MULTIQC {
+-    label 'process_single'
++    label 'process_medium'
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/multiqc:1.27--pyhdfd78af_0' :
+-        'biocontainers/multiqc:1.27--pyhdfd78af_0' }"
++        'https://depot.galaxyproject.org/singularity/multiqc:1.35--pyhdfd78af_1' :
++        'biocontainers/multiqc:1.35--pyhdfd78af_1' }"
+ 
+     input:
+     path  multiqc_files, stageAs: "?/*"
+
+'modules/nf-core/multiqc/meta.yml' is unchanged
+'modules/nf-core/multiqc/tests/main.nf.test' is unchanged
+Changes in 'multiqc/tests/main.nf.test.snap':
+--- modules/nf-core/multiqc/tests/main.nf.test.snap
++++ modules/nf-core/multiqc/tests/main.nf.test.snap
+@@ -2,14 +2,14 @@
+     "multiqc_versions_single": {
+         "content": [
+             [
+-                "versions.yml:md5,8f3b8c1cec5388cf2708be948c9fa42f"
++                "versions.yml:md5,97afa81e568cfe8ec2b4fa273dff07fc"
+             ]
+         ],
++        "timestamp": "2026-08-21T11:26:14.804769587",
+         "meta": {
+-            "nf-test": "0.9.2",
+-            "nextflow": "24.10.4"
+-        },
+-        "timestamp": "2025-01-27T09:29:57.631982377"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.0"
++        }
+     },
+     "multiqc_stub": {
+         "content": [
+@@ -17,25 +17,25 @@
+                 "multiqc_report.html",
+                 "multiqc_data",
+                 "multiqc_plots",
+-                "versions.yml:md5,8f3b8c1cec5388cf2708be948c9fa42f"
++                "versions.yml:md5,97afa81e568cfe8ec2b4fa273dff07fc"
+             ]
+         ],
++        "timestamp": "2026-08-21T11:26:56.352900915",
+         "meta": {
+-            "nf-test": "0.9.2",
+-            "nextflow": "24.10.4"
+-        },
+-        "timestamp": "2025-01-27T09:30:34.743726958"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.0"
++        }
+     },
+     "multiqc_versions_config": {
+         "content": [
+             [
+-                "versions.yml:md5,8f3b8c1cec5388cf2708be948c9fa42f"
++                "versions.yml:md5,97afa81e568cfe8ec2b4fa273dff07fc"
+             ]
+         ],
++        "timestamp": "2026-08-21T11:26:38.056549005",
+         "meta": {
+-            "nf-test": "0.9.2",
+-            "nextflow": "24.10.4"
+-        },
+-        "timestamp": "2025-01-27T09:30:21.44383553"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.0"
++        }
+     }
+ }
+'modules/nf-core/multiqc/tests/nextflow.config' is unchanged
+'modules/nf-core/multiqc/tests/tags.yml' is unchanged
+************************************************************
