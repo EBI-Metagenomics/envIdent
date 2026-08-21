@@ -1,0 +1,17 @@
+Changes in component 'nf-core/custom/dumpsoftwareversions'
+Changes in 'dumpsoftwareversions/main.nf':
+--- modules/nf-core/custom/dumpsoftwareversions/main.nf
++++ modules/nf-core/custom/dumpsoftwareversions/main.nf
+@@ -4,8 +4,8 @@ process CUSTOM_DUMPSOFTWAREVERSIONS {
+     // Requires `pyyaml` which does not have a dedicated container but is in the MultiQC container
+     conda "bioconda::multiqc=1.14"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/multiqc:1.14--pyhdfd78af_0' :
+-        'quay.io/biocontainers/multiqc:1.14--pyhdfd78af_0' }"
++        'https://depot.galaxyproject.org/singularity/multiqc:1.35--pyhdfd78af_1' :
++        'quay.io/biocontainers/multiqc:1.35--pyhdfd78af_1' }"
+ 
+     input:
+     path versions
+     
+************************************************************
