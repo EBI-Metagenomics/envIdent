@@ -3,8 +3,8 @@ process EXTRACT_MARKER_HITS_FROM_UNMERGED_READS {
     tag "$meta.id"
     label 'process_medium'
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/seqkit:2.9.0--h9ee0642_0' :
-        'biocontainers/seqkit:2.9.0--h9ee0642_0' }"
+        'https://depot.galaxyproject.org/singularity/seqkit:2.13.0--he881be0_0' :
+        'biocontainers/seqkit:2.13.0--he881be0_0' }"
 
     input:
     tuple val(meta), path(reads), path(marker_search_deoverlap_out)
