@@ -1,7 +1,3 @@
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-
 def reads_merged_input_prep( reads_qc, cutadapt_channel ) {
 
     def dada2_input = reads_qc

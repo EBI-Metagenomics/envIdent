@@ -274,7 +274,7 @@ workflow ENVIDENT {
         .filter { meta, seqfu_res ->
             seqfu_res[0] != "OK"
         }
-        .map { meta, __ -> "${meta.id},seqfu_fail" }
+        .map { meta, _seqfu_res -> "${meta.id},seqfu_fail" }
         .set { seqfu_fails }
 
     // Extract runs that failed Suffix Header check //
@@ -282,7 +282,7 @@ workflow ENVIDENT {
         .filter { meta, sfxhd_res ->
             sfxhd_res.countLines() != 0
         }
-        .map { meta, __ -> "${meta.id},sfxhd_fail"  }
+        .map { meta, _sfxhd_res -> "${meta.id},sfxhd_fail"  }
         .set { sfxhd_fails }
 
     // Extract runs that failed Library Strategy check //
@@ -290,11 +290,11 @@ workflow ENVIDENT {
         .filter { meta, strategy ->
             strategy != "AMPLICON"
         }
-        .map { meta, __ -> "${meta.id},libstrat_fail" }
+        .map { meta, _strategy -> "${meta.id},libstrat_fail" }
         .set { libstrat_fails }
 
     // Extract runs that had zero reads after fastp //
-    extended_reads_qc.qc_fail.map { meta, __ -> "${meta.id},min_reads"  }
+    extended_reads_qc.qc_fail.map { meta, _no_reads -> "${meta.id},min_reads"  }
         .set { min_reads_fails }
 
     // Extract runs that failed the reads_percentage_threshold parameter
@@ -304,7 +304,7 @@ workflow ENVIDENT {
         .filter { id, meta, passed_meta ->
             passed_meta == null  // These are samples that didn't pass
         }
-        .map { id, meta, __ -> "${meta.id},reads_percentage_fail" }
+        .map { id, meta, _low_percent -> "${meta.id},reads_percentage_fail" }
         .set { reads_percentage_fails }
 
     // Save all failed runs to file //

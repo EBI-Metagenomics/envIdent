@@ -40,7 +40,7 @@ workflow  READS_QC {
         .filter { meta, sufhd_res ->
             sufhd_res.countLines() == 0
         }
-        .map { meta, _ -> [ meta ] }
+        .map { meta, _sufhd_res -> [ meta ] }
         .join(ch_reads_pe)
         .mix(ch_reads_se)
 
@@ -61,7 +61,7 @@ workflow  READS_QC {
                         .filter { meta, strategy ->
                             strategy == "AMPLICON"
                         }
-                        .map { meta, _ -> [ meta ] }
+                        .map { meta, _strategy -> [ meta ] }
                         .join(ch_reads)
 
         amplicon_check = ASSESSMCPPROPORTIONS.out.library_check_out

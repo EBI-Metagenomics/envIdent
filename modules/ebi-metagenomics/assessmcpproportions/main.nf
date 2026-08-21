@@ -14,7 +14,7 @@ process ASSESSMCPPROPORTIONS {
 
     output:
     tuple val(meta), path("*.tsv") , emit: tsv
-    tuple val(meta), env(check_out), optional: true, emit: library_check_out
+    tuple val(meta), env('check_out'), optional: true, emit: library_check_out
     path "versions.yml"            , emit: versions
 
     when:
