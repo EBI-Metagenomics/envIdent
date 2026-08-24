@@ -77,18 +77,15 @@ workflow PIPELINE_INITIALISATION {
         .map {
             meta, fastq_1, fastq_2 ->
                 if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
+                    return [ meta.id, meta + [single_end:true], [fastq_1] ]
                 } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+                    return [ meta.id, meta + [single_end:false], [fastq_1, fastq_2] ]
                 }
         }
         .groupTuple()
         .map { samplesheet ->
-            validateInputSamplesheet(samplesheet)
-        }
-        .map {
-            meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
+            def validated = validateInputSamplesheet(samplesheet)
+            return tuple(validated[0], validated[1].flatten())
         }
         .set { ch_samplesheet }
 
@@ -166,7 +163,14 @@ def validateInputSamplesheet(input) {
         error("Please check input samplesheet -> Multiple runs of a sample must be of the same datatype i.e. single-end or paired-end: ${metas[0].id}")
     }
 
-    return [ metas[0], fastqs ]
+    def primers_ok = metas.collect { meta ->
+        [meta.forward_primer ?: '', meta.reverse_primer ?: '']
+    }.unique().size == 1
+    if (!primers_ok) {
+        error("Please check input samplesheet -> Multiple runs of a sample must use the same forward and reverse primers: ${metas[0].id}")
+    }
+
+    return tuple(metas[0], fastqs)
 }
 
 //

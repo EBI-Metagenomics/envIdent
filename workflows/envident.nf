@@ -22,6 +22,7 @@ include { softwareVersionsToYAML       } from '../subworkflows/nf-core/utils_nfc
 include { methodsDescriptionText       } from '../subworkflows/local/utils_nfcore_envident_pipeline'
 include { PRIMER_IDENTIFICATION        } from '../subworkflows/local/primer_identification_swf.nf'
 include { CONCAT_PRIMER_CUTADAPT       } from '../subworkflows/local/concat_primer_cutadapt.nf'
+include { SUPPLIED_PRIMERS             } from '../modules/local/supplied_primers/main.nf'
 include { PROFILE_HMMSEARCH_PFAM       } from '../subworkflows/local/profile_hmmsearch_pfam/main'
 include { DADA2_SWF                    } from '../subworkflows/local/dada2_swf.nf'
 include { MAPSEQ_ASV_KRONA as MAPSEQ_ASV_KRONA_BOLD         } from '../subworkflows/local/mapseq_asv_krona_swf.nf'
@@ -112,16 +113,27 @@ workflow ENVIDENT {
                                 }
                                 .set { extended_reads_qc }
 
-    // Identify whether primers exist or not in reads, separated by different amplified regions if more than one exists in a run //
+    supplied_primers = extended_reads_qc.qc_pass
+        .filter { meta, _reads -> meta.forward_primer && meta.reverse_primer }
+        .map { meta, _reads ->
+            meta + [var_region: 'provided', var_regions_size: 0]
+        }
+
+    SUPPLIED_PRIMERS(supplied_primers)
+
+    primers_to_identify = extended_reads_qc.qc_pass
+        .filter { meta, _reads -> !(meta.forward_primer && meta.reverse_primer) }
+
+    // Identify whether primers exist or not in reads for samples without supplied primers //
     PRIMER_IDENTIFICATION(
-        extended_reads_qc.qc_pass,
+        primers_to_identify,
         std_primer_library
     )
     ch_versions = ch_versions.mix(PRIMER_IDENTIFICATION.out.versions)
      
     // Concatenate all primers for for a run, send them to cutadapt with original QCd reads for primer trimming //
     CONCAT_PRIMER_CUTADAPT(
-        PRIMER_IDENTIFICATION.out.std_primer_out,
+        PRIMER_IDENTIFICATION.out.std_primer_out.mix(SUPPLIED_PRIMERS.out.supplied_primer_out),
         READS_QC.out.reads
     )
     ch_versions = ch_versions.mix(CONCAT_PRIMER_CUTADAPT.out.versions)
