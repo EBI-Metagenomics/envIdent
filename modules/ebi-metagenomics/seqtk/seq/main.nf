@@ -7,8 +7,8 @@ process SEQTK_SEQ {
 
     conda "bioconda::seqtk=1.4"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/seqtk:1.3--h5bf99c6_3' :
-        'biocontainers/seqtk:1.3--h5bf99c6_3' }"
+        'https://depot.galaxyproject.org/singularity/seqtk:1.5--h577a1d6_1' :
+        'biocontainers/seqtk:1.5--h577a1d6_1' }"
 
     input:
     tuple val(meta), path(fastx)

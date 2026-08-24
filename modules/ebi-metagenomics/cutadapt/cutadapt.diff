@@ -1,7 +1,7 @@
 Changes in module 'ebi-metagenomics/cutadapt'
 --- modules/ebi-metagenomics/cutadapt/main.nf
 +++ modules/ebi-metagenomics/cutadapt/main.nf
-@@ -1,7 +1,7 @@
+@@ -1,9 +1,9 @@
  
  process CUTADAPT {
      tag "$meta.id"
@@ -10,6 +10,11 @@ Changes in module 'ebi-metagenomics/cutadapt'
  
      conda "${moduleDir}/environment.yml"
      container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
++        'https://depot.galaxyproject.org/singularity/cutadapt:5.2--py311haab0aaa_0':
++        'biocontainers/cutadapt:5.2--py311haab0aaa_0' }"
+-        'https://depot.galaxyproject.org/singularity/cutadapt:4.6--py39hf95cd2a_1':
+-        'biocontainers/cutadapt:4.6--py39hf95cd2a_1' }"
+
 @@ -42,19 +42,47 @@
  
      def primer_arg = "$fwd_primer $rev_primer"
@@ -71,5 +76,14 @@ Changes in module 'ebi-metagenomics/cutadapt'
  
      stub:
      def prefix  = task.ext.prefix ?: "${meta.id}"
+
+--- modules/ebi-metagenomics/cutadapt/environment.yml
++++ modules/ebi-metagenomics/cutadapt/environment.yml
+@@ -4,4 +4,4 @@
+   - bioconda
+   - defaults
+ dependencies:
++  - bioconda::cutadapt=5.2
+-  - bioconda::cutadapt=4.6
 
 ************************************************************
