@@ -5,8 +5,7 @@
 */
 
 include { READS_QC                     } from '../subworkflows/ebi-metagenomics/reads_qc/main'
-include { READS_QC as READS_QC_MERGE   } from '../subworkflows/ebi-metagenomics/reads_qc/main'
-include { READS_QC as READS_QC_MERGE_BEFOREHMM   } from '../subworkflows/ebi-metagenomics/reads_qc/main'
+include { READS_QC as READS_QC_BEFOREHMM   } from '../subworkflows/ebi-metagenomics/reads_qc/main'
 
 
 /*
@@ -20,7 +19,8 @@ include { paramsSummaryMap             } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc         } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML       } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText       } from '../subworkflows/local/utils_nfcore_envident_pipeline'
-include { PRIMER_IDENTIFICATION        } from '../subworkflows/local/primer_identification_swf.nf'
+include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_F } from '../subworkflows/local/primer_identification_swf.nf'
+include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_R } from '../subworkflows/local/primer_identification_swf.nf'
 include { CONCAT_PRIMER_CUTADAPT       } from '../subworkflows/local/concat_primer_cutadapt.nf'
 include { SUPPLIED_PRIMERS             } from '../modules/local/supplied_primers/main.nf'
 include { PROFILE_HMMSEARCH_PFAM       } from '../subworkflows/local/profile_hmmsearch_pfam/main'
@@ -73,10 +73,14 @@ workflow ENVIDENT {
 
     // Initialiase standard primer library for PIMENTO if user-given//
     // If there are no primers provided, it will fallback to use the default PIMENTO standard primer library
-    std_primer_library = []
+    std_primer_library_forward = []
+    std_primer_library_reverse = []
 
-    if (params.std_primer_library){
-        std_primer_library = file(params.std_primer_library, type: 'dir', checkIfExists: true)
+    if (params.std_primer_library_forward){
+        std_primer_library_forward = file(params.std_primer_library_forward, type: 'dir', checkIfExists: true)
+    }
+    if (params.std_primer_library_reverse){
+        std_primer_library_reverse = file(params.std_primer_library_reverse, type: 'dir', checkIfExists: true)
     }
 
     FASTQC_RAW(
@@ -88,26 +92,18 @@ workflow ENVIDENT {
     )
     ch_versions = ch_versions.mix(FASTQC_RAW.out.versions.first())
 
-
     // Sanity checking and quality control of reads //
-    READS_QC_MERGE(
-        true, 
-        samplesheet,
-        true // merge
-    )
-    ch_versions = ch_versions.mix(READS_QC_MERGE.out.versions)
-
-    // Run it again without merging to keep PE files unmerged for primer trimming+DADA2 //
     READS_QC(
-        false, 
+        true, 
         samplesheet,
         false // merge
     )
     ch_versions = ch_versions.mix(READS_QC.out.versions)
 
     // Filter and branch reads based on minimum read count with logging
-    READS_QC_MERGE.out.reads_se_and_merged.branch{ meta, reads ->
-                                    def count = reads.countFastq()
+    READS_QC.out.reads.branch{ meta, reads ->
+                                    def read_files = reads instanceof List ? reads : [reads]
+                                    def count = read_files.collect { read -> read.toAbsolutePath().countFastq() }.sum()
                                     qc_pass: count >= params.min_read_count
                                     qc_fail: count < params.min_read_count
                                 }
@@ -116,7 +112,7 @@ workflow ENVIDENT {
     supplied_primers = extended_reads_qc.qc_pass
         .filter { meta, _reads -> meta.forward_primer && meta.reverse_primer }
         .map { meta, _reads ->
-            meta + [var_region: 'provided', var_regions_size: 0]
+            meta + [direction: 'provided', direction_size: 0]
         }
 
     SUPPLIED_PRIMERS(supplied_primers)
@@ -124,16 +120,45 @@ workflow ENVIDENT {
     primers_to_identify = extended_reads_qc.qc_pass
         .filter { meta, _reads -> !(meta.forward_primer && meta.reverse_primer) }
 
-    // Identify whether primers exist or not in reads for samples without supplied primers //
-    PRIMER_IDENTIFICATION(
-        primers_to_identify,
-        std_primer_library
+    primer_reads_f = primers_to_identify
+        .map { meta, reads ->
+            tuple(meta + [direction: 'f'], reads instanceof List ? reads[0] : reads)
+        }
+
+    primer_reads_r = primers_to_identify
+        .map { meta, reads ->
+            tuple(meta + [direction: 'r'], reads instanceof List ? reads[1] : reads)
+    }
+
+    // Identify primers independently in read 1 and read 2 for samples without supplied primers.
+    PRIMER_IDENTIFICATION_F(
+        primer_reads_f,
+        std_primer_library_forward
     )
-    ch_versions = ch_versions.mix(PRIMER_IDENTIFICATION.out.versions)
-     
+    ch_versions = ch_versions.mix(PRIMER_IDENTIFICATION_F.out.versions)
+
+    PRIMER_IDENTIFICATION_R(
+        primer_reads_r,
+        std_primer_library_reverse
+    )
+    ch_versions = ch_versions.mix(PRIMER_IDENTIFICATION_R.out.versions)   
+
+    primer_outputs = PRIMER_IDENTIFICATION_F.out.std_primer_out
+    .map { meta, primers -> [meta.subMap('id', 'single_end'), meta, primers] }
+    .join(
+        PRIMER_IDENTIFICATION_R.out.std_primer_out
+            .map { meta, primers -> [meta.subMap('id', 'single_end'), primers] },
+        by: [0]
+    )
+    .map { _key, meta, f_primers, r_primers ->
+        tuple(meta + [direction: 'identified', direction_size: 0], f_primers, r_primers)
+    }
+
+    primer_outputs.view { "IDENTIFIED FINAL: $it" }
     // Concatenate all primers for for a run, send them to cutadapt with original QCd reads for primer trimming //
     CONCAT_PRIMER_CUTADAPT(
-        PRIMER_IDENTIFICATION.out.std_primer_out.mix(SUPPLIED_PRIMERS.out.supplied_primer_out),
+        primer_outputs
+                    .mix(SUPPLIED_PRIMERS.out.supplied_primer_out),
         READS_QC.out.reads
     )
     ch_versions = ch_versions.mix(CONCAT_PRIMER_CUTADAPT.out.versions)
@@ -149,12 +174,12 @@ workflow ENVIDENT {
     )
     ch_versions = ch_versions.mix(FASTQC_CLEAN.out.versions.first())
 
-    READS_QC_MERGE_BEFOREHMM(
+    READS_QC_BEFOREHMM(
         false, 
         reads_merge_input,
         true // merge
     )
-    ch_versions = ch_versions.mix(READS_QC_MERGE_BEFOREHMM.out.versions) 
+    ch_versions = ch_versions.mix(READS_QC_BEFOREHMM.out.versions) 
 
     // Pfam profiling
     pfam_db = params.pfam_coi_db ?
@@ -164,9 +189,9 @@ workflow ENVIDENT {
     Channel.empty()
     
     PROFILE_HMMSEARCH_PFAM(
-        READS_QC_MERGE_BEFOREHMM.out.reads_fasta,
+        READS_QC_BEFOREHMM.out.reads_fasta,
         pfam_db,
-        READS_QC_MERGE_BEFOREHMM.out.fastp_summary_json
+        READS_QC_BEFOREHMM.out.fastp_summary_json
     )
     ch_versions = ch_versions.mix(PROFILE_HMMSEARCH_PFAM.out.versions)
         
@@ -224,7 +249,7 @@ workflow ENVIDENT {
     //
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC_RAW.out.zip.collect{it[1]})
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC_CLEAN.out.zip.collect{it[1]})
-    ch_multiqc_files = ch_multiqc_files.mix(READS_QC_MERGE.out.fastp_summary_json.map { it[1] })
+    ch_multiqc_files = ch_multiqc_files.mix(READS_QC.out.fastp_summary_json.map { it[1] })
     ch_versions = ch_versions.mix(FASTQC_CLEAN.out.versions.first())
 
     //
@@ -298,7 +323,7 @@ workflow ENVIDENT {
         .set { sfxhd_fails }
 
     // Extract runs that failed Library Strategy check //
-    READS_QC_MERGE.out.amplicon_check
+    READS_QC.out.amplicon_check
         .filter { meta, strategy ->
             strategy != "AMPLICON"
         }
