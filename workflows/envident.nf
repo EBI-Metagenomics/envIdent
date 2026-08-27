@@ -154,7 +154,6 @@ workflow ENVIDENT {
         tuple(meta + [direction: 'identified', direction_size: 0], f_primers, r_primers)
     }
 
-    primer_outputs.view { "IDENTIFIED FINAL: $it" }
     // Concatenate all primers for for a run, send them to cutadapt with original QCd reads for primer trimming //
     CONCAT_PRIMER_CUTADAPT(
         primer_outputs
