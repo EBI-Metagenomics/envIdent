@@ -77,7 +77,7 @@ workflow  READS_QC {
         .filter { it[0].single_end }
 
     ch_reads_se_and_paired = ch_se_fastp_reads
-        .mix(FASTP.out.reads_paired)
+        .mix(FASTP.out.reads)
 
     SEQTK_SEQ(ch_reads_se_and_paired)
     ch_versions = ch_versions.mix(SEQTK_SEQ.out.versions.first())

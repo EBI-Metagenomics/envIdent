@@ -32,7 +32,6 @@ nextflow_workflow {
                             ]
                         ]
                     ])
-                input[2] = true
                 """
             }
         }
@@ -67,7 +66,6 @@ nextflow_workflow {
                         ]
                     ]
                 ])
-                input[2] = true
                 """
             }
         }
@@ -102,7 +100,6 @@ nextflow_workflow {
                         ]
                     ]
                 ])
-                input[2] = true
                 """
             }
         }
@@ -131,7 +128,6 @@ nextflow_workflow {
                         ]
                     ]
                 ])
-                input[2] = true
                 """
             }
         }
@@ -160,7 +156,6 @@ nextflow_workflow {
                             ]
                         ]
                     ])
-                input[2] = true
                 """
             }
         }

@@ -43,8 +43,8 @@
                             "single_end": false
                         },
                         [
-                            "SRR21814853_1.fastp.fastq.gz:md5,ab81a64d069ed8876432d8e3bad0b847",
-                            "SRR21814853_2.fastp.fastq.gz:md5,f8bf866d116205baa454b7a501a67b62"
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
                         ]
                     ]
                 ],
@@ -54,7 +54,10 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.merged.fastq.gz:md5,58ededca56f023aa625f51ec241ba849"
+                        [
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
+                        ]
                     ]
                 ],
                 "5": [
@@ -63,7 +66,7 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.fastp.json:md5,f2fa2740350c702e0f7d6adec47858c4"
+                        "SRR21814853.fastp.json:md5,263466cfd80a0a3d08673ab750739ee0"
                     ]
                 ],
                 "6": [
@@ -72,15 +75,15 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.seqtk-seq.fasta.gz:md5,a14b76b1e8c24d3f9d98e61d03a62a53"
+                        "SRR21814853.seqtk-seq.fasta.gz:md5,d9329b53a9b6c819bcacf4f80f254508"
                     ]
                 ],
                 "7": [
-                    "versions.yml:md5,20bda9fb4ab57e076a6db1b8cf72cb67",
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,a5fd01ddb43380f5a73a5fcdb4dde637",
-                    "versions.yml:md5,caf2b2e3fac12c4d49e72d81275628ce",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,061fcb79e4939036c6a7f0ab476c77ea",
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,57875ee55990810a0aa7cccc636e1cf3",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0",
+                    "versions.yml:md5,efd5a6cd7f5b9dffdb7dda18ae78e4cf"
                 ],
                 "amplicon_check": [
                     [
@@ -97,7 +100,7 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.fastp.json:md5,f2fa2740350c702e0f7d6adec47858c4"
+                        "SRR21814853.fastp.json:md5,263466cfd80a0a3d08673ab750739ee0"
                     ]
                 ],
                 "reads": [
@@ -107,8 +110,8 @@
                             "single_end": false
                         },
                         [
-                            "SRR21814853_1.fastp.fastq.gz:md5,ab81a64d069ed8876432d8e3bad0b847",
-                            "SRR21814853_2.fastp.fastq.gz:md5,f8bf866d116205baa454b7a501a67b62"
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
                         ]
                     ]
                 ],
@@ -118,16 +121,19 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.seqtk-seq.fasta.gz:md5,a14b76b1e8c24d3f9d98e61d03a62a53"
+                        "SRR21814853.seqtk-seq.fasta.gz:md5,d9329b53a9b6c819bcacf4f80f254508"
                     ]
                 ],
-                "reads_se_and_merged": [
+                "reads_se_and_paired": [
                     [
                         {
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.merged.fastq.gz:md5,58ededca56f023aa625f51ec241ba849"
+                        [
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
+                        ]
                     ]
                 ],
                 "seqfu_check": [
@@ -156,19 +162,19 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,20bda9fb4ab57e076a6db1b8cf72cb67",
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,a5fd01ddb43380f5a73a5fcdb4dde637",
-                    "versions.yml:md5,caf2b2e3fac12c4d49e72d81275628ce",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,061fcb79e4939036c6a7f0ab476c77ea",
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,57875ee55990810a0aa7cccc636e1cf3",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0",
+                    "versions.yml:md5,efd5a6cd7f5b9dffdb7dda18ae78e4cf"
                 ]
             }
         ],
+        "timestamp": "2026-09-01T15:31:20.965097701",
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "24.04.4"
-        },
-        "timestamp": "2024-10-18T16:49:36.445528195"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
     },
     "test_reads_onlyfail": {
         "content": [
@@ -207,8 +213,8 @@
                     
                 ],
                 "7": [
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0"
                 ],
                 "amplicon_check": [
                     
@@ -222,7 +228,7 @@
                 "reads_fasta": [
                     
                 ],
-                "reads_se_and_merged": [
+                "reads_se_and_paired": [
                     
                 ],
                 "seqfu_check": [
@@ -244,16 +250,16 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0"
                 ]
             }
         ],
+        "timestamp": "2026-09-01T15:32:17.374969305",
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "24.04.4"
-        },
-        "timestamp": "2024-10-18T16:50:34.898179189"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
     },
     "test_reads_qc_success": {
         "content": [
@@ -292,8 +298,8 @@
                             "single_end": false
                         },
                         [
-                            "SRR21814853_1.fastp.fastq.gz:md5,ab81a64d069ed8876432d8e3bad0b847",
-                            "SRR21814853_2.fastp.fastq.gz:md5,f8bf866d116205baa454b7a501a67b62"
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
                         ]
                     ]
                 ],
@@ -303,7 +309,10 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.merged.fastq.gz:md5,58ededca56f023aa625f51ec241ba849"
+                        [
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
+                        ]
                     ]
                 ],
                 "5": [
@@ -312,7 +321,7 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.fastp.json:md5,f2fa2740350c702e0f7d6adec47858c4"
+                        "SRR21814853.fastp.json:md5,263466cfd80a0a3d08673ab750739ee0"
                     ]
                 ],
                 "6": [
@@ -321,15 +330,15 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.seqtk-seq.fasta.gz:md5,a14b76b1e8c24d3f9d98e61d03a62a53"
+                        "SRR21814853.seqtk-seq.fasta.gz:md5,d9329b53a9b6c819bcacf4f80f254508"
                     ]
                 ],
                 "7": [
-                    "versions.yml:md5,20bda9fb4ab57e076a6db1b8cf72cb67",
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,a5fd01ddb43380f5a73a5fcdb4dde637",
-                    "versions.yml:md5,caf2b2e3fac12c4d49e72d81275628ce",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,061fcb79e4939036c6a7f0ab476c77ea",
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,57875ee55990810a0aa7cccc636e1cf3",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0",
+                    "versions.yml:md5,efd5a6cd7f5b9dffdb7dda18ae78e4cf"
                 ],
                 "amplicon_check": [
                     [
@@ -346,7 +355,7 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.fastp.json:md5,f2fa2740350c702e0f7d6adec47858c4"
+                        "SRR21814853.fastp.json:md5,263466cfd80a0a3d08673ab750739ee0"
                     ]
                 ],
                 "reads": [
@@ -356,8 +365,8 @@
                             "single_end": false
                         },
                         [
-                            "SRR21814853_1.fastp.fastq.gz:md5,ab81a64d069ed8876432d8e3bad0b847",
-                            "SRR21814853_2.fastp.fastq.gz:md5,f8bf866d116205baa454b7a501a67b62"
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
                         ]
                     ]
                 ],
@@ -367,16 +376,19 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.seqtk-seq.fasta.gz:md5,a14b76b1e8c24d3f9d98e61d03a62a53"
+                        "SRR21814853.seqtk-seq.fasta.gz:md5,d9329b53a9b6c819bcacf4f80f254508"
                     ]
                 ],
-                "reads_se_and_merged": [
+                "reads_se_and_paired": [
                     [
                         {
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.merged.fastq.gz:md5,58ededca56f023aa625f51ec241ba849"
+                        [
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
+                        ]
                     ]
                 ],
                 "seqfu_check": [
@@ -398,19 +410,19 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,20bda9fb4ab57e076a6db1b8cf72cb67",
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,a5fd01ddb43380f5a73a5fcdb4dde637",
-                    "versions.yml:md5,caf2b2e3fac12c4d49e72d81275628ce",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,061fcb79e4939036c6a7f0ab476c77ea",
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,57875ee55990810a0aa7cccc636e1cf3",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0",
+                    "versions.yml:md5,efd5a6cd7f5b9dffdb7dda18ae78e4cf"
                 ]
             }
         ],
+        "timestamp": "2026-09-01T15:30:39.638769809",
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "24.04.4"
-        },
-        "timestamp": "2024-10-18T16:48:51.208364188"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
     },
     "test_reads_fail_suffixheader": {
         "content": [
@@ -463,8 +475,8 @@
                             "single_end": false
                         },
                         [
-                            "SRR21814853_1.fastp.fastq.gz:md5,ab81a64d069ed8876432d8e3bad0b847",
-                            "SRR21814853_2.fastp.fastq.gz:md5,f8bf866d116205baa454b7a501a67b62"
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
                         ]
                     ]
                 ],
@@ -474,7 +486,10 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.merged.fastq.gz:md5,58ededca56f023aa625f51ec241ba849"
+                        [
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
+                        ]
                     ]
                 ],
                 "5": [
@@ -483,7 +498,7 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.fastp.json:md5,f2fa2740350c702e0f7d6adec47858c4"
+                        "SRR21814853.fastp.json:md5,263466cfd80a0a3d08673ab750739ee0"
                     ]
                 ],
                 "6": [
@@ -492,15 +507,15 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.seqtk-seq.fasta.gz:md5,a14b76b1e8c24d3f9d98e61d03a62a53"
+                        "SRR21814853.seqtk-seq.fasta.gz:md5,d9329b53a9b6c819bcacf4f80f254508"
                     ]
                 ],
                 "7": [
-                    "versions.yml:md5,20bda9fb4ab57e076a6db1b8cf72cb67",
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,a5fd01ddb43380f5a73a5fcdb4dde637",
-                    "versions.yml:md5,caf2b2e3fac12c4d49e72d81275628ce",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,061fcb79e4939036c6a7f0ab476c77ea",
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,57875ee55990810a0aa7cccc636e1cf3",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0",
+                    "versions.yml:md5,efd5a6cd7f5b9dffdb7dda18ae78e4cf"
                 ],
                 "amplicon_check": [
                     [
@@ -517,7 +532,7 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.fastp.json:md5,f2fa2740350c702e0f7d6adec47858c4"
+                        "SRR21814853.fastp.json:md5,263466cfd80a0a3d08673ab750739ee0"
                     ]
                 ],
                 "reads": [
@@ -527,8 +542,8 @@
                             "single_end": false
                         },
                         [
-                            "SRR21814853_1.fastp.fastq.gz:md5,ab81a64d069ed8876432d8e3bad0b847",
-                            "SRR21814853_2.fastp.fastq.gz:md5,f8bf866d116205baa454b7a501a67b62"
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
                         ]
                     ]
                 ],
@@ -538,16 +553,19 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.seqtk-seq.fasta.gz:md5,a14b76b1e8c24d3f9d98e61d03a62a53"
+                        "SRR21814853.seqtk-seq.fasta.gz:md5,d9329b53a9b6c819bcacf4f80f254508"
                     ]
                 ],
-                "reads_se_and_merged": [
+                "reads_se_and_paired": [
                     [
                         {
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.merged.fastq.gz:md5,58ededca56f023aa625f51ec241ba849"
+                        [
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
+                        ]
                     ]
                 ],
                 "seqfu_check": [
@@ -583,19 +601,19 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,20bda9fb4ab57e076a6db1b8cf72cb67",
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,a5fd01ddb43380f5a73a5fcdb4dde637",
-                    "versions.yml:md5,caf2b2e3fac12c4d49e72d81275628ce",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,061fcb79e4939036c6a7f0ab476c77ea",
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,57875ee55990810a0aa7cccc636e1cf3",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0",
+                    "versions.yml:md5,efd5a6cd7f5b9dffdb7dda18ae78e4cf"
                 ]
             }
         ],
+        "timestamp": "2026-09-01T15:32:03.797846688",
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "24.04.4"
-        },
-        "timestamp": "2024-10-18T16:50:22.371602861"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
     },
     "test_reads_qc_notamplicon": {
         "content": [
@@ -628,8 +646,8 @@
                             "single_end": false
                         },
                         [
-                            "SRR21814853_1.fastp.fastq.gz:md5,ab81a64d069ed8876432d8e3bad0b847",
-                            "SRR21814853_2.fastp.fastq.gz:md5,f8bf866d116205baa454b7a501a67b62"
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
                         ]
                     ]
                 ],
@@ -639,7 +657,10 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.merged.fastq.gz:md5,58ededca56f023aa625f51ec241ba849"
+                        [
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
+                        ]
                     ]
                 ],
                 "5": [
@@ -648,7 +669,7 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.fastp.json:md5,f2fa2740350c702e0f7d6adec47858c4"
+                        "SRR21814853.fastp.json:md5,263466cfd80a0a3d08673ab750739ee0"
                     ]
                 ],
                 "6": [
@@ -657,14 +678,14 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.seqtk-seq.fasta.gz:md5,a14b76b1e8c24d3f9d98e61d03a62a53"
+                        "SRR21814853.seqtk-seq.fasta.gz:md5,d9329b53a9b6c819bcacf4f80f254508"
                     ]
                 ],
                 "7": [
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,a5fd01ddb43380f5a73a5fcdb4dde637",
-                    "versions.yml:md5,caf2b2e3fac12c4d49e72d81275628ce",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,57875ee55990810a0aa7cccc636e1cf3",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0",
+                    "versions.yml:md5,efd5a6cd7f5b9dffdb7dda18ae78e4cf"
                 ],
                 "amplicon_check": [
                     
@@ -675,7 +696,7 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.fastp.json:md5,f2fa2740350c702e0f7d6adec47858c4"
+                        "SRR21814853.fastp.json:md5,263466cfd80a0a3d08673ab750739ee0"
                     ]
                 ],
                 "reads": [
@@ -685,8 +706,8 @@
                             "single_end": false
                         },
                         [
-                            "SRR21814853_1.fastp.fastq.gz:md5,ab81a64d069ed8876432d8e3bad0b847",
-                            "SRR21814853_2.fastp.fastq.gz:md5,f8bf866d116205baa454b7a501a67b62"
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
                         ]
                     ]
                 ],
@@ -696,16 +717,19 @@
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.seqtk-seq.fasta.gz:md5,a14b76b1e8c24d3f9d98e61d03a62a53"
+                        "SRR21814853.seqtk-seq.fasta.gz:md5,d9329b53a9b6c819bcacf4f80f254508"
                     ]
                 ],
-                "reads_se_and_merged": [
+                "reads_se_and_paired": [
                     [
                         {
                             "id": "SRR21814853",
                             "single_end": false
                         },
-                        "SRR21814853.merged.fastq.gz:md5,58ededca56f023aa625f51ec241ba849"
+                        [
+                            "SRR21814853_1.fastp.fastq.gz:md5,6f360b56114b0205c6299efe1e435c85",
+                            "SRR21814853_2.fastp.fastq.gz:md5,ba870704bdd86f3d0ac1aeacc62eb004"
+                        ]
                     ]
                 ],
                 "seqfu_check": [
@@ -727,17 +751,17 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,8d811725182283301014b4f776199d82",
-                    "versions.yml:md5,a5fd01ddb43380f5a73a5fcdb4dde637",
-                    "versions.yml:md5,caf2b2e3fac12c4d49e72d81275628ce",
-                    "versions.yml:md5,d2730aa327e9fd88847006cdcccc7df0"
+                    "versions.yml:md5,4a71e1a7e802353c3cb76d9bc32a3850",
+                    "versions.yml:md5,57875ee55990810a0aa7cccc636e1cf3",
+                    "versions.yml:md5,a5656f3dc655d675d35bac7ad67b77b0",
+                    "versions.yml:md5,efd5a6cd7f5b9dffdb7dda18ae78e4cf"
                 ]
             }
         ],
+        "timestamp": "2026-09-01T15:32:55.176434745",
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "24.04.4"
-        },
-        "timestamp": "2024-10-18T16:51:03.87281995"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
     }
 }
