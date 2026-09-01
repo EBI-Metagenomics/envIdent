@@ -4,8 +4,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { READS_QC                     } from '../subworkflows/ebi-metagenomics/reads_qc/main'
-include { READS_QC as READS_QC_BEFOREHMM   } from '../subworkflows/ebi-metagenomics/reads_qc/main'
+include { READS_QC                     } from '../subworkflows/local/reads_qc/main'
+include { READS_QC as READS_QC_BEFOREHMM   } from '../subworkflows/local/reads_qc/main'
 
 
 /*
