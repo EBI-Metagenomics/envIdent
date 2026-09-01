@@ -1,7 +1,7 @@
 
-include { EXTRACT_MARKER_HITS_FROM_UNMERGED_READS } from '../../modules/local/extract_marker_hits_from_unmerged_reads'
-include { REMOVE_AMBIGUOUS_READS                } from '../../modules/local/remove_ambiguous_reads/main.nf'
-include { DADA2                                 } from '../../modules/local/dada2/main.nf'
+include { EXTRACT_MARKER_HITS_FROM_READS } from '../../modules/local/extract_marker_hits_from_reads'
+include { REMOVE_AMBIGUOUS_READS         } from '../../modules/local/remove_ambiguous_reads/main.nf'
+include { DADA2                          } from '../../modules/local/dada2/main.nf'
 
 workflow DADA2_SWF {
     
@@ -23,10 +23,10 @@ workflow DADA2_SWF {
                         [meta + ["var_region": var_region, "var_regions_size": var_regions_size], reads, deoverlap_out]
                       }
 
-        EXTRACT_MARKER_HITS_FROM_UNMERGED_READS(seqkit_input)
+        EXTRACT_MARKER_HITS_FROM_READS(seqkit_input)
 
         REMOVE_AMBIGUOUS_READS(
-            EXTRACT_MARKER_HITS_FROM_UNMERGED_READS.out.extracted_reads
+            EXTRACT_MARKER_HITS_FROM_READS.out.extracted_reads
         )
         ch_versions = ch_versions.mix(REMOVE_AMBIGUOUS_READS.out.versions.first())
 
