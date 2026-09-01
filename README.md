@@ -118,8 +118,8 @@ nextflow run EBI-Metagenomics/envident \
 |----------------|-------------|-----------------|
 | `--min_read_count` | `5000` | Minimum number of reads required per sample |
 | `--reads_percentage_threshold` | `0.10` | Minimum percentage of reads matching COI profile |
-| `--std_primer_library_forward` | `[]` | Forward primer library for PIMENTO R1 identification |
-| `--std_primer_library_reverse` | `[]` | Reverse primer library for PIMENTO R2 identification |
+| `--std_primer_library_forward` | `[]` | Forward custom primer library for PIMENTO R1 identification |
+| `--std_primer_library_reverse` | `[]` | Reverse custom primer library for PIMENTO R2 identification |
 | `--pfam_coi_db` | `Default path` | Path to Pfam COI HMM database |
 
 
@@ -144,7 +144,8 @@ results/
 │   ├── qc/
 │   │   ├── sample1_seqfu.tsv
 │   │   └── sample1.fastp.json
-│   │   └── sample1.merged.fastq.gz
+│   │   └── sample1_1.fastq.gz
+│   │   └── sample1_2.fastq.gz
 │   │   └── sample1_suffix_header_err.json
 │   ├── taxonomy-summary/
 │   │   ├── DADA2-BOLD/
