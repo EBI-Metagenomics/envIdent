@@ -26,9 +26,6 @@ input:
   - save_trimmed_fail:
       type: boolean
       description: Specify true to save files that failed to pass trimming thresholds ending in `*.fail.fastq.gz`
-  - save_merged:
-      type: boolean
-      description: Specify true to save all merged reads to the a file ending in `*.merged.fastq.gz`
 
 output:
   - meta:
@@ -38,7 +35,7 @@ output:
         e.g. [ id:'test', single_end:false ]
   - reads:
       type: file
-      description: The trimmed/modified/unmerged fastq reads
+      description: The trimmed/modified fastq reads
       pattern: "*fastp.fastq.gz"
   - json:
       type: file
@@ -60,10 +57,6 @@ output:
       type: file
       description: Reads the failed the preprocessing
       pattern: "*fail.fastq.gz"
-  - reads_merged:
-      type: file
-      description: Reads that were successfully merged
-      pattern: "*.{merged.fastq.gz}"
 authors:
   - "@drpatelh"
   - "@kevinmenden"

@@ -15,7 +15,6 @@ process FASTP {
     input:
     tuple val(meta), path(reads)
     val   save_trimmed_fail
-    val   save_merged
 
     output:
     tuple val(meta), path('*.fastp.fastq.gz') , optional:true, emit: reads
@@ -24,7 +23,6 @@ process FASTP {
     tuple val(meta), path('*.log')            , emit: log
     path "versions.yml"                       , emit: versions
     tuple val(meta), path('*.fail.fastq.gz')  , optional:true, emit: reads_fail
-    tuple val(meta), path('*.merged.fastq.gz'), optional:true, emit: reads_merged
 
     when:
     task.ext.when == null || task.ext.when
@@ -75,7 +73,6 @@ process FASTP {
         END_VERSIONS
         """
     } else {
-        def merge_fastq = save_merged ? "-m --merged_out ${prefix}.merged.fastq.gz" : ''
         """
         [ ! -f  ${prefix}_1.fastq.gz ] && ln -sf ${reads[0]} ${prefix}_1.fastq.gz
         [ ! -f  ${prefix}_2.fastq.gz ] && ln -sf ${reads[1]} ${prefix}_2.fastq.gz
@@ -87,7 +84,6 @@ process FASTP {
             --json ${prefix}.fastp.json \\
             --html ${prefix}.fastp.html \\
             $fail_fastq \\
-            $merge_fastq \\
             --thread $task.cpus \\
             --detect_adapter_for_pe \\
             $args \\
