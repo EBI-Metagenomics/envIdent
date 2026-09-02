@@ -1,7 +1,7 @@
 
 include { EXTRACT_MARKER_HITS_FROM_UNMERGED_READS } from '../../modules/local/extract_marker_hits_from_unmerged_reads'
-include { REMOVE_AMBIGUOUS_READS                } from '../../modules/local/remove_ambiguous_reads/main.nf'
-include { DADA2                                 } from '../../modules/local/dada2/main.nf'
+include { REMOVE_AMBIGUOUS_READS } from '../../modules/local/remove_ambiguous_reads/main.nf'
+include { DADA2                  } from '../../modules/local/dada2/main.nf'
 
 workflow DADA2_SWF {
     
@@ -9,19 +9,23 @@ workflow DADA2_SWF {
         dada2_input
         marker_search_deoverlap_out
 
-
     main:
 
-        ch_versions = Channel.empty()
+        ch_versions = channel.empty()
 
         seqkit_input = dada2_input
-                      .map{ meta, reads ->
-                        [ meta.subMap('id', 'single_end'), meta['var_region'], meta['var_regions_size'], reads ]
-                       }
-                      .join(marker_search_deoverlap_out, by: [0])
-                      .map{meta, var_region, var_regions_size, reads, deoverlap_out ->
-                        [meta + ["var_region": var_region, "var_regions_size": var_regions_size], reads, deoverlap_out]
-                      }
+            .map{ meta, reads ->
+                [ meta.subMap('id', 'single_end'), meta['var_region'], meta['var_regions_size'], reads ]
+             }
+            .join(
+                marker_search_deoverlap_out.map { meta, marker_search_deoverlap_out_ ->
+                    [ meta.subMap('id', 'single_end'), marker_search_deoverlap_out_ ]
+                },
+                by: [0]
+            )
+            .map{meta, var_region, var_regions_size, reads, marker_search_deoverlap_out_ ->
+                [meta + ["var_region": var_region, "var_regions_size": var_regions_size], reads, marker_search_deoverlap_out_]
+            }
 
         EXTRACT_MARKER_HITS_FROM_UNMERGED_READS(seqkit_input)
 
