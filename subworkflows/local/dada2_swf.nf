@@ -1,7 +1,7 @@
 
 include { EXTRACT_MARKER_HITS_FROM_UNMERGED_READS } from '../../modules/local/extract_marker_hits_from_unmerged_reads'
-include { REMOVE_AMBIGUOUS_READS } from '../../modules/local/remove_ambiguous_reads/main.nf'
-include { DADA2                  } from '../../modules/local/dada2/main.nf'
+include { REMOVE_AMBIGUOUS_READS                  } from '../../modules/local/remove_ambiguous_reads/main.nf'
+include { DADA2                                   } from '../../modules/local/dada2/main.nf'
 
 workflow DADA2_SWF {
     
