@@ -10,7 +10,7 @@
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with at least 5 columns, and a header row as shown in the examples below.
 
 ```bash
 --input '[path to samplesheet file]'
@@ -21,10 +21,10 @@ You will need to create a samplesheet with information about the samples you wou
 The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+sample,fastq_1,fastq_2,forward_primer,reverse_primer,single_end
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,true
+CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,true
+CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,true
 ```
 
 ### Full samplesheet
@@ -34,14 +34,14 @@ The pipeline will auto-detect whether a sample is single- or paired-end using th
 A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+sample,fastq_1,fastq_2,forward_primer,reverse_primer,single_end
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,false
+CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,false
+CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,false
+TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,true
+TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,true
+TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,true
+TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,,GGWACWGGWTGAACWGTWTAYCCYCC,TAIACYTCIGGRTGICCRAARAAYCA,true
 ```
 
 | Column    | Description                                                                                                                                                                            |
@@ -49,6 +49,8 @@ TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
 | `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
 | `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
 | `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| `forward_primer` | Forward primer sequence using IUPAC nucleotide codes. Leave blank if not available for this sample. |
+| `reverse_primer` | Reverse primer sequence using IUPAC nucleotide codes. Leave blank if not available for this sample. |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 

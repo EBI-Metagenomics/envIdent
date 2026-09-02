@@ -35,6 +35,34 @@
           "type": "boolean",
           "errorMessage": "Strandedness must be provided and be one of 'single_end' or 'paired_end'",
           "meta": ["single_end"]
+        },
+        "forward_primer": {
+          "errorMessage": "Forward primer must contain only IUPAC nucleotide codes",
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[ACGTRYSWKMBDHVNIacgtryswkmbdhvni]+$"
+            },
+            {
+              "type": "string",
+              "maxLength": 0
+            }
+          ],
+          "meta": ["forward_primer"]
+        },
+        "reverse_primer": {
+          "errorMessage": "Reverse primer must contain only IUPAC nucleotide codes",
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[ACGTRYSWKMBDHVNIacgtryswkmbdhvni]+$"
+            },
+            {
+              "type": "string",
+              "maxLength": 0
+            }
+          ],
+          "meta": ["reverse_primer"]
         }
       },
       "required": ["sample", "fastq_1", "single_end"]

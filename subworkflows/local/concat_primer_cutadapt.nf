@@ -27,7 +27,12 @@ workflow CONCAT_PRIMER_CUTADAPT {
                         .map{ meta, fwd_primer, rev_primer ->
                             [ meta.subMap('id', 'single_end'), meta['var_region'], meta['var_regions_size'], [fwd_primer, rev_primer] ]
                         }
-                        .join(reads, by: [0])
+                        .join(
+                            reads.map { meta, final_reads ->
+                                [ meta.subMap('id', 'single_end'), final_reads ]
+                            },
+                            by: [0]
+                        )
                         .map{ meta, var_region, var_regions_size, primers, final_reads -> 
                             [ meta + ["var_region":var_region, "var_regions_size": var_regions_size], final_reads, primers ]
                         }
