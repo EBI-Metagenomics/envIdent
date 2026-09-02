@@ -1,0 +1,35 @@
+{
+    "supplied primers": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "forward_primer": "TTCTCAACCAACCANAANGANATNGG",
+                            "reverse_primer": "ACWAAYCAYAAAGAYATYGG"
+                        },
+                        "test_provided_primers.fasta:md5,b738856ab95e57b42dc5e1420ecfa390"
+                    ]
+                ],
+                "supplied_primer_out": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "forward_primer": "TTCTCAACCAACCANAANGANATNGG",
+                            "reverse_primer": "ACWAAYCAYAAAGAYATYGG"
+                        },
+                        "test_provided_primers.fasta:md5,b738856ab95e57b42dc5e1420ecfa390"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-01T16:06:02.753197882",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    }
+}
