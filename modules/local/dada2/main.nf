@@ -2,7 +2,7 @@
 process DADA2 {
     // Run DADA2 pipeline including read-tracking
     tag "$meta.id"
-    label 'process_medium'
+    label 'dada2_resources'
     container 'quay.io/microbiome-informatics/dada2:1.40.0'
 
     input:
