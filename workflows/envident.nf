@@ -95,7 +95,9 @@ workflow ENVIDENT {
     // Sanity checking and quality control of reads //
     READS_QC(
         true, 
-        samplesheet
+        samplesheet,
+        false,
+        false
     )
     ch_versions = ch_versions.mix(READS_QC.out.versions)
 
@@ -174,7 +176,9 @@ workflow ENVIDENT {
 
     READS_QC_BEFOREHMM(
         false, 
-        reads_merge_input
+        reads_merge_input,
+        false,
+        false
     )
     ch_versions = ch_versions.mix(READS_QC_BEFOREHMM.out.versions) 
 
