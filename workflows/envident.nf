@@ -178,7 +178,7 @@ workflow ENVIDENT {
         false, 
         reads_merge_input,
         false,
-        false
+        true // merge
     )
     ch_versions = ch_versions.mix(READS_QC_BEFOREHMM.out.versions) 
 
@@ -188,7 +188,7 @@ workflow ENVIDENT {
         .fromPath(params.pfam_coi_db, checkIfExists: true)
         .first() :
     Channel.empty()
-    
+
     PROFILE_HMMSEARCH_PFAM(
         READS_QC_BEFOREHMM.out.reads_fasta,
         pfam_db,
