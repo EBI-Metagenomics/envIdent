@@ -1,0 +1,145 @@
+Changes in component 'nf-core/seqtk/seq'
+Changes in 'seqtk/seq/environment.yml':
+--- modules/nf-core/seqtk/seq/environment.yml
++++ modules/nf-core/seqtk/seq/environment.yml
+@@ -4,4 +4,4 @@
+   - conda-forge
+   - bioconda
+ dependencies:
+-  - bioconda::seqtk=1.4
++  - bioconda::seqtk=1.5
+
+Changes in 'seqtk/seq/meta.yml':
+--- modules/nf-core/seqtk/seq/meta.yml
++++ modules/nf-core/seqtk/seq/meta.yml
+@@ -6,7 +6,8 @@
+   - transformation
+ tools:
+   - seqtk:
+-      description: Seqtk is a fast and lightweight tool for processing sequences in
++      description:
++        Seqtk is a fast and lightweight tool for processing sequences in
+         the FASTA or FASTQ format. The seqtk seq command enables common transformation
+         operations on FASTA or FASTQ files.
+       homepage: https://github.com/lh3/seqtk
+@@ -23,7 +24,8 @@
+     - fastx:
+         type: file
+         description: A FASTQ or FASTA file
+-        pattern: "*.{fastq.gz, fastq, fq, fq.gz, fasta, fastq.gz, fa, fa.gz, fas, fas.gz,
++        pattern:
++          "*.{fastq.gz, fastq, fq, fq.gz, fasta, fastq.gz, fa, fa.gz, fas, fas.gz,
+           fna, fna.gz}"
+         ontologies: []
+ output:
+
+Changes in 'seqtk/seq/main.nf':
+--- modules/nf-core/seqtk/seq/main.nf
++++ modules/nf-core/seqtk/seq/main.nf
+@@ -4,8 +4,8 @@
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/seqtk:1.4--he4a0461_1' :
+-        'biocontainers/seqtk:1.4--he4a0461_1' }"
++        'https://depot.galaxyproject.org/singularity/seqtk:1.5--h577a1d6_1' :
++        'biocontainers/seqtk:1.5--h577a1d6_1' }"
+ 
+     input:
+     tuple val(meta), path(fastx)
+
+'modules/nf-core/seqtk/seq/tests/main.nf.test' is unchanged
+Changes in 'seqtk/seq/tests/main.nf.test.snap':
+--- modules/nf-core/seqtk/seq/tests/main.nf.test.snap
++++ modules/nf-core/seqtk/seq/tests/main.nf.test.snap
+@@ -11,7 +11,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    "versions.yml:md5,d3214d3bd8c0bb57f06550146eab94fa"
++                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                 ],
+                 "fastx": [
+                     [
+@@ -22,15 +22,15 @@
+                     ]
+                 ],
+                 "versions": [
+-                    "versions.yml:md5,d3214d3bd8c0bb57f06550146eab94fa"
++                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-03T15:05:01.875671131",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.3"
+-        },
+-        "timestamp": "2024-02-22T15:57:07.883846"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.0"
++        }
+     },
+     "sarscov2_seq_fq": {
+         "content": [
+@@ -44,7 +44,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    "versions.yml:md5,d3214d3bd8c0bb57f06550146eab94fa"
++                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                 ],
+                 "fastx": [
+                     [
+@@ -55,15 +55,15 @@
+                     ]
+                 ],
+                 "versions": [
+-                    "versions.yml:md5,d3214d3bd8c0bb57f06550146eab94fa"
++                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-03T15:05:06.601522662",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.3"
+-        },
+-        "timestamp": "2024-02-22T15:57:16.282429"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.0"
++        }
+     },
+     "sarscov2_seq_fa_stub": {
+         "content": [
+@@ -77,7 +77,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    "versions.yml:md5,d3214d3bd8c0bb57f06550146eab94fa"
++                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                 ],
+                 "fastx": [
+                     [
+@@ -88,14 +88,14 @@
+                     ]
+                 ],
+                 "versions": [
+-                    "versions.yml:md5,d3214d3bd8c0bb57f06550146eab94fa"
++                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-03T15:05:11.659526295",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.3"
+-        },
+-        "timestamp": "2024-02-22T15:57:24.751443"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.0"
++        }
+     }
+ }
+'modules/nf-core/seqtk/seq/tests/standard.config' is unchanged
+************************************************************

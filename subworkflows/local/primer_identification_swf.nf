@@ -8,7 +8,7 @@ workflow PRIMER_IDENTIFICATION {
     // Checks for the presence of standard primers from a known library using params.std_primer_library
 
     take:
-        reads_merged
+        reads
         std_primer_library
     main:
 
@@ -16,7 +16,7 @@ workflow PRIMER_IDENTIFICATION {
 
         // Standard Library primers
         STD_PRIMER_FLAG(
-            reads_merged,
+            reads,
             std_primer_library
         )
         ch_versions = ch_versions.mix(STD_PRIMER_FLAG.out.versions.first())

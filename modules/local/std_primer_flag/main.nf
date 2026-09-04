@@ -7,7 +7,7 @@ process STD_PRIMER_FLAG {
         "https://depot.galaxyproject.org/singularity/mi-pimento:${params.pimento_version}":
         "biocontainers/mi-pimento:${params.pimento_version}"}"
     input:
-    tuple val(meta), path(reads_merged)
+    tuple val(meta), path(reads)
     path(std_primer_library)
 
     output:
@@ -19,7 +19,7 @@ process STD_PRIMER_FLAG {
     def std_primer_library_arg = "${std_primer_library}" ? "-p ${std_primer_library}" : ""
     
     """
-    pimento std -i ${reads_merged} ${std_primer_library_arg} --merged --threads $task.cpus -o ${meta.id}_${meta.var_region}
+    pimento std -i ${reads} ${std_primer_library_arg} --threads $task.cpus -o ${meta.id}_${meta.var_region}_${meta.direction}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
