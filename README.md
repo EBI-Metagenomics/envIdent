@@ -31,10 +31,10 @@ EnvIdent v0.1 implements the following key features:
 - Reads quality control and filtering using fastp
 - Minimum read count filtering (configurable threshold)
 
-**Primer Analysis:**
-- Automatic primer identification using PIMENTO
-- Primer trimming using Cutadapt
-- Primer validation and reporting
+** Analysis:**
+- Automatic  identification using PIMENTO
+-  trimming using Cutadapt
+-  validation and reporting
 
 **Taxonomic Profiling:**
 - Pfam-based COI (Cytochrome C Oxidase subunit I) profiling using HMMER
@@ -54,7 +54,7 @@ EnvIdent v0.1 implements the following key features:
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| [cutadapt](https://cutadapt.readthedocs.io/en/stable/)  | 4.6 | Primer trimming |
+| [cutadapt](https://cutadapt.readthedocs.io/en/stable/)  | 4.6 |  trimming |
 | [DADA2](https://benjjneb.github.io/dada2/index.html)   | 1.30.0 | ASV calling and denoising |
 | [fastp](https://github.com/OpenGene/fastp)  | 0.23.4 | Read quality control and filtering |
 | [FastQC](https://github.com/s-andrews/fastqc) | 0.12.1 | Read quality control |
@@ -63,7 +63,7 @@ EnvIdent v0.1 implements the following key features:
 | [MAPseq](https://github.com/meringlab/MAPseq)  | 2.1.1b | Taxonomic classification of ASVs |
 | [mgnify-pipelines-toolkit](https://github.com/EBI-Metagenomics/mgnify-pipelines-toolkit) | 1.0.4 | Toolkit containing various in-house processing scripts |
 | [MultiQC](https://github.com/MultiQC/MultiQC) | 1.27 | Aggregated quality control reporting |
-| [PIMENTO](https://github.com/EBI-Metagenomics/PIMENTO)  | 1.0.3 | Primer identification and inference |
+| [PIMENTO](https://github.com/EBI-Metagenomics/PIMENTO)  | 1.0.3 |  identification and inference |
 | [SeqFu](https://telatin.github.io/seqfu2/) | 1.20.3 | FASTQ validity check |
 | [SeqKit](https://bioinf.shenwei.me/seqkit/) | 2.9.0 | Read extraction and protein tranlsation |
 | [Seqtk](https://github.com/lh3/seqtk) | 1.3 | Converting FASTQ to FASTA |
@@ -74,7 +74,7 @@ This pipeline uses the following reference databases:
 
 | Database | Purpose | Default Location |
 |----------|---------|------------------|
-| BOLD | COI taxonomic classification and popular COI primers | Configurable via parameters |
+| BOLD | COI taxonomic classification and popular COI s | Configurable via parameters |
 | MIDORI2 | COI taxonomic classification | Configurable via parameters |
 
 > [!NOTE]
@@ -88,7 +88,7 @@ The pipeline requires:
 - Nextflow (≥24.04.2)
 - Docker, Singularity, or Conda for software management
 - Access to reference databases
-- Primer database formatted for PIMENTO - a FASTA file with contig ids ending with F for forward primers and R for reverse primers. See [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_primers/V3-V5.fasta) for an example
+-  database formatted for PIMENTO - a FASTA file with contig ids ending with F for forward s and R for reverse s. See [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_s/V3-V5.fasta) for an example
 
 ### Input Format
 
@@ -118,8 +118,8 @@ nextflow run EBI-Metagenomics/envident \
 |----------------|-------------|-----------------|
 | `--min_read_count` | `5000` | Minimum number of reads required per sample |
 | `--reads_percentage_threshold` | `0.10` | Minimum percentage of reads matching COI profile |
-| `--std_primer_library_forward` | `[]` | Forward custom primer library for PIMENTO R1 identification |
-| `--std_primer_library_reverse` | `[]` | Reverse custom primer library for PIMENTO R2 identification |
+| `--std__library_forward` | `[]` | Forward custom  library for PIMENTO F identification |
+| `--std__library_reverse` | `[]` | Reverse custom primer library for PIMENTO R identification |
 | `--pfam_coi_db` | `Default path` | Path to Pfam COI HMM database |
 
 
