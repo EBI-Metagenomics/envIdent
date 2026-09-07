@@ -73,14 +73,10 @@ workflow ENVIDENT {
 
     // Initialiase standard primer library for PIMENTO if user-given//
     // If there are no primers provided, it will fallback to use the default PIMENTO standard primer library
-    std_primer_library_forward = []
-    std_primer_library_reverse = []
+    std_primer_library = []
 
-    if (params.std_primer_library_forward){
-        std_primer_library_forward = file(params.std_primer_library_forward, type: 'dir', checkIfExists: true)
-    }
-    if (params.std_primer_library_reverse){
-        std_primer_library_reverse = file(params.std_primer_library_reverse, type: 'dir', checkIfExists: true)
+    if (params.std_primer_library){
+        std_primer_library = file(params.std_primer_library, type: 'dir', checkIfExists: true)
     }
 
     FASTQC_RAW(
@@ -134,13 +130,13 @@ workflow ENVIDENT {
     // Identify primers independently in read 1 and read 2 for samples without supplied primers.
     PRIMER_IDENTIFICATION_F(
         primer_reads_f,
-        std_primer_library_forward
+        std_primer_library
     )
     ch_versions = ch_versions.mix(PRIMER_IDENTIFICATION_F.out.versions)
 
     PRIMER_IDENTIFICATION_R(
         primer_reads_r,
-        std_primer_library_reverse
+        std_primer_library
     )
     ch_versions = ch_versions.mix(PRIMER_IDENTIFICATION_R.out.versions)   
 

@@ -16,7 +16,12 @@ process STD_PRIMER_FLAG {
     path "versions.yml"                        , emit: versions
 
     script:
-    def std_primer_library_arg = "${std_primer_library}" ? "-p ${std_primer_library}" : ""
+    def primer_direction = meta.direction.toLowerCase()
+    if (!['f', 'r'].contains(primer_direction)) {
+        error "Unsupported primer direction '${meta.direction}'; expected 'f' or 'r'"
+    }
+    def primer_pattern = primer_direction == 'f' ? '*[Ff].fasta' : '*[Rr].fasta'
+    def std_primer_library_arg = "${std_primer_library}" ? "-p ${std_primer_library}/${primer_pattern}" : ""
     
     """
     pimento std -i ${reads} ${std_primer_library_arg} --threads $task.cpus -o ${meta.id}_${meta.var_region}_${meta.direction}

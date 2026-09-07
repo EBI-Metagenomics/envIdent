@@ -49,16 +49,10 @@
          "description": "Paths to the different reference databases needed for the pipeline",
          "default": "",
          "properties": {
-             "std_primer_library_forward": {
+             "std_primer_library": {
              "type": "string",
              "format": "directory-path",
-             "description": "Path to forward standard primer library",
-             "default": "./data/standard_primers"
-             },
-             "std_primer_library_reverse": {
-             "type": "string",
-             "format": "directory-path",
-             "description": "Path to reverse standard primer library",
+             "description": "Path to standard primer library containing forward (*F.fasta) and reverse (*R.fasta) primers",
              "default": "./data/standard_primers"
              },
              "pfam_coi_db": {
