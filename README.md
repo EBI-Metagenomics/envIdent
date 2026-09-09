@@ -119,7 +119,7 @@ nextflow run EBI-Metagenomics/envident \
 | `--min_read_count` | `5000` | Minimum number of reads required per sample |
 | `--reads_percentage_threshold` | `0.10` | Minimum percentage of reads matching COI profile |
 | `--std_primer_library` | `./data/standard_primers` | Directory containing forward (`*F.fasta`) and reverse (`*R.fasta`) PIMENTO primer libraries |
-| `--cutadapt_primers` | `Default path` | Directory containing forward (`*F.fasta`), reverse (`*R.fasta`), reverse complemented forward (`F_RC.fasta`), reverse complemented reverse (`R_RC.fasta`) cutadapt prepared primer libraries |
+| `--cutadapt_primers` | `Default path` | Directory containing forward (`*F.fasta`), reverse (`*R.fasta`), reverse complemented forward (`F_RC.fasta`) and reverse complemented reverse (`R_RC.fasta`) cutadapt prepared primer libraries |
 | `--pfam_coi_db` | `Default path` | Path to Pfam COI HMM database |
 
 
