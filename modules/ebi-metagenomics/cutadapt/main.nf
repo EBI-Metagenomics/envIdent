@@ -34,9 +34,9 @@ process CUTADAPT {
     if (!meta.single_end && primers[1].size() > 0) {
         first_primer_args += " -G file:${primers[1]}"
     }
-    def second_primer_args = primers[2].size() > 0 ? "-a file:${primers[2]}" : ""
-    if (!meta.single_end && primers[3].size() > 0) {
-        second_primer_args += " -A file:${primers[3]}"
+    def second_primer_args = primers[3].size() > 0 ? "-a file:${primers[3]}" : ""
+    if (!meta.single_end && primers[2].size() > 0) {
+        second_primer_args += " -A file:${primers[2]}"
     }
 
     if(first_primer_args == ""){
