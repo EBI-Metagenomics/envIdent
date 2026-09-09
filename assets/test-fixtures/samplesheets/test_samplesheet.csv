@@ -1,0 +1,5 @@
+sample,fastq_1,fastq_2,forward_primer,reverse_primer,single_end
+TEST,https://github.com/EBI-Metagenomics/envIdent/raw/refs/heads/main/assets/test-fixtures/test-reads/test_1_R1.fq.gz,https://github.com/EBI-Metagenomics/envIdent/raw/refs/heads/main/assets/test-fixtures/test-reads/test_1_R2.fq.gz,,,false
+ERRSEQFUFAIL,https://github.com/EBI-Metagenomics/envIdent/raw/refs/heads/main/assets/test-fixtures/test-reads/ERRSEQFUFAIL_1.fastq.gz,https://github.com/EBI-Metagenomics/envIdent/raw/refs/heads/main/assets/test-fixtures/test-reads/ERRSEQFUFAIL_2.fastq.gz,,,false
+ERRSFXHDFAIL,https://github.com/EBI-Metagenomics/envIdent/raw/refs/heads/main/assets/test-fixtures/test-reads/ERRSFXHDFAIL_1.fastq.gz,https://github.com/EBI-Metagenomics/envIdent/raw/refs/heads/main/assets/test-fixtures/test-reads/ERRSFXHDFAIL_2.fastq.gz,,,false
+ERRNOREADS,https://github.com/EBI-Metagenomics/envIdent/raw/refs/heads/main/assets/test-fixtures/test-reads/ERRNOREADS_1.fastq.gz,https://github.com/EBI-Metagenomics/envIdent/raw/refs/heads/main/assets/test-fixtures/test-reads/ERRNOREADS_2.fastq.gz,,,false
