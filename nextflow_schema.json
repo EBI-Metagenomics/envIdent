@@ -55,6 +55,11 @@
              "description": "Path to standard primer library containing forward (*F.fasta) and reverse (*R.fasta) primers",
              "default": "./data/standard_primers"
              },
+             "cutadapt_primers": {
+             "type": "string",
+             "format": "directory-path",
+             "description": "Directory containing forward (`*F.fasta`), reverse (`*R.fasta`), reverse complemented forward (`F_RC.fasta`), reverse complemented reverse (`R_RC.fasta`) cutadapt prepared primer libraries"
+             },
              "pfam_coi_db": {
                 "type": "string",
                 "format": "file-path",
@@ -227,6 +232,13 @@
                     "description": "Version of PIMENTO to be used",
                     "default": "1.0.2--pyhdfd78af_0"
                 },
+                "bases_allowed_before_primer": {
+                    "type": "integer",
+                    "description": "Number of bases allowed before primer sequence by cutadapt",
+                    "default": 10,
+                    "minimum": 0,
+                    "help_text": "Number of bases allowed before the primer sequence by cutadapt. This parameter is used to allow for some flexibility in the primer matching process, accommodating potential variations in the sequences or synthetic bases before the primer."
+                },
                 "min_read_count": {
                     "type": "integer",
                     "description": "Minimum read count threshold for filtering",
@@ -255,6 +267,13 @@
                     "default": 100000,
                     "minimum": 1,
                     "help_text": "Defines the target number of sequences to include in each chunk for HMM search processing to optimize performance and resource utilization."
+                },
+                "dada2_merge_mode": {
+                    "type": "string",
+                    "description": "DADA2 merge mode for paired-end reads",
+                    "default": "standard",
+                    "enum": ["standard", "gap", "separate"],
+                    "help_text": "Specifies the merging strategy for paired-end reads in DADA2. Options include 'standard' for default merging, 'gap' for allowing gaps, and 'separate' for processing reads separately."
                 },
                 "publish_dir_mode": {
                     "type": "string",
