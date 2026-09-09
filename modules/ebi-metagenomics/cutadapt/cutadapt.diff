@@ -1,0 +1,66 @@
+diff --git a/modules/ebi-metagenomics/cutadapt/main.nf b/modules/ebi-metagenomics/cutadapt/main.nf
+index df50ac3..aa085b2 100644
+--- a/modules/ebi-metagenomics/cutadapt/main.nf
++++ b/modules/ebi-metagenomics/cutadapt/main.nf
+@@ -24,26 +24,22 @@ process CUTADAPT {
+     def args = task.ext.args ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
+ 
+-    def trimmed = "-o ${prefix}.trim.fastq.gz"
+-    if (!meta.single_end){
+-        trimmed = "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
++    def first_trimmed = meta.single_end
++        ? "-o ${prefix}.first_pass.fastq.gz"
++        : "-o ${prefix}_1.first_pass.fastq.gz -p ${prefix}_2.first_pass.fastq.gz"
++    def final_trimmed = meta.single_end
++        ? "-o ${prefix}.trim.fastq.gz"
++        : "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
++    def first_primer_args = primers[0].size() > 0 ? "-g file:${primers[0]}" : ""
++    if (!meta.single_end && primers[1].size() > 0) {
++        first_primer_args += " -G file:${primers[1]}"
+     }
+-
+-    def fwd_primer = ""
+-    if (primers[0].size() > 0){
+-        fwd_primer = "-g file:${primers[0]}"
+-    }
+-
+-    def rev_primer = ""
+-    if (primers[1].size() > 0  && meta.single_end){
+-        rev_primer = "-a file:${primers[1]}"
+-    } else if (primers[1].size() > 0  && !meta.single_end){
+-        rev_primer = "-G file:${primers[1]}"
++    def second_primer_args = primers[2].size() > 0 ? "-a file:${primers[2]}" : ""
++    if (!meta.single_end && primers[3].size() > 0) {
++        second_primer_args += " -A file:${primers[3]}"
+     }
+ 
+-    def primer_arg = "$fwd_primer $rev_primer"
+-
+-    if(fwd_primer == "" && rev_primer == ""){
++    if(first_primer_args == ""){
+         if (!meta.single_end){
+             """
+             touch ${prefix}.cutadapt.log
+@@ -76,9 +72,18 @@ process CUTADAPT {
+         cutadapt \\
+             --cores $task.cpus \\
+             $args \\
+-            $trimmed \\
+-            $primer_arg \\
+-            $reads \\
++            ${first_trimmed} \\
++            ${first_primer_args} \\
++            ${reads} \\
++            --json ${prefix}.first_pass.cutadapt.json \\
++            > ${prefix}.first_pass.cutadapt.log
++
++        cutadapt \\
++            --cores $task.cpus \\
++            $args \\
++            ${final_trimmed} \\
++            ${second_primer_args} \\
++            ${meta.single_end ? "${prefix}.first_pass.fastq.gz" : "${prefix}_1.first_pass.fastq.gz ${prefix}_2.first_pass.fastq.gz"} \\
+             --json ${prefix}.cutadapt.json \\
+             > ${prefix}.cutadapt.log
+         cat <<-END_VERSIONS > versions.yml

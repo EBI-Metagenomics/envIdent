@@ -1,4 +1,4 @@
-include { CUTADAPT                } from '../../modules/local/cutadapt/main.nf'
+include { CUTADAPT                } from '../../modules/ebi-metagenomics/cutadapt/main.nf'
 
 workflow CONCAT_PRIMER_CUTADAPT {
     take:
