@@ -1,0 +1,101 @@
+{
+    "sarscov2_seq_fa": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.seqtk-seq.fasta.gz:md5,e73599798195a519ba2565c3f0275b93"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                ],
+                "fastx": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.seqtk-seq.fasta.gz:md5,e73599798195a519ba2565c3f0275b93"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T15:05:01.875671131",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    },
+    "sarscov2_seq_fq": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.seqtk-seq.fasta.gz:md5,f0c5c9110ce19e9ebbc9a6b6baf9e105"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                ],
+                "fastx": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.seqtk-seq.fasta.gz:md5,f0c5c9110ce19e9ebbc9a6b6baf9e105"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T15:05:06.601522662",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    },
+    "sarscov2_seq_fa_stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.seqtk-seq.fasta.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                ],
+                "fastx": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.seqtk-seq.fasta.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,c58145b735fa0f3dd921d14f39cee3bc"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T15:05:11.659526295",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    }
+}

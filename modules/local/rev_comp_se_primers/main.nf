@@ -7,21 +7,22 @@ process REV_COMP_SE_PRIMERS {
         "biocontainers/mgnify-pipelines-toolkit:${params.mpt_version}" }"
 
     input:
-    tuple val(meta), path(final_concat_primers)
+    tuple val(meta), path(forward_primers), path(reverse_primers)
 
     output:
-    tuple val(meta), path("*rev_comp_se_primers.fasta"), optional: true, emit: rev_comp_se_primers_out
+    tuple val(meta), path("${meta.id}_forward.fasta"), path("${meta.id}_reverse.fasta"), emit: rev_comp_se_primers_out
     path "versions.yml"                                , emit: versions
 
     script:
     """
-    if [[ -s $final_concat_primers && ${meta.single_end} = true ]]; then
-        rev_comp_se_primers -i $final_concat_primers -s ${meta.id} -o ./
-    elif [[ -s $final_concat_primers && ${meta.single_end} = false ]]; then
-        cat $final_concat_primers > ./${meta.id}_rev_comp_se_primers.fasta
+    if [[ ${meta.single_end} = true ]]; then
+        rev_comp_se_primers -i $reverse_primers -s ${meta.id} -o ./
+        mv ./${meta.id}_rev_comp_se_primers.fasta ./${meta.id}_reverse.fasta
     else
-        touch ./${meta.id}_rev_comp_se_primers.fasta
+        cp $reverse_primers ./${meta.id}_reverse.fasta
     fi
+
+    cp $forward_primers ./${meta.id}_forward.fasta
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
