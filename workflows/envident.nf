@@ -120,8 +120,10 @@ workflow ENVIDENT {
             meta + [direction: 'provided', direction_size: 0]
         }
 
+    // Generates fasta files with the user supplied primer sequences from the samplesheet. Skipped if no primers provided
     SUPPLIED_PRIMERS(supplied_primers)
 
+    // Takes user supplied primers and prepares them for cutadapt, including reverse complementing and adding the syntax needed for internal adaptors //
     PREP_CUTADAPT_PRIMERS(
         SUPPLIED_PRIMERS.out.supplied_primer_out
     )
@@ -164,13 +166,14 @@ workflow ENVIDENT {
         tuple(meta + [direction: 'identified', direction_size: 0], f_primers, r_primers)
     }
 
+    // Using the contig id of the primers identified by PIMENTO, extracts the corresponding formatted and revcomped primers from the cutadapt primer library for use in cutadapt trimming
     EXTRACT_CUTADAPT_PRIMERS(
         primer_outputs,
         cutadapt_primers
     )
     ch_versions = ch_versions.mix(EXTRACT_CUTADAPT_PRIMERS.out.versions.first())
 
-    // Concatenate all primers for for a run, send them to cutadapt with original QCd reads for primer trimming //
+    // Concatenate all primers for for a run, using either the user supplied primers or those identified by PIMENTO, send them to cutadapt with original QCd reads for primer trimming
     CONCAT_PRIMER_CUTADAPT(
         EXTRACT_CUTADAPT_PRIMERS.out.cutadapt_prepared_primers
             .mix(PREP_CUTADAPT_PRIMERS.out.cutadapt_prepared_primers),
