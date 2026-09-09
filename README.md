@@ -88,7 +88,7 @@ The pipeline requires:
 - Nextflow (≥24.04.2)
 - Docker, Singularity, or Conda for software management
 - Access to reference databases
--  database formatted for PIMENTO - a FASTA file with contig ids ending with F for forward s and R for reverse s. See [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_s/V3-V5.fasta) for an example
+- Database formatted for PIMENTO - a FASTA file with contig ids ending with F for forward strand and R for reverse strand. See [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_s/V3-V5.fasta) for an example
 
 ### Input Format
 
@@ -119,6 +119,7 @@ nextflow run EBI-Metagenomics/envident \
 | `--min_read_count` | `5000` | Minimum number of reads required per sample |
 | `--reads_percentage_threshold` | `0.10` | Minimum percentage of reads matching COI profile |
 | `--std_primer_library` | `./data/standard_primers` | Directory containing forward (`*F.fasta`) and reverse (`*R.fasta`) PIMENTO primer libraries |
+| `--cutadapt_primers` | `Default path` | Directory containing forward (`*F.fasta`), reverse (`*R.fasta`), reverse complemented forward (`F_RC.fasta`), reverse complemented reverse (`R_RC.fasta`) cutadapt prepared primer libraries |
 | `--pfam_coi_db` | `Default path` | Path to Pfam COI HMM database |
 
 
