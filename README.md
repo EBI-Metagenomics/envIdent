@@ -88,7 +88,7 @@ The pipeline requires:
 - Nextflow (≥24.04.2)
 - Docker, Singularity, or Conda for software management
 - Access to reference databases
--  database formatted for PIMENTO - a FASTA file with contig ids ending with F for forward s and R for reverse s. See [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_s/V3-V5.fasta) for an example
+-  Database formatted for PIMENTO - a FASTA file with contig ids ending with F for forward strand and R for reverse strand. See [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_s/V3-V5.fasta) for an example
 
 ### Input Format
 
