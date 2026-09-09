@@ -1,0 +1,80 @@
+{
+    "extract primers - fasta": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_F.fasta:md5,de81d1f57a523b077239284a65f98da7",
+                        "test_R.fasta:md5,3789cfaee08b5d0dd5d19c13be5684f7",
+                        "test_F_RC.fasta:md5,7f076a61a82c5556c26b2fde380cd93a",
+                        "test_R_RC.fasta:md5,57485c699dd31a5b7fbe4929bf8dc1a7"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,93b37c3e7cafd17dcaf9763101037d3b"
+                ],
+                "cutadapt_prepared_primers": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_F.fasta:md5,de81d1f57a523b077239284a65f98da7",
+                        "test_R.fasta:md5,3789cfaee08b5d0dd5d19c13be5684f7",
+                        "test_F_RC.fasta:md5,7f076a61a82c5556c26b2fde380cd93a",
+                        "test_R_RC.fasta:md5,57485c699dd31a5b7fbe4929bf8dc1a7"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,93b37c3e7cafd17dcaf9763101037d3b"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-09T09:09:55.815783",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "extract primers - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_F.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test_R.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test_F_RC.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test_R_RC.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,93b37c3e7cafd17dcaf9763101037d3b"
+                ],
+                "cutadapt_prepared_primers": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_F.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test_R.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test_F_RC.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test_R_RC.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,93b37c3e7cafd17dcaf9763101037d3b"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-09T10:02:28.465559",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}
