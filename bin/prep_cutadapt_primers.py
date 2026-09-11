@@ -90,7 +90,7 @@ def main():
 
     count = modify_fasta(args.input, args.output, addition, args.position, args.replace_i)
     verb = "Prepended" if args.position == "start" else "Appended"
-    print(f"Done. {verb} '{addition}' to {count} primers(s). Written to {args.output}", file=sys.stderr)
+    print(f"Done. {verb} '{addition}' to {count} primer(s). Written to {args.output}", file=sys.stderr)
 
 
 if __name__ == "__main__":
