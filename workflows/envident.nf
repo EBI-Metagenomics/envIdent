@@ -23,6 +23,8 @@ include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_F } from '../subworkflo
 include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_R } from '../subworkflows/local/primer_identification_swf.nf'
 include { CONCAT_PRIMER_CUTADAPT       } from '../subworkflows/local/concat_primer_cutadapt.nf'
 include { SUPPLIED_PRIMERS             } from '../modules/local/supplied_primers/main.nf'
+include { PREP_CUTADAPT_PRIMERS        } from '../modules/local/prep_cutadapt_primers/main.nf'
+include { EXTRACT_CUTADAPT_PRIMERS     } from '../modules/local/extract_cutadapt_primers/main.nf'
 include { PROFILE_HMMSEARCH_PFAM       } from '../subworkflows/local/profile_hmmsearch_pfam/main'
 include { DADA2_SWF                    } from '../subworkflows/local/dada2_swf.nf'
 include { MAPSEQ_ASV_KRONA as MAPSEQ_ASV_KRONA_BOLD         } from '../subworkflows/local/mapseq_asv_krona_swf.nf'
@@ -79,6 +81,12 @@ workflow ENVIDENT {
         std_primer_library = file(params.std_primer_library, type: 'dir', checkIfExists: true)
     }
 
+    cutadapt_primers = []
+
+    if (params.cutadapt_primers){
+        cutadapt_primers = file(params.cutadapt_primers, type: 'dir', checkIfExists: true)
+    }
+
     FASTQC_RAW(
         samplesheet.map { meta, reads -> 
             def new_meta = meta.clone()
@@ -112,7 +120,14 @@ workflow ENVIDENT {
             meta + [direction: 'provided', direction_size: 0]
         }
 
+    // Generates fasta files with the user supplied primer sequences from the samplesheet. Skipped if no primers provided
     SUPPLIED_PRIMERS(supplied_primers)
+
+    // Takes user supplied primers and prepares them for cutadapt, including reverse complementing and adding the syntax needed for internal adaptors //
+    PREP_CUTADAPT_PRIMERS(
+        SUPPLIED_PRIMERS.out.supplied_primer_out
+    )
+    ch_versions = ch_versions.mix(PREP_CUTADAPT_PRIMERS.out.versions.first())
 
     primers_to_identify = extended_reads_qc.qc_pass
         .filter { meta, _reads -> !(meta.forward_primer && meta.reverse_primer) }
@@ -151,10 +166,17 @@ workflow ENVIDENT {
         tuple(meta + [direction: 'identified', direction_size: 0], f_primers, r_primers)
     }
 
-    // Concatenate all primers for for a run, send them to cutadapt with original QCd reads for primer trimming //
+    // Using the contig id of the primers identified by PIMENTO, extracts the corresponding formatted and revcomped primers from the cutadapt primer library for use in cutadapt trimming
+    EXTRACT_CUTADAPT_PRIMERS(
+        primer_outputs,
+        cutadapt_primers
+    )
+    ch_versions = ch_versions.mix(EXTRACT_CUTADAPT_PRIMERS.out.versions.first())
+
+    // Concatenate all primers for for a run, using either the user supplied primers or those identified by PIMENTO, send them to cutadapt with original QCd reads for primer trimming
     CONCAT_PRIMER_CUTADAPT(
-        primer_outputs
-                    .mix(SUPPLIED_PRIMERS.out.supplied_primer_out),
+        EXTRACT_CUTADAPT_PRIMERS.out.cutadapt_prepared_primers
+            .mix(PREP_CUTADAPT_PRIMERS.out.cutadapt_prepared_primers),
         READS_QC.out.reads
     )
     ch_versions = ch_versions.mix(CONCAT_PRIMER_CUTADAPT.out.versions)

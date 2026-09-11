@@ -1,89 +1,66 @@
-Changes in module 'ebi-metagenomics/cutadapt'
---- modules/ebi-metagenomics/cutadapt/main.nf
-+++ modules/ebi-metagenomics/cutadapt/main.nf
-@@ -1,9 +1,9 @@
+diff --git a/modules/ebi-metagenomics/cutadapt/main.nf b/modules/ebi-metagenomics/cutadapt/main.nf
+index df50ac3..aa085b2 100644
+--- a/modules/ebi-metagenomics/cutadapt/main.nf
++++ b/modules/ebi-metagenomics/cutadapt/main.nf
+@@ -24,26 +24,22 @@ process CUTADAPT {
+     def args = task.ext.args ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
  
- process CUTADAPT {
-     tag "$meta.id"
--    label 'process_medium'
-+    label 'very_light'
+-    def trimmed = "-o ${prefix}.trim.fastq.gz"
+-    if (!meta.single_end){
+-        trimmed = "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
++    def first_trimmed = meta.single_end
++        ? "-o ${prefix}.first_pass.fastq.gz"
++        : "-o ${prefix}_1.first_pass.fastq.gz -p ${prefix}_2.first_pass.fastq.gz"
++    def final_trimmed = meta.single_end
++        ? "-o ${prefix}.trim.fastq.gz"
++        : "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
++    def first_primer_args = primers[0].size() > 0 ? "-g file:${primers[0]}" : ""
++    if (!meta.single_end && primers[1].size() > 0) {
++        first_primer_args += " -G file:${primers[1]}"
+     }
+-
+-    def fwd_primer = ""
+-    if (primers[0].size() > 0){
+-        fwd_primer = "-g file:${primers[0]}"
+-    }
+-
+-    def rev_primer = ""
+-    if (primers[1].size() > 0  && meta.single_end){
+-        rev_primer = "-a file:${primers[1]}"
+-    } else if (primers[1].size() > 0  && !meta.single_end){
+-        rev_primer = "-G file:${primers[1]}"
++    def second_primer_args = primers[2].size() > 0 ? "-a file:${primers[2]}" : ""
++    if (!meta.single_end && primers[3].size() > 0) {
++        second_primer_args += " -A file:${primers[3]}"
+     }
  
-     conda "${moduleDir}/environment.yml"
-     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-+        'https://depot.galaxyproject.org/singularity/cutadapt:5.2--py311haab0aaa_0':
-+        'biocontainers/cutadapt:5.2--py311haab0aaa_0' }"
--        'https://depot.galaxyproject.org/singularity/cutadapt:4.6--py39hf95cd2a_1':
--        'biocontainers/cutadapt:4.6--py39hf95cd2a_1' }"
-
-@@ -42,19 +42,47 @@
- 
-     def primer_arg = "$fwd_primer $rev_primer"
- 
--    """
--    cutadapt \\
--        --cores $task.cpus \\
--        $args \\
--        $trimmed \\
--        $primer_arg \\
--        $reads \\
--        > ${prefix}.cutadapt.log
--    cat <<-END_VERSIONS > versions.yml
--    "${task.process}":
--        cutadapt: \$(cutadapt --version)
--    END_VERSIONS
--    """
-+    if(fwd_primer == "" && rev_primer == ""){
-+        if (!meta.single_end){
-+            """
-+            touch ${prefix}.cutadapt.log
-+            touch ${prefix}_1.trim.fastq.gz
-+            touch ${prefix}_2.trim.fastq.gz
+-    def primer_arg = "$fwd_primer $rev_primer"
+-
+-    if(fwd_primer == "" && rev_primer == ""){
++    if(first_primer_args == ""){
+         if (!meta.single_end){
+             """
+             touch ${prefix}.cutadapt.log
+@@ -76,9 +72,18 @@ process CUTADAPT {
+         cutadapt \\
+             --cores $task.cpus \\
+             $args \\
+-            $trimmed \\
+-            $primer_arg \\
+-            $reads \\
++            ${first_trimmed} \\
++            ${first_primer_args} \\
++            ${reads} \\
++            --json ${prefix}.first_pass.cutadapt.json \\
++            > ${prefix}.first_pass.cutadapt.log
 +
-+            cat <<-END_VERSIONS > versions.yml
-+            "${task.process}":
-+                cutadapt: \$(cutadapt --version)
-+            END_VERSIONS
-+            """
-+        }
-+        else{
-+            """
-+            touch ${prefix}.cutadapt.log
-+            touch ${prefix}.trim.fastq.gz
-+
-+            cat <<-END_VERSIONS > versions.yml
-+            "${task.process}":
-+                cutadapt: \$(cutadapt --version)
-+            END_VERSIONS
-+            """
-+
-+        }
-+    }
-+    else{
-+        """
 +        cutadapt \\
 +            --cores $task.cpus \\
 +            $args \\
-+            $trimmed \\
-+            $primer_arg \\
-+            $reads \\
-+            > ${prefix}.cutadapt.log
-+        cat <<-END_VERSIONS > versions.yml
-+        "${task.process}":
-+            cutadapt: \$(cutadapt --version)
-+        END_VERSIONS
-+        """
-+    }
- 
-     stub:
-     def prefix  = task.ext.prefix ?: "${meta.id}"
-
---- modules/ebi-metagenomics/cutadapt/environment.yml
-+++ modules/ebi-metagenomics/cutadapt/environment.yml
-@@ -4,4 +4,4 @@
-   - bioconda
-   - defaults
- dependencies:
-+  - bioconda::cutadapt=5.2
--  - bioconda::cutadapt=4.6
-
-************************************************************
++            ${final_trimmed} \\
++            ${second_primer_args} \\
++            ${meta.single_end ? "${prefix}.first_pass.fastq.gz" : "${prefix}_1.first_pass.fastq.gz ${prefix}_2.first_pass.fastq.gz"} \\
+             --json ${prefix}.cutadapt.json \\
+             > ${prefix}.cutadapt.log
+         cat <<-END_VERSIONS > versions.yml
