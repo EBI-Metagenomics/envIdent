@@ -48,7 +48,7 @@ def modify_fasta(in_path, out_path, addition, position, replace_i):
             n_primers += 1
 
         for line in fin:
-            line = line.rstrip("\n")
+            line = line.strip()
             if line.startswith(">"):
                 flush()
                 header = line
