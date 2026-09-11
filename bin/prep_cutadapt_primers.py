@@ -9,7 +9,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 
 """
-Add a literal string to every contig's sequence in a FASTA file,
+Add a literal string to every primer sequence in a FASTA file,
 leaving headers unchanged. Optionally replace I's with N's in sequences.
 
 If --position start: prepends "XN{N}" to the start of the sequence.
@@ -27,13 +27,13 @@ import sys
 
 
 def modify_fasta(in_path, out_path, addition, position, replace_i):
-    n_contigs = 0
+    n_primers = 0
     with open(in_path, "r") as fin, open(out_path, "w") as fout:
         seq_chunks = []
         header = None
 
         def flush():
-            nonlocal seq_chunks, header, n_contigs
+            nonlocal seq_chunks, header, n_primers
             if header is None:
                 return
             seq = "".join(seq_chunks)
@@ -45,7 +45,7 @@ def modify_fasta(in_path, out_path, addition, position, replace_i):
                 seq = seq + addition
             fout.write(header + "\n")
             fout.write(seq + "\n")
-            n_contigs += 1
+            n_primers += 1
 
         for line in fin:
             line = line.rstrip("\n")
@@ -57,7 +57,7 @@ def modify_fasta(in_path, out_path, addition, position, replace_i):
                 seq_chunks.append(line)
         flush()  # last record
 
-    return n_contigs
+    return n_primers
 
 
 def main():
@@ -90,7 +90,7 @@ def main():
 
     count = modify_fasta(args.input, args.output, addition, args.position, args.replace_i)
     verb = "Prepended" if args.position == "start" else "Appended"
-    print(f"Done. {verb} '{addition}' to {count} contig(s). Written to {args.output}", file=sys.stderr)
+    print(f"Done. {verb} '{addition}' to {count} primers(s). Written to {args.output}", file=sys.stderr)
 
 
 if __name__ == "__main__":
