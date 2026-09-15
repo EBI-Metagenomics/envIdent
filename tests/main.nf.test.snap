@@ -1,0 +1,131 @@
+{
+    "directory_structure": {
+        "content": [
+            [
+                "ERRMINREADS",
+                "ERRMINREADS/qc",
+                "ERRMINREADS/qc/ERRMINREADS.fastp.json",
+                "ERRMINREADS/qc/ERRMINREADS_seqfu.tsv",
+                "ERRMINREADS/qc/ERRMINREADS_suffix_header_err.json",
+                "ERRSEQFUFAIL",
+                "ERRSEQFUFAIL/qc",
+                "ERRSEQFUFAIL/qc/ERRSEQFUFAIL_seqfu.tsv",
+                "ERRSFXHDFAIL",
+                "ERRSFXHDFAIL/qc",
+                "ERRSFXHDFAIL/qc/ERRSFXHDFAIL_seqfu.tsv",
+                "ERRSFXHDFAIL/qc/ERRSFXHDFAIL_suffix_header_err.json",
+                "TEST",
+                "TEST/asv",
+                "TEST/asv/TEST_all_DADA2-BOLD_asv_read_counts.tsv",
+                "TEST/asv/TEST_all_DADA2-MIDORI_asv_read_counts.tsv",
+                "TEST/asv/TEST_asvs.fasta",
+                "TEST/asv/TEST_dada2_stats.tsv",
+                "TEST/hmmsearch-COI",
+                "TEST/hmmsearch-COI/TEST_Pfam-A.domtbl",
+                "TEST/hmmsearch-COI/TEST_Pfam-A.txt",
+                "TEST/primer-identification",
+                "TEST/primer-identification/TEST.cutadapt.json",
+                "TEST/primer-identification/TEST.first_pass.cutadapt.json",
+                "TEST/primer-identification/TEST_F.fasta",
+                "TEST/primer-identification/TEST_F_RC.fasta",
+                "TEST/primer-identification/TEST_R.fasta",
+                "TEST/primer-identification/TEST_R_RC.fasta",
+                "TEST/qc",
+                "TEST/qc/TEST.fastp.json",
+                "TEST/qc/TEST_seqfu.tsv",
+                "TEST/qc/TEST_suffix_header_err.json",
+                "TEST/taxonomy-summary",
+                "TEST/taxonomy-summary/DADA2-BOLD",
+                "TEST/taxonomy-summary/DADA2-BOLD/TEST_DADA2-BOLD.html",
+                "TEST/taxonomy-summary/DADA2-BOLD/TEST_DADA2-BOLD.mseq",
+                "TEST/taxonomy-summary/DADA2-BOLD/TEST_DADA2-BOLD_asv_krona_counts.txt",
+                "TEST/taxonomy-summary/DADA2-BOLD/TEST_DADA2-BOLD_asv_taxa.tsv",
+                "TEST/taxonomy-summary/DADA2-MIDORI",
+                "TEST/taxonomy-summary/DADA2-MIDORI/TEST_DADA2-MIDORI.html",
+                "TEST/taxonomy-summary/DADA2-MIDORI/TEST_DADA2-MIDORI.mseq",
+                "TEST/taxonomy-summary/DADA2-MIDORI/TEST_DADA2-MIDORI_asv_krona_counts.txt",
+                "TEST/taxonomy-summary/DADA2-MIDORI/TEST_DADA2-MIDORI_asv_taxa.tsv",
+                "multiqc_report.html",
+                "pipeline_info",
+                "qc_failed_runs.csv",
+                "qc_passed_runs.csv"
+            ]
+        ],
+        "timestamp": "2026-09-15T16:48:45.695996",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "line_counts": {
+        "content": [
+            [
+                "ERRMINREADS.fastp.json - 417 lines",
+                "ERRMINREADS_seqfu.tsv - 1 lines",
+                "ERRMINREADS_suffix_header_err.json - 0 lines",
+                "ERRSEQFUFAIL_seqfu.tsv - 1 lines",
+                "ERRSFXHDFAIL_seqfu.tsv - 1 lines",
+                "ERRSFXHDFAIL_suffix_header_err.json - 1 lines",
+                "TEST.cutadapt.json - 100 lines",
+                "TEST.fastp.json - 417 lines",
+                "TEST.first_pass.cutadapt.json - 104 lines",
+                "TEST_DADA2-BOLD_asv_taxa.tsv - 4 lines",
+                "TEST_DADA2-MIDORI_asv_taxa.tsv - 4 lines",
+                "TEST_F.fasta - 2 lines",
+                "TEST_F_RC.fasta - 2 lines",
+                "TEST_R.fasta - 2 lines",
+                "TEST_R_RC.fasta - 2 lines",
+                "TEST_all_DADA2-BOLD_asv_read_counts.tsv - 4 lines",
+                "TEST_all_DADA2-MIDORI_asv_read_counts.tsv - 4 lines",
+                "TEST_asvs.fasta - 10 lines",
+                "TEST_dada2_stats.tsv - 14 lines",
+                "TEST_seqfu.tsv - 1 lines",
+                "TEST_suffix_header_err.json - 0 lines"
+            ]
+        ],
+        "timestamp": "2026-09-15T16:48:45.740116",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "file_sizes": {
+        "content": [
+            [
+                "ERRMINREADS_seqfu.tsv - 44 bytes",
+                "ERRMINREADS_suffix_header_err.json - 0 bytes",
+                "ERRSEQFUFAIL_seqfu.tsv - 158 bytes",
+                "ERRSFXHDFAIL_seqfu.tsv - 41 bytes",
+                "ERRSFXHDFAIL_suffix_header_err.json - 358 bytes",
+                "TEST.cutadapt.json - 2469 bytes",
+                "TEST.first_pass.cutadapt.json - 2594 bytes",
+                "TEST_DADA2-BOLD.html - 227158 bytes",
+                "TEST_DADA2-BOLD.mseq - 632 bytes",
+                "TEST_DADA2-BOLD_asv_krona_counts.txt - 101 bytes",
+                "TEST_DADA2-BOLD_asv_taxa.tsv - 377 bytes",
+                "TEST_DADA2-MIDORI.html - 227160 bytes",
+                "TEST_DADA2-MIDORI.mseq - 632 bytes",
+                "TEST_DADA2-MIDORI_asv_krona_counts.txt - 101 bytes",
+                "TEST_DADA2-MIDORI_asv_taxa.tsv - 377 bytes",
+                "TEST_F.fasta - 53 bytes",
+                "TEST_F_RC.fasta - 53 bytes",
+                "TEST_Pfam-A.txt - 126 bytes",
+                "TEST_R.fasta - 47 bytes",
+                "TEST_R_RC.fasta - 47 bytes",
+                "TEST_all_DADA2-BOLD_asv_read_counts.tsv - 37 bytes",
+                "TEST_all_DADA2-MIDORI_asv_read_counts.tsv - 37 bytes",
+                "TEST_asvs.fasta - 1605 bytes",
+                "TEST_dada2_stats.tsv - 437 bytes",
+                "TEST_seqfu.tsv - 40 bytes",
+                "TEST_suffix_header_err.json - 0 bytes",
+                "qc_failed_runs.csv - 70 bytes",
+                "qc_passed_runs.csv - 17 bytes"
+            ]
+        ],
+        "timestamp": "2026-09-15T16:48:45.715358",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}
