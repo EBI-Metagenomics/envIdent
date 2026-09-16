@@ -94,7 +94,7 @@ nextflow_pipeline {
 
                     // Verify TEST ASV taxonomy outputs have proper structure
                     {
-                        def dada2_midori = path("${params.outdir}/TEST/taxonomy-summary/DADA2-MIDORI/test_DADA2-MIDORI_asv_taxa.tsv").text
+                        def dada2_midori = path("${params.outdir}/TEST/taxonomy-summary/DADA2-MIDORI/TEST_DADA2-MIDORI_asv_taxa.tsv").text
                         def dada2_midori_lines = dada2_midori.trim().split('\n')
                         assert dada2_midori_lines.size() > 0
                         assert dada2_midori_lines[0].contains("ASV")
