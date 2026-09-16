@@ -100,7 +100,7 @@ nextflow_pipeline {
                         assert dada2_midori_lines[0].contains("ASV")
                         assert dada2_midori_lines.any { line -> line.contains("sk__") }
 
-                        def dada2_bold = path("${params.outdir}/TEST/taxonomy-summary/DADA2-BOLD/test_DADA2-BOLD_asv_taxa.tsv").text
+                        def dada2_bold = path("${params.outdir}/TEST/taxonomy-summary/DADA2-BOLD/TEST_DADA2-BOLD_asv_taxa.tsv").text
                         def dada2_bold_lines = dada2_bold.trim().split('\n')
                         assert dada2_bold_lines.size() > 0
                         assert dada2_bold_lines[0].contains("ASV")
