@@ -135,7 +135,7 @@
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to BOLD database taxonomy file",
-                    "pattern": "^\\S+\\.txt$",
+                    "pattern": "^\\S+\\.(tax|txt)$",
                     "help_text": "Path to the BOLD taxonomy file containing taxonomic information for the reference sequences."
                 },
                 "bold_db_otu": {
