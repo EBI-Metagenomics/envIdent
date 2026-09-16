@@ -78,7 +78,7 @@ nextflow_pipeline {
                             path("${params.outdir}/TEST/primer-identification/TEST.cutadapt.json").text
                         )
                         assert rc_primer.adapters_read1.every { it.name.contains('COI') && it.total_matches == 0 }
-                        assert rc_primer.adapters_read2.any { it.name.contains('COI') && it.total_matches == 0 }                    
+                        assert rc_primer.adapters_read2.every { it.name.contains('COI') && it.total_matches == 0 }                    
                     },
 
                     // Verify TEST ASV sequence file contains FASTA format
