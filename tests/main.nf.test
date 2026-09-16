@@ -130,7 +130,7 @@ nextflow_pipeline {
                         assert asv_count_lines[0].contains("asv") && asv_count_lines[0].contains("count")
                         assert asv_count_lines[1].contains("seq_1") && asv_count_lines[1].contains("10")
                         assert asv_count_lines[2].contains("seq_2") && asv_count_lines[2].contains("10")
-                        assert asv_count_lines[3].contains("seq_4") && asv_count_lines[1].contains("10")
+                        assert asv_count_lines[3].contains("seq_4") && asv_count_lines[3].contains("10")
 
                     },
 
