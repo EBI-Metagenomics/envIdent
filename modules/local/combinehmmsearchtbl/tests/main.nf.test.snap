@@ -7,7 +7,7 @@
                         {
                             "id": "test"
                         },
-                        "ERR10889197_mini.domtbl:md5,2e16ac4e90acd642a8ff8aef15ac8611"
+                        "ERR10889197_mini.domtbl.gz:md5,58672947d7f305d6ee4ef4af877e30f0"
                     ]
                 ],
                 "concatenated_result": [
@@ -15,16 +15,16 @@
                         {
                             "id": "test"
                         },
-                        "ERR10889197_mini.domtbl:md5,2e16ac4e90acd642a8ff8aef15ac8611"
+                        "ERR10889197_mini.domtbl.gz:md5,58672947d7f305d6ee4ef4af877e30f0"
                     ]
                 ]
             }
         ],
+        "timestamp": "2026-09-17T08:25:32.603412",
         "meta": {
-            "nf-test": "0.9.2",
-            "nextflow": "24.10.2"
-        },
-        "timestamp": "2025-05-20T14:06:32.631716346"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
     },
     "one domtbl should match snapshot": {
         "content": [
@@ -34,7 +34,7 @@
                         {
                             "id": "test"
                         },
-                        "ERR10889197_mini.domtbl:md5,a433f5f0ab57cc5837c9cbdf0ca9ffae"
+                        "ERR10889197_mini.domtbl.gz:md5,a3d2b61b98cd92c7abb7c6902f28e367"
                     ]
                 ],
                 "concatenated_result": [
@@ -42,16 +42,16 @@
                         {
                             "id": "test"
                         },
-                        "ERR10889197_mini.domtbl:md5,a433f5f0ab57cc5837c9cbdf0ca9ffae"
+                        "ERR10889197_mini.domtbl.gz:md5,a3d2b61b98cd92c7abb7c6902f28e367"
                     ]
                 ]
             }
         ],
+        "timestamp": "2026-09-17T08:25:24.75251",
         "meta": {
-            "nf-test": "0.9.2",
-            "nextflow": "24.10.2"
-        },
-        "timestamp": "2025-05-20T14:06:03.223315833"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
     },
     "two domtbls should match snapshot": {
         "content": [
@@ -61,7 +61,7 @@
                         {
                             "id": "test"
                         },
-                        "ERR10889197_mini.domtbl:md5,1f23a563727db2fd916808549355898a"
+                        "ERR10889197_mini.domtbl.gz:md5,f042637121d2347d5530630338990f08"
                     ]
                 ],
                 "concatenated_result": [
@@ -69,15 +69,15 @@
                         {
                             "id": "test"
                         },
-                        "ERR10889197_mini.domtbl:md5,1f23a563727db2fd916808549355898a"
+                        "ERR10889197_mini.domtbl.gz:md5,f042637121d2347d5530630338990f08"
                     ]
                 ]
             }
         ],
+        "timestamp": "2026-09-17T08:25:28.573479",
         "meta": {
-            "nf-test": "0.9.2",
-            "nextflow": "24.10.2"
-        },
-        "timestamp": "2025-05-20T14:06:18.012631179"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
     }
 }
