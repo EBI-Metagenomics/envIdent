@@ -5,8 +5,8 @@ process PIMENTO_GENERATEBCV {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mi-pimento:1.3.0--pyhdfd78af_0':
-        'biocontainers/mi-pimento:1.3.0--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/mi-pimento:1.0.2--pyhdfd78af_0':
+        'biocontainers/mi-pimento:1.0.2--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), val(fwd_flag), val(rev_flag), path(fastq)
@@ -64,8 +64,6 @@ process PIMENTO_GENERATEBCV {
     def assess_mcp_prop_prefix = "${prefix}_${var_region}"
 
     """
-    touch ${assess_mcp_prop_prefix}_mcp_cons.tsv
-
     echo 'dummy' > ${assess_mcp_prop_prefix}_mcp_cons.tsv
 
     cat <<-END_VERSIONS > versions.yml

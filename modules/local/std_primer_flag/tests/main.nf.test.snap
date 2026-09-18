@@ -6,16 +6,17 @@
                     {
                         "id": "test",
                         "single_end": false,
-                        "var_region": "16S-V3-V4"
+                        "var_region": "16S-V3-V4",
+                        "direction": "f"
                     },
-                    "test_16S-V3-V4_std_primers.fasta:md5,f26cdc22a5231d2dbd0831f1f1983dc6"
+                    "test_16S-V3-V4_f_std_primers.fasta:md5,ecb0cc7b62bb03c531827220cd4f0629"
                 ]
             ]
         ],
-        "timestamp": "2026-08-21T14:58:20.585900327",
+        "timestamp": "2026-09-17T10:44:34.281443",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "26.04.0"
+            "nextflow": "26.04.6"
         }
     }
 }

@@ -13,8 +13,8 @@ nextflow_process {
             process {
                 """
                 input[0] = [
-		    ['id': 'test'],
-		    file("${projectDir}/tests/fixtures/parsehmmsearchcoverage/ERR10889056_mini.domtbl.gz", checkIfExists: true),
+		    ['id': 'test', 'read_count':84],
+		    file("${projectDir}/assets/test-fixtures/parsehmmsearchcoverage/ERR10889056_mini.domtbl.gz", checkIfExists: true),
 		]
 		input[1] = file("${projectDir}/bin/hmmer_domtbl_parse_coverage.py")
                 """
@@ -33,8 +33,8 @@ nextflow_process {
             process {
                 """
                 input[0] = [
-		    ['id': 'test'],
-		    file("${projectDir}/tests/fixtures/parsehmmsearchcoverage/synthetic_edgecase_test.domtbl.gz", checkIfExists: true),
+		    ['id': 'test', 'read_count': 4],
+		    file("${projectDir}/assets/test-fixtures/parsehmmsearchcoverage/synthetic_edgecase_test.domtbl.gz", checkIfExists: true),
 		]
 		input[1] = file("${projectDir}/bin/hmmer_domtbl_parse_coverage.py")
                 """

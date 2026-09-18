@@ -10,7 +10,8 @@
                             "forward_primer": "TTCTCAACCAACCANAANGANATNGG",
                             "reverse_primer": "ACWAAYCAYAAAGAYATYGG"
                         },
-                        "test_provided_primers.fasta:md5,b738856ab95e57b42dc5e1420ecfa390"
+                        "test_provided_forward.fasta:md5,18c85f1e690e3c5738934b50a9f75e25",
+                        "test_provided_reverse.fasta:md5,461bd6538ca31ec0ade7a7bdec2147d0"
                     ]
                 ],
                 "supplied_primer_out": [
@@ -21,15 +22,16 @@
                             "forward_primer": "TTCTCAACCAACCANAANGANATNGG",
                             "reverse_primer": "ACWAAYCAYAAAGAYATYGG"
                         },
-                        "test_provided_primers.fasta:md5,b738856ab95e57b42dc5e1420ecfa390"
+                        "test_provided_forward.fasta:md5,18c85f1e690e3c5738934b50a9f75e25",
+                        "test_provided_reverse.fasta:md5,461bd6538ca31ec0ade7a7bdec2147d0"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-09-01T16:06:02.753197882",
+        "timestamp": "2026-09-17T10:48:58.726397",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "26.04.0"
+            "nextflow": "26.04.6"
         }
     }
 }

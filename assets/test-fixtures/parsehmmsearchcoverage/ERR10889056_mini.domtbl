@@ -1,0 +1,24 @@
+#                                                                                                                 --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord
+# target name                                             accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target
+#                                     ------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
+#
+# Program:         hmmsearch
+# Version:         3.4 (Aug 2023)
+# Pipeline mode:   SEARCH
+# Query file:      Pfam-A.hmm
+# Target file:     ERR10889056.1.fastq
+# Option settings: hmmsearch -o ERR10889056.txt -A ERR10889056.sto --tblout ERR10889056.tbl --domtblout ERR10889056.domtbl --cut_ga -Z 21979 --cpu 2 Pfam-A.hmm ERR10889056.1.fastq 
+# Current dir:     /hps/nobackup/rdf/metagenomics/service-team/users/timrozday/rrap/work/aa/f70ac364043cd97f0a34ab34c901b6
+# Date:            Mon May  5 21:41:36 2025
+# [ok]
+ERR10889056.1187746.1_length=121_frame=-2_begin=1_end=120 -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.4   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    14    39    13    40 0.89 -
+ERR10889056.1187746.1_length=121_frame=-2_begin=1_end=120 -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.3   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    1     13    13    40 0.89 -
+ERR10889056.1187746.1_length=121_frame=-2_begin=1_end=120 -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.3   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    1     14    13    40 0.89 -
+ERR10889056.1187746.1_length=121_frame=-1_begin=1_end=120 -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.3   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    1     14    13    40 0.89 -
+ERR10889056.1187746.1_length=121_frame=-3_begin=1_end=120 -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.3   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    1     14    13    40 0.89 -
+ERR10889056.1187746.1_length=121_frame=-2_begin=1_end=120 -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.3   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    1     15    13    40 0.89 -
+ERR10889056.1187746.1_length=121_frame=-2_begin=1_end=120 -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.3   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    40    50    13    40 0.89 -
+ERR10889056.1187746.1_length=121_frame=-2_begin=1_end=120 -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.3   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    39    50    13    40 0.89 -
+ERR10889056.1187746.1_length=121_frame=-2_begin=1_end=120 -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.3   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    38    50    13    40 0.89 -
+ERR10889056.1187746.1_length=121_frame=2_begin=1_end=120  -             40 1-cysPrx_C           PF10417.14    41   2.3e-09   37.3   0.0   1   1   1.2e-13   2.5e-09   37.2   0.0     2    30    11    36    13    40 0.89 -
+ERR10889056.4181506.1_length=196_frame=-1_begin=2_end=196 -             65 2-Hacid_dh           PF00389.36   134   2.1e-13   50.4   0.1   1   1     3e-17   2.2e-13   50.3   0.1    64   109     1    53     1    59 0.85 merged_125_71
