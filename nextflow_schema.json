@@ -183,7 +183,7 @@
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to MIDORI database taxonomy file",
-                    "pattern": "^\\S+\\.txt$",
+                    "pattern": "^\\S+\\.(tax|txt)$",
                     "help_text": "Path to the MIDORI taxonomy file containing taxonomic information for the reference sequences."
                 },
                 "midori_db_otu": {
