@@ -8,23 +8,22 @@ process MAKE_ASV_COUNT_TABLES {
         "biocontainers/mgnify-pipelines-toolkit:${params.mpt_version}" }"
 
     input:
-    tuple val(meta), path(maps), path(reads), path(filter_list)
+    tuple val(meta), path(maps), path(asvtaxtable), path(reads)
+    val db_label
 
     output:
-    tuple val(meta), path("*_asv_read_counts.tsv"), optional: true, emit: asv_read_counts
+    tuple val(meta), path("*_asv_read_counts.tsv"), optional: true, emit: asv_read_counts_out
+    tuple val(meta), path("*_asv_krona_counts.txt"), optional: true, emit: asv_count_tables_out
     path "versions.yml"                           , emit: versions
 
     script:
     """
-    # Passing an empty taxonomy table to make_asv_count_table means that it does not filter by taxonomy
-    printf 'ASV\\tSuperkingdom\\tKingdom\\tPhylum\\tClass\\tOrder\\tFamily\\tGenus\\tSpecies\\n' > empty_tax.tsv
-
     if [[ ${meta.single_end} = true ]]; then
         zcat ${reads} | awk 'NR % 4 == 1' > headers.txt
-        make_asv_count_table -t empty_tax.tsv -f ${maps} -a ${filter_list} -hd headers.txt -s ${meta.id}_${meta.var_region}
+        make_asv_count_table.py -t ${asvtaxtable} -f ${maps} -hd headers.txt -s ${meta.id}_${meta.var_region}_${db_label}
     else
         zcat ${reads[0]} | awk 'NR % 4 == 1' > headers.txt
-        make_asv_count_table -t empty_tax.tsv -f ${maps[0]} -a ${filter_list} -hd headers.txt -s ${meta.id}_${meta.var_region}
+        make_asv_count_table.py -t ${asvtaxtable} -f ${maps[0]} -r ${maps[1]} -hd headers.txt -s ${meta.id}_${meta.var_region}_${db_label}
     fi
 
     cat <<-END_VERSIONS > versions.yml
@@ -35,7 +34,8 @@ process MAKE_ASV_COUNT_TABLES {
 
     stub:
     """
-    touch ${meta.id}_${meta.var_region}_asv_read_counts.tsv
+    touch ${meta.id}_${meta.var_region}_${db_label}_asv_read_counts.tsv
+    touch ${meta.id}_${meta.var_region}_${db_label}_asv_krona_counts.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
