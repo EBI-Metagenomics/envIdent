@@ -92,6 +92,19 @@ def process(line, keep_accession=False, show_identity=False, show_coverage=False
     identity = cols[2] if len(cols) > 2 else ""  # 3rd column: percentage identity
     coverage = cols[3] if len(cols) > 3 else ""  # 4th column: query coverage
 
+    # VSEARCH --output_no_hits uses '*' for the missing reference target.
+    # Retain the query with eight empty ranks and no invented alignment metrics.
+    if tax_field == "*":
+        out_cols = [seq_id]
+        if keep_accession:
+            out_cols.append("")
+        out_cols.append("sk__;k__;p__;c__;o__;f__;g__;s__;")
+        if show_identity:
+            out_cols.append("NA")
+        if show_coverage:
+            out_cols.append("NA")
+        return "\t".join(out_cols)
+
     fields = tax_field.split(";")
     if len(fields) < 2:
         return None
