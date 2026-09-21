@@ -43,7 +43,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: nf-test-out
+          name: nf-test-out-${{ matrix.shard }}
           include-hidden-files: true
           path: |
             ${{ github.workspace }}/nf-test-output
