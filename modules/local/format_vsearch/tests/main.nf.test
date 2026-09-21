@@ -1,0 +1,139 @@
+nextflow_process {
+    name "Test Process FORMAT_VSEARCH"
+    script "../main.nf"
+    process "FORMAT_VSEARCH"
+    tag "modules"
+    tag "format_vsearch"
+
+    test("lca mode") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'test_lca', single_end: false],
+                    file('${projectDir}/modules/local/format_vsearch/tests/data/vsearch.tsv', checkIfExists: true)
+                ]
+                input[1] = 'lca'
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.formatted.size() == 1 },
+                { assert process.out.formatted[0][0] == [id: 'test_lca', single_end: false] },
+                { assert path(process.out.formatted[0][1]).getFileName().toString() == 'test_lca_lca_formatted.tsv' },
+                {
+                    assert snapshot(path(process.out.formatted[0][1]).text).match("lca_formatted")
+                },
+                {
+                    assert process.out.versions.size() == 1
+                    assert path(process.out.versions[0]).text.contains('python:')
+                }
+            )
+        }
+    }
+
+    test("clean mode") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'test_clean', single_end: false],
+                    file('${projectDir}/modules/local/format_vsearch/tests/data/vsearch.tsv', checkIfExists: true)
+                ]
+                input[1] = 'clean'
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.formatted.size() == 1 },
+                { assert process.out.formatted[0][0] == [id: 'test_clean', single_end: false] },
+                { assert path(process.out.formatted[0][1]).getFileName().toString() == 'test_clean_clean_formatted.tsv' },
+                {
+                    assert snapshot(path(process.out.formatted[0][1]).text).match("clean_formatted")
+                },
+                {
+                    assert process.out.versions.size() == 1
+                    assert path(process.out.versions[0]).text.contains('python:')
+                }
+            )
+        }
+    }
+
+    test("invalid mode") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'test_invalid', single_end: false],
+                    file('${projectDir}/modules/local/format_vsearch/tests/data/vsearch.tsv', checkIfExists: true)
+                ]
+                input[1] = 'invalid'
+                """
+            }
+        }
+        then {
+            assert !process.success
+            assert workflow.stdout.join("\n").contains("Unknown FORMAT_VSEARCH mode 'invalid': expected 'lca' or 'clean'")
+        }
+    }
+
+    test("lca mode - stub") {
+        options "-stub"
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'test', single_end: false],
+                    file('${projectDir}/modules/local/format_vsearch/tests/data/vsearch.tsv', checkIfExists: true)
+                ]
+                input[1] = 'lca'
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.formatted.size() == 1 },
+                { assert process.out.formatted[0][0] == [id: 'test', single_end: false] },
+                { assert path(process.out.formatted[0][1]).getFileName().toString() == 'test_lca_formatted.tsv' },
+                { assert path(process.out.formatted[0][1]).size() == 0 },
+                {
+                    assert process.out.versions.size() == 1
+                    assert path(process.out.versions[0]).text.contains('python:')
+                }
+            )
+        }
+    }
+
+    test("clean mode - stub") {
+        options "-stub"
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'test', single_end: false],
+                    file('${projectDir}/modules/local/format_vsearch/tests/data/vsearch.tsv', checkIfExists: true)
+                ]
+                input[1] = 'clean'
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.formatted.size() == 1 },
+                { assert process.out.formatted[0][0] == [id: 'test', single_end: false] },
+                { assert path(process.out.formatted[0][1]).getFileName().toString() == 'test_clean_formatted.tsv' },
+                { assert path(process.out.formatted[0][1]).size() == 0 },
+                {
+                    assert process.out.versions.size() == 1
+                    assert path(process.out.versions[0]).text.contains('python:')
+                }
+            )
+        }
+    }
+}
