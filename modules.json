@@ -51,7 +51,12 @@
             "git_sha": "bf70cbf44b42ff4a81afcb673fcef604f5ef3a85",
             "installed_by": ["modules"],
             "patch": "modules/nf-core/seqkit/translate/seqkit-translate.diff"
-          }
+          },
+          "vsearch/usearchglobal": {
+            "branch": "master",
+            "git_sha": "3a0ac08f5e8a748df4bc8b3998623121adec36fe",
+            "installed_by": ["modules"]
+          }          
         }
       },
       "subworkflows": {

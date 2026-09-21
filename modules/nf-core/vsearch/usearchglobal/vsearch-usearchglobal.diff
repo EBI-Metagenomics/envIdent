@@ -1,0 +1,53 @@
+Changes in component 'nf-core/vsearch/usearchglobal'
+'modules/nf-core/vsearch/usearchglobal/environment.yml' is unchanged
+'modules/nf-core/vsearch/usearchglobal/meta.yml' is unchanged
+Changes in 'vsearch/usearchglobal/main.nf':
+--- modules/nf-core/vsearch/usearchglobal/main.nf
++++ modules/nf-core/vsearch/usearchglobal/main.nf
+@@ -4,8 +4,8 @@
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/vsearch:2.31.0--hd2be7a0_0':
+-        'quay.io/biocontainers/vsearch:2.31.0--hd2be7a0_0' }"
++        'https://depot.galaxyproject.org/singularity/vsearch:2.32.0--hd2be7a0_0':
++        'quay.io/biocontainers/vsearch:2.32.0--hd2be7a0_0' }"
+ 
+     input:
+     tuple val(meta), path(queryfasta)
+@@ -24,7 +24,7 @@
+     tuple val(meta), path('*.tsv')    , optional: true, emit: tsv
+     tuple val(meta), path('*.txt')    , optional: true, emit: txt
+     tuple val(meta), path('*.uc')     , optional: true, emit: uc
+-    tuple val("${task.process}"), val('vsearch'), eval('vsearch --version 2>&1 | sed -n "1s/.*v\\([0-9.]*\\).*/\\\\1/p"'), emit: versions_vsearch, topic: versions
++    path "versions.yml"               , emit: versions
+ 
+     when:
+     task.ext.when == null || task.ext.when
+@@ -73,6 +73,11 @@
+         $args \\
+         ${columns} \\
+         ${outfmt} ${prefix}.${out_ext}
++
++    cat <<-END_VERSIONS > versions.yml
++    "${task.process}":
++        vsearch: \$(vsearch --version 2>&1 | sed -n "1s/.*v\\([0-9.]*\\).*/\\\\1/p")
++    END_VERSIONS
+     """
+     stub:
+     def prefix = task.ext.prefix ?: "${meta.id}"
+@@ -88,5 +93,10 @@
+                     'aln'
+     """
+     touch ${prefix}.${out_ext}
++    
++    cat <<-END_VERSIONS > versions.yml
++    "${task.process}":
++        vsearch: \$(vsearch --version 2>&1 | sed -n "1s/.*v\\([0-9.]*\\).*/\\\\1/p")
++    END_VERSIONS
+     """
+ }
+
+'modules/nf-core/vsearch/usearchglobal/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/vsearch/usearchglobal/tests/main.nf.test' is unchanged
+************************************************************
