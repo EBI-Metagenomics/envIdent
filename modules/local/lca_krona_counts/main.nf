@@ -4,6 +4,7 @@ process LCA_KRONA_COUNTS {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
         ? 'docker://docker.io/library/node:24'
         : 'docker.io/library/node:24' }"
+        
     input:
     tuple val(meta), path(counts), path(lca_all), path(lca_top)
 
