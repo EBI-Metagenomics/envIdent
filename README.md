@@ -132,9 +132,8 @@ Example output structure for a sample (sample1). The qc_passed and qc_failed csv
 results/
 ├── sample1/
 │   ├── asv/
-│   │   ├── sample1_DADA2-BOLD_asv_read_counts.tsv
-│   │   ├── sample1_DADA2-MIDORI_asv_read_counts.tsv
-│   │   └── sample1_dada2_stats.tsv
+│   │   ├── sample1_asv_counts.tsv
+│   │   ├── sample1_dada2_stats.tsv
 │   │   └── sample1_asvs.fasta
 │   ├── hmmsearch-COI/
 │   │   ├── sample1_Pfam-A.domtbl
@@ -148,16 +147,26 @@ results/
 │   │   └── sample1_2.fastq.gz
 │   │   └── sample1_suffix_header_err.json
 │   ├── taxonomy-summary/
-│   │   ├── DADA2-BOLD/
-│   │   |   ├── ERR8441464_DADA2-BOLD_asv_krona_counts.txt
-│   │   |   ├── ERR8441464_DADA2-BOLD_asv_taxa.tsv
-│   │   |   ├── ERR8441464_DADA2-BOLD.html
-│   │   |   └── ERR8441464_DADA2-BOLD.mseq
-│   │   ├── DADA2-MIDORI/
-│   │   |   ├── ERR8441464_DADA2-MIDORI_asv_krona_counts.txt
-│   │   |   ├── ERR8441464_DADA2-MIDORI_asv_taxa.tsv
-│   │   |   ├── ERR8441464_DADA2-MIDORI.html
-│   │   |   └── ERR8441464_DADA2-MIDORI.mseq
+│   │   ├── BOLD/
+│   │   │   ├── sample1_BOLD_vsearch_raw_hits.tsv
+│   │   │   ├── sample1_BOLD_vsearch_hits_with_accessions.tsv
+│   │   │   ├── sample1_BOLD_vsearch_hits_for_lca.tsv
+│   │   │   ├── sample1_BOLD_taxonomy_lca_all_hits.tsv
+│   │   │   ├── sample1_BOLD_taxonomy_lca_top_hits.tsv
+│   │   │   ├── sample1_BOLD_krona_lca_all_hits_counts.tsv
+│   │   │   ├── sample1_BOLD_krona_lca_top_hits_counts.tsv
+│   │   │   ├── sample1_BOLD_krona_lca_all_hits.html
+│   │   │   └── sample1_BOLD_krona_lca_top_hits.html
+│   │   ├── MIDORI/
+│   │   │   ├── sample1_MIDORI_vsearch_raw_hits.tsv
+│   │   │   ├── sample1_MIDORI_vsearch_hits_with_accessions.tsv
+│   │   │   ├── sample1_MIDORI_vsearch_hits_for_lca.tsv
+│   │   │   ├── sample1_MIDORI_taxonomy_lca_all_hits.tsv
+│   │   │   ├── sample1_MIDORI_taxonomy_lca_top_hits.tsv
+│   │   │   ├── sample1_MIDORI_krona_lca_all_hits_counts.tsv
+│   │   │   ├── sample1_MIDORI_krona_lca_top_hits_counts.tsv
+│   │   │   ├── sample1_MIDORI_krona_lca_all_hits.html
+│   │   │   └── sample1_MIDORI_krona_lca_top_hits.html
 ├── pipeline_info/
 │   ├── execution_report_YYYY-MM-DD_HH-mm-ss.html
 │   ├── execution_timeline_YYYY-MM-DD_HH-mm-ss.html
@@ -169,6 +178,20 @@ results/
 ├── qc_passed_runs.csv
 └── qc_failed_runs.csv
 ```
+
+Taxonomy filenames use `<sample>_<database>_<description>`. The database labels
+come from `--bold_label` (default `BOLD`) and `--midori_label`
+(default `MIDORI`); each label controls both the folder and filename prefix.
+
+| Description | Contents |
+| --- | --- |
+| `vsearch_raw_hits.tsv` | Original VSEARCH output, without a header |
+| `vsearch_hits_with_accessions.tsv` | Readable hits with the standard taxonomy ranks, retaining reference database accessions |
+| `vsearch_hits_for_lca.tsv` | Individual hits with taxonomy, identity and query coverage for LCA script input |
+| `taxonomy_lca_all_hits.tsv` | ASV assignments calculated from all hits above the percentage identity threshold at the selected rank |
+| `taxonomy_lca_top_hits.tsv` | ASV assignments from highest-identity qualifying hits, above the percentage identity threshold at the selected rank |
+| `krona_lca_all_hits_counts.tsv`, `krona_lca_top_hits_counts.tsv` | Headerless, read-weighted counts grouped by taxonomy; includes unclassified reads |
+| `krona_lca_all_hits.html`, `krona_lca_top_hits.html` | Interactive reports for the respective assignment method |
 
 ### Key Output Files
 
