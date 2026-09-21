@@ -16,7 +16,7 @@ nextflow_process {
                 input[0] = [
 		    ['id': 'test'],
 		    [
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
 		    ]
 		]
                 """
@@ -38,8 +38,8 @@ nextflow_process {
                 input[0] = [
 		    ['id': 'test'],
 		    [
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
 		    ]
 		]
                 """
@@ -61,16 +61,16 @@ nextflow_process {
                 input[0] = [
 		    ['id': 'test'],
 		    [
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
-		        file("${projectDir}/tests/fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
+		        file("${projectDir}/assets/test-fixtures/combinehmmsearchtbl/ERR10889197_mini.domtbl.gz", checkIfExists: true),
 		    ]
 		]
                 """

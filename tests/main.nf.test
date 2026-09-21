@@ -1,0 +1,252 @@
+nextflow_pipeline {
+
+    name "Test Workflow EnvIdent"
+    script "main.nf"
+
+    test("End-to-end EnvIdent test") {
+
+        tag "end-to-end"
+        options "-c ${projectDir}/conf/test_dbs.config"
+
+        when {
+            params {
+                input  = "${projectDir}/assets/test-fixtures/samplesheets/test_samplesheet.csv"
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+
+            with(workflow) {
+
+                assertAll(
+                    { assert success },
+
+                    // Snapshot of names and file structure of output directory
+                    {
+                        def stable_name = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/**'])
+                        assert snapshot(stable_name).match("directory_structure")
+                    },
+
+                    // Snapshot all output file sizes for regression detection
+                    {
+                        def allFiles = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/**', '**/*.domtbl', '**/*.fastp.json', '**/*_multiqc_report.html', 'multiqc_report.html', '**/*krona_counts.txt'])
+                        def fileSizes = allFiles.collect { file ->
+                            "${file.name} - ${file.size()} bytes"
+                        }.sort()
+                        assert snapshot(fileSizes).match("file_sizes")
+                    },
+
+                    // Snapshot line counts for JSON, TSV, and FASTA files
+                    {
+                        def dataFiles = getAllFilesFromDir(params.outdir, include: ['*.{json,tsv,fasta,fa}', '**/*.{json,tsv,fasta,fa}'], ignore: ['pipeline_info/**'])
+                        def lineCounts = dataFiles.collect { file ->
+                            def lineCount = file.text.isEmpty() ? 0 : file.readLines().size()
+                            "${file.name} - ${lineCount} lines"
+                        }.sort()
+                        assert snapshot(lineCounts).match("line_counts")
+                    },
+
+                    // Verify qc_passed_runs.csv content
+                    {
+                        def content = path("${params.outdir}/qc_passed_runs.csv").text
+                        def lines = content.trim().split('\n')
+                        assert lines.size() == 2 : "Expected 2 passed runs"
+                        assert content.contains("TEST,all_results")
+                        assert content.contains("TEST2,all_results")
+                    },
+
+                    // Verify qc_failed_runs.csv has all expected failures
+                    {
+                        def content = path("${params.outdir}/qc_failed_runs.csv").text
+                        def lines = content.trim().split('\n')
+                        assert lines.size() == 3 : "Expected 3 failed runs"
+                        assert content.contains("ERRMINREADS,min_reads")
+                        assert content.contains("ERRSFXHDFAIL,sfxhd_fail")
+                        assert content.contains("ERRSEQFUFAIL,seqfu_fail")
+                    },
+
+                    // Verify TEST COI primers were detected in both read directions
+                    {
+                        ['TEST', 'TEST2'].each { test_name ->
+                            def std_primer = new groovy.json.JsonSlurper().parseText(
+                                path("${params.outdir}/${test_name}/primer-identification/${test_name}.first_pass.cutadapt.json").text
+                            )
+                            assert std_primer.adapters_read1.every { it.name.contains('COI') && it.total_matches == 50 }
+                            assert std_primer.adapters_read2.every { it.name.contains('COI') && it.total_matches == 50 }                    
+                        }
+                    },               
+
+                    // Verify TEST COI reverse complemented primers were not detected in both read directions
+                    {
+                        ['TEST', 'TEST2'].each { test_name ->
+                            def rc_primer = new groovy.json.JsonSlurper().parseText(
+                                path("${params.outdir}/${test_name}/primer-identification/${test_name}.cutadapt.json").text
+                            )
+                            assert rc_primer.adapters_read1.every { it.name.contains('COI') && it.total_matches == 0 }
+                            assert rc_primer.adapters_read2.every { it.name.contains('COI') && it.total_matches == 0 }                    
+                        }
+                    },
+
+                    // Verify TEST ASV sequence file contains FASTA format
+                    {
+                        ['TEST', 'TEST2'].each { test_name ->
+                            def asv_seqs = path("${params.outdir}/${test_name}/asv/${test_name}_asvs.fasta").text
+                            def lines = asv_seqs.trim().split('\n')
+                            assert lines.size() > 0
+                            assert lines[0].startsWith(">") : "First line should be FASTA header"
+                            // Verify there are sequences (non-header lines with letters)
+                            def hasSequences = lines.any { line -> !line.startsWith(">") && line.matches("^[ACGTN]+\$") }
+                            assert hasSequences : "Should contain DNA sequences"
+                        }
+                    },    
+
+                    // Verify TEST ASV taxonomy outputs have proper structure
+                    {  
+                        ['TEST', 'TEST2'].each { test_name ->
+                            def dada2_midori = path("${params.outdir}/${test_name}/taxonomy-summary/DADA2-MIDORI/${test_name}_DADA2-MIDORI_asv_taxa.tsv").text
+                            def dada2_midori_lines = dada2_midori.trim().split('\n')
+                            assert dada2_midori_lines.size() > 0
+                            assert dada2_midori_lines[0].contains("ASV")
+                            assert dada2_midori_lines.any { line -> line.contains("sk__") }
+
+                            def dada2_bold = path("${params.outdir}/${test_name}/taxonomy-summary/DADA2-BOLD/${test_name}_DADA2-BOLD_asv_taxa.tsv").text
+                            def dada2_bold_lines = dada2_bold.trim().split('\n')
+                            assert dada2_bold_lines.size() > 0
+                            assert dada2_bold_lines[0].contains("ASV")
+                            assert dada2_bold_lines.any { line -> line.contains("sk__") }
+                        }
+                    },    
+
+                    // Verify TEST DADA2 stats file has expected metrics
+                    {
+                        ['TEST', 'TEST2'].each { test_name ->
+                            def stats_content = path("${params.outdir}/${test_name}/asv/${test_name}_dada2_stats.tsv").text
+                            assert stats_content.contains("initial_read_count")
+                            assert stats_content.contains("filtered_trimmed_read_count")
+                            assert stats_content.contains("dereplicated_read_count")
+                            assert stats_content.contains("merged_sequence_variant_count")
+                            assert stats_content.contains("reads_with_asv_read_count")
+                            assert stats_content.contains("proportion_reads_matched")
+                            assert stats_content.contains("proportion_reads_chimeric")
+                            assert stats_content.contains("final_nonchimeric_read_count")
+                            assert stats_content.contains("truncation_point_forward")
+                            assert stats_content.contains("truncation_point_reverse")
+                        }
+                    },    
+
+                    // Verify TEST ASV read counts
+                    {
+                        def asv_counts = path("${params.outdir}/TEST/asv/TEST_all_DADA2-MIDORI_asv_read_counts.tsv").text
+                        assert !asv_counts.isEmpty()
+                        def asv_count_lines = asv_counts.readLines()
+                        assert asv_count_lines[0].contains("asv") && asv_count_lines[0].contains("count")
+                        assert asv_count_lines[1].contains("seq_1") && asv_count_lines[1].contains("10")
+                        assert asv_count_lines[2].contains("seq_2") && asv_count_lines[2].contains("10")
+                        assert asv_count_lines[3].contains("seq_4") && asv_count_lines[3].contains("10")
+
+                    },
+
+                    // Verify TEST primer FASTA files contain sequences
+                    {
+                        ['TEST', 'TEST2'].each { test_name ->
+                            def fwd_primers = path("${params.outdir}/${test_name}/primer-identification/${test_name}_F.fasta").text
+                            assert fwd_primers.contains(">mlCOIintF|COI-5P|F")
+                            assert fwd_primers.contains("XN{10}GGWACWGGWTGAACWGTWTAYCCYCC") : "Should contain specific DNA sequence"
+
+                            def rev_primers = path("${params.outdir}/${test_name}/primer-identification/${test_name}_R.fasta").text
+                            assert rev_primers.contains(">jgHCO2198|COI-5P|R")
+                            assert rev_primers.contains("XN{10}YCCTGTGAATAGGGGGAATC") : "Should contain specific DNA sequence"
+
+                            def fwd_primers_revcomp = path("${params.outdir}/${test_name}/primer-identification/${test_name}_F_RC.fasta").text
+                            assert fwd_primers_revcomp.contains(">mlCOIintF|COI-5P|F")
+                            assert fwd_primers_revcomp.contains("GGRGGRTAWACWGTTCAWCCWGTWCCN{10}X") : "Should contain specific DNA sequence"
+
+                            def rev_primers_revcomp = path("${params.outdir}/${test_name}/primer-identification/${test_name}_R_RC.fasta").text
+                            assert rev_primers_revcomp.contains(">jgHCO2198|COI-5P|R")
+                            assert rev_primers_revcomp.contains("GATTCCCCCTATTCACAGGRN{10}X") : "Should contain specific DNA sequence"
+
+                        }
+                    },    
+
+                    // Verify TEST QC outputs
+                    {
+                        ['TEST', 'TEST2'].each { test_name ->
+                            def fastp_json = path("${params.outdir}/${test_name}/qc/${test_name}.fastp.json").text
+                            def fastp = new groovy.json.JsonSlurper().parseText(fastp_json)
+                            assert fastp instanceof Map
+                            assert fastp.summary
+
+                            def seqfu_tsv = path("${params.outdir}/${test_name}/qc/${test_name}_seqfu.tsv").text
+                            assert seqfu_tsv.contains("OK") && seqfu_tsv.contains("PE")
+
+                            def suffix_header = path("${params.outdir}/${test_name}/qc/${test_name}_suffix_header_err.json").text
+                            assert suffix_header.empty
+                        }
+                    },
+
+                    // Verify software versions file exists and has expected structure
+                    {
+                        def versions_file = path("${params.outdir}/pipeline_info/envident_software_mqc_versions.yml")
+
+                        assert versions_file.exists() : "Software versions file does not exist"
+                        assert !versions_file.text.trim().isEmpty() : "Software versions file is empty"
+
+                        def lines = versions_file.readLines()
+
+                        // Expected top-level process/software sections
+                        def expected_sections = [
+                            "CUTADAPT:",
+                            "DADA2:",
+                            "EXTRACT_CUTADAPT_PRIMERS:",
+                            "FASTP:",
+                            "FASTQC_CLEAN:",
+                            "FASTQC_RAW:",
+                            "FASTQSUFFIXHEADERCHECK:",
+                            "HMMER_HMMSEARCH:",
+                            "KRONA_KTIMPORTTEXT:",
+                            "LIBRARYSTRATEGYCHECK:",
+                            "MAKE_ASV_COUNT_TABLES:",
+                            "MAPSEQ2ASVTABLE:",
+                            "MAPSEQ:",
+                            "PARSEHMMSEARCHCOVERAGE:",
+                            "PIMENTO_GENERATEBCV:",
+                            "REMOVE_AMBIGUOUS_READS:",
+                            "SEQFU_CHECK:",
+                            "SEQTK_SEQ:",
+                            "STD_PRIMER_FLAG:",
+                            "Workflow:"
+                        ]
+
+                        expected_sections.each { section ->
+                            assert lines.contains(section) :
+                                "Missing section '${section}' from software versions file"
+                        }
+
+                        // Check that software entries have a key and a non-empty value
+                        def software_entries = lines.findAll { line ->
+                            line ==~ /^  [^ ].*: .+$/
+                        }
+
+                        assert !software_entries.isEmpty() :
+                            "No software version entries found"
+
+                        assert software_entries.every { line ->
+                            def value = line.split(":", 2)[1].trim()
+                            !value.isEmpty()
+                        } : "One or more software entries has an empty value"
+
+                        // Check Workflow metadata
+                        assert lines.any { line ->
+                            line ==~ /^    EBI-Metagenomics\/envident: .+$/
+                        } : "Missing EBI-Metagenomics/envident version"
+
+                        assert lines.any { line ->
+                            line ==~ /^    Nextflow: .+$/
+                        } : "Missing Nextflow version"
+                    }
+                )
+            }
+        }
+    }
+}                    

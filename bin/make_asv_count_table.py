@@ -20,10 +20,10 @@ import logging
 
 import pandas as pd
 
-from mgnify_pipelines_toolkit.constants.tax_ranks import (
-    _SILVA_TAX_RANKS as _BOLD_TAX_RANKS, 
-    _PR2_TAX_RANKS,
-)
+# Rank columns produced by mapseq_to_asv_table.py for BOLD and MIDORI.
+_BOLD_TAX_RANKS = [
+    "Superkingdom", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"
+]
 
 logging.basicConfig(level=logging.DEBUG)
 
