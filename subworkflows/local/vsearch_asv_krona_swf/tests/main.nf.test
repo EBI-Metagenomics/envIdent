@@ -1,6 +1,7 @@
 nextflow_workflow {
     name "Test VSEARCH LCA and Krona"
     script "../main.nf"
+    config "./nextflow.config"
     workflow "VSEARCH_ASV_KRONA"
     tag "subworkflows"
     tag "vsearch_asv_krona"
