@@ -17,6 +17,8 @@ nextflow_pipeline {
 
         then {
 
+            assert workflow.success
+
             with(workflow) {
 
                 assertAll(
@@ -30,7 +32,7 @@ nextflow_pipeline {
 
                     // Snapshot all output file sizes for regression detection
                     {
-                        def allFiles = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/**', '**/*.domtbl', '**/*.fastp.json', '**/*_multiqc_report.html', 'multiqc_report.html', '**/*krona_counts.txt'])
+                        def allFiles = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/**', '**/*.domtbl', '**/*.fastp.json', '**/*_multiqc_report.html', 'multiqc_report.html', '**/*krona_counts.txt', '**/*_hits_counts.tsv'])
                         def fileSizes = allFiles.collect { file ->
                             "${file.name} - ${file.size()} bytes"
                         }.sort()
@@ -101,22 +103,91 @@ nextflow_pipeline {
                         }
                     },    
 
-                    // Verify TEST ASV taxonomy outputs have proper structure
-                    {  
-                        ['TEST', 'TEST2'].each { test_name ->
-                            def dada2_midori = path("${params.outdir}/${test_name}/taxonomy-summary/DADA2-MIDORI/${test_name}_DADA2-MIDORI_asv_taxa.tsv").text
-                            def dada2_midori_lines = dada2_midori.trim().split('\n')
-                            assert dada2_midori_lines.size() > 0
-                            assert dada2_midori_lines[0].contains("ASV")
-                            assert dada2_midori_lines.any { line -> line.contains("sk__") }
-
-                            def dada2_bold = path("${params.outdir}/${test_name}/taxonomy-summary/DADA2-BOLD/${test_name}_DADA2-BOLD_asv_taxa.tsv").text
-                            def dada2_bold_lines = dada2_bold.trim().split('\n')
-                            assert dada2_bold_lines.size() > 0
-                            assert dada2_bold_lines[0].contains("ASV")
-                            assert dada2_bold_lines.any { line -> line.contains("sk__") }
+                    // Both optional database branches must search and format their hits.
+                    {
+                        ['TEST', 'TEST2'].each { sample ->
+                            def asvIds = path("${params.outdir}/${sample}/asv/${sample}_asvs.fasta")
+                                .readLines().findAll { it.startsWith('>') }.collect { it.substring(1) }
+                            ['BOLD', 'MIDORI'].each { db ->
+                                def folder = "${params.outdir}/${sample}/taxonomy-summary/${db}"
+                                def filenames = getAllFilesFromDir(folder).collect { it.name }
+                                assert filenames.size() == 9
+                                assert filenames.every { it.startsWith("${sample}_${db}_") }
+                                def raw = path("${folder}/${sample}_${db}_vsearch_raw_hits.tsv").readLines()
+                                assert !raw.isEmpty()
+                                assert raw.collect { it.split('\t')[0] }.toSet() == asvIds.toSet()
+                                assert raw.every { row ->
+                                    def fields = row.split('\t')
+                                    fields.size() == 5 && fields[0] in asvIds
+                                }
+                                def lca = path("${folder}/${sample}_${db}_vsearch_hits_for_lca.tsv").readLines()
+                                def clean = path("${folder}/${sample}_${db}_vsearch_hits_with_accessions.tsv").readLines()
+                                assert lca[0] == 'query\ttaxonomy\tpid\tqcov'
+                                assert clean[0] == 'query\taccession\ttaxonomy\tpid'
+                                assert lca.size() == raw.size() + 1
+                                assert clean.size() == raw.size() + 1
+                                lca.drop(1).eachWithIndex { row, i ->
+                                    def fields = row.split('\t')
+                                    def rawFields = raw[i].split('\t')
+                                    def cleanFields = clean[i + 1].split('\t')
+                                    assert fields.size() == 4
+                                    assert fields[0] == rawFields[0]
+                                    if (rawFields[1] == '*') {
+                                        assert fields[1] == 'sk__;k__;p__;c__;o__;f__;g__;s__;'
+                                        assert fields[2..3] == ['NA', 'NA']
+                                        assert cleanFields == [fields[0], '', fields[1], 'NA']
+                                    } else {
+                                        assert fields[1] == 'k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;'
+                                        assert fields[2..3] == rawFields[2..3]
+                                        assert cleanFields == [fields[0], 'AB264799.1.1.1530_root_1', fields[1], fields[2]]
+                                    }
+                                }
+                            }
                         }
-                    },    
+                    },
+
+                    // Check both LCA methods and count-weighted Krona reports for each database.
+                    {
+                        def unclassified = 'sk__;k__;p__;c__;o__;f__;g__;s__;'
+                        def species = 'sk__;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;'
+                        def phylum = 'sk__;k__Metazoa;p__Entoprocta;c__;o__;f__;g__;s__;'
+                        ['TEST', 'TEST2'].each { sample ->
+                            def expected = (1..5).collectEntries { [("seq_${it}".toString()): unclassified] }
+                            if (sample == 'TEST') {
+                                expected.seq_1 = species
+                                expected.seq_2 = phylum
+                            }
+                            ['BOLD', 'MIDORI'].each { db ->
+                                def folder = "${params.outdir}/${sample}/taxonomy-summary/${db}"
+                                ['all', 'top'].each { method ->
+                                    def rows = path("${folder}/${sample}_${db}_taxonomy_lca_${method}_hits.tsv").readLines()
+                                    assert rows.size() == expected.size()
+                                    def assignments = rows.collectEntries { row ->
+                                        def fields = row.split('\t')
+                                        assert fields.size() == 2
+                                        [(fields[0]): fields[1]]
+                                    }
+                                    assert assignments == expected
+
+                                    def counts = path("${folder}/${sample}_${db}_krona_lca_${method}_hits_counts.tsv").readLines()
+                                    def expectedCounts = sample == 'TEST' ? [
+                                        '10\tsk__\tk__Metazoa\tp__Entoprocta\tc__\to__\tf__Loxosomatidae\tg__Loxocorone\ts__allax',
+                                        '10\tsk__\tk__Metazoa\tp__Entoprocta',
+                                        '30\tUnclassified'
+                                    ] : ['50\tUnclassified']
+                                    assert counts.sort() == expectedCounts.sort()
+                                    assert counts.collect { it.split('\t')[0].toInteger() }.sum() == 50
+
+                                    def html = path("${folder}/${sample}_${db}_krona_lca_${method}_hits.html")
+                                    assert html.exists()
+                                    assert html.text.contains('<html>')
+                                    assert html.text.contains('Unclassified')
+                                    if (sample == 'TEST') assert html.text.contains('s__allax')
+                                    assert !path("${folder}/${sample}_lca_${method}_null.html").exists()
+                                }
+                            }
+                        }
+                    },
 
                     // Verify TEST DADA2 stats file has expected metrics
                     {
@@ -135,16 +206,26 @@ nextflow_pipeline {
                         }
                     },    
 
-                    // Verify TEST ASV read counts
+                    // Counts are generated once per sample, independent of taxonomy.
                     {
-                        def asv_counts = path("${params.outdir}/TEST/asv/TEST_all_DADA2-MIDORI_asv_read_counts.tsv").text
-                        assert !asv_counts.isEmpty()
-                        def asv_count_lines = asv_counts.readLines()
-                        assert asv_count_lines[0].contains("asv") && asv_count_lines[0].contains("count")
-                        assert asv_count_lines[1].contains("seq_1") && asv_count_lines[1].contains("10")
-                        assert asv_count_lines[2].contains("seq_2") && asv_count_lines[2].contains("10")
-                        assert asv_count_lines[3].contains("seq_4") && asv_count_lines[3].contains("10")
-
+                        ['TEST', 'TEST2'].each { sample ->
+                            def rows = path("${params.outdir}/${sample}/asv/${sample}_asv_counts.tsv").readLines()
+                            assert rows[0] == 'asv\tcount'
+                            def counts = rows.drop(1).collectEntries { row ->
+                                def fields = row.split('\t')
+                                [(fields[0]): fields[1].toInteger()]
+                            }
+                            assert counts == ['seq_1': 10, 'seq_2': 10, 'seq_3': 10, 'seq_4': 10, 'seq_5': 10]
+                            def ids = path("${params.outdir}/${sample}/asv/${sample}_asvs.fasta")
+                                .readLines().findAll { it.startsWith('>') }.collect { it.substring(1) }
+                            assert counts.keySet() == ids.toSet()
+                            def stats = path("${params.outdir}/${sample}/asv/${sample}_dada2_stats.tsv")
+                                .readLines().collectEntries { row ->
+                                    def fields = row.split('\t')
+                                    [(fields[0]): fields[1]]
+                                }
+                            assert counts.values().sum() == stats.final_nonchimeric_read_count.toInteger()
+                        }
                     },
 
                     // Verify TEST primer FASTA files contain sequences
@@ -204,11 +285,14 @@ nextflow_pipeline {
                             "FASTQC_RAW:",
                             "FASTQSUFFIXHEADERCHECK:",
                             "HMMER_HMMSEARCH:",
-                            "KRONA_KTIMPORTTEXT:",
                             "LIBRARYSTRATEGYCHECK:",
-                            "MAKE_ASV_COUNT_TABLES:",
-                            "MAPSEQ2ASVTABLE:",
-                            "MAPSEQ:",
+                            "VSEARCH:",
+                            "FORMAT_VSEARCH_LCA:",
+                            "FORMAT_VSEARCH_CLEAN:",
+                            "LCA:",
+                            "LCA_KRONA_COUNTS:",
+                            "KRONA_ALL:",
+                            "KRONA_TOP:",
                             "PARSEHMMSEARCHCOVERAGE:",
                             "PIMENTO_GENERATEBCV:",
                             "REMOVE_AMBIGUOUS_READS:",
