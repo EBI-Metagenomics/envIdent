@@ -193,6 +193,12 @@ come from `--bold_label` (default `BOLD`) and `--midori_label`
 | `krona_lca_all_hits_counts.tsv`, `krona_lca_top_hits_counts.tsv` | Headerless, read-weighted counts grouped by taxonomy; includes unclassified reads |
 | `krona_lca_all_hits.html`, `krona_lca_top_hits.html` | Interactive reports for the respective assignment method |
 
+ASVs without reference hits remain in the output tables. Raw VSEARCH rows use
+`*` for the missing target. Both formatted tables and both LCA assignment tables
+retain the ASV ID with `sk__;k__;p__;c__;o__;f__;g__;s__;`. Formatted no-hit rows
+have an empty accession and `NA` identity/coverage where those columns are present.
+Their reads remain included under `Unclassified` in the Krona counts and reports.
+
 ### Key Output Files
 
 * **MultiQC Report**: Comprehensive quality control summary across all samples
