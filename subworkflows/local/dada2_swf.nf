@@ -41,6 +41,7 @@ workflow DADA2_SWF {
 
     emit:
         dada2_out        = DADA2.out.dada2_out
+        asv_counts       = DADA2.out.asv_counts
         dada2_report     = DADA2.out.dada2_stats
         dada2_errors     = DADA2.out.dada2_errors
         dada2_stats_fail = DADA2.out.dada2_stats_fail

@@ -1,7 +1,7 @@
 nextflow_process {
 
     name "Test Process DADA2"
-    script "modules/local/dada2/main.nf"
+    script "../main.nf"
     process "DADA2"
     tag "modules"
     tag "dada2"
@@ -28,6 +28,23 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
+                {
+                    assert process.out.asv_counts.size() == 1
+                    def output = process.out.asv_counts[0]
+                    assert output[0] == process.out.dada2_out[0][0]
+                    assert path(output[1]).getFileName().toString() == "${output[0].id}_asv_counts.tsv"
+                    def rows = path(output[1]).readLines()
+                    assert rows[0] == 'asv\tcount'
+                    def counts = rows.drop(1).collect { it.split('\t') }
+                    def ids = path(process.out.dada2_out[0][2]).readLines()
+                        .findAll { it.startsWith('>') }.collect { it.substring(1) }
+                    assert counts.collect { it[0] } == ids
+                    assert counts.every { it[1].toInteger() > 0 }
+                    def stats = path(process.out.dada2_stats[0][1]).readLines()
+                        .collect { it.replace('"', '').split('\t') }
+                    def total = stats.find { it[0] == 'final_nonchimeric_read_count' }[1].toInteger()
+                    assert counts.collect { it[1].toInteger() }.sum() == total
+                },
                 { assert snapshot(process.out.dada2_out).match("dada2_out") },
                 { assert snapshot(process.out.dada2_stats).match("dada2_stats") }
             )
@@ -35,6 +52,8 @@ nextflow_process {
     }
 
     test("Should run in gap mode (justConcatenate)") {
+
+        tag "dada2_gap"
 
         when {
             params {
@@ -57,6 +76,25 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
+                {
+                    assert process.out.asv_counts.size() == 1
+                    def output = process.out.asv_counts[0]
+                    assert output[0] == process.out.dada2_out[0][0]
+                    assert path(output[1]).getFileName().toString() == "${output[0].id}_asv_counts.tsv"
+                    def rows = path(output[1]).readLines()
+                    assert rows[0] == 'asv\tcount'
+                    def counts = rows.drop(1).collect { it.split('\t') }
+                    def ids = path(process.out.dada2_out[0][2]).readLines()
+                        .findAll { it.startsWith('>') }.collect { it.substring(1) }
+                    assert counts.collect { it[0] } == ids
+                    assert counts.every { it[1].toInteger() > 0 }
+                    def stats = path(process.out.dada2_stats[0][1]).readLines()
+                        .collect { it.replace('"', '').split('\t') }
+                    def total = stats.find { it[0] == 'final_nonchimeric_read_count' }[1].toInteger()
+                    // The existing gap-mode FASTA exports a subset of the full sequence table.
+                    assert counts.collect { it[1].toInteger() }.sum() == 388
+                    assert counts.collect { it[1].toInteger() }.sum() <= total
+                },
                 { assert snapshot(process.out.dada2_out).match("dada2_out_gap") },
                 { assert snapshot(process.out.dada2_stats).match("dada2_stats_gap") }
             )
@@ -86,6 +124,23 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
+                {
+                    assert process.out.asv_counts.size() == 1
+                    def output = process.out.asv_counts[0]
+                    assert output[0] == process.out.dada2_out[0][0]
+                    assert path(output[1]).getFileName().toString() == "${output[0].id}_asv_counts.tsv"
+                    def rows = path(output[1]).readLines()
+                    assert rows[0] == 'asv\tcount'
+                    def counts = rows.drop(1).collect { it.split('\t') }
+                    def ids = path(process.out.dada2_out[0][2]).readLines()
+                        .findAll { it.startsWith('>') }.collect { it.substring(1) }
+                    assert counts.collect { it[0] } == ids
+                    assert counts.every { it[1].toInteger() > 0 }
+                    def stats = path(process.out.dada2_stats[0][1]).readLines()
+                        .collect { it.replace('"', '').split('\t') }
+                    def total = stats.find { it[0] == 'final_nonchimeric_read_count' }[1].toInteger()
+                    assert counts.collect { it[1].toInteger() }.sum() == total
+                },
                 { assert snapshot(process.out.dada2_out).match("dada2_out_separate") },
                 { assert snapshot(process.out.dada2_stats).match("dada2_stats_separate") }
             )
