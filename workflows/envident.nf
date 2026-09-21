@@ -27,8 +27,8 @@ include { PREP_CUTADAPT_PRIMERS        } from '../modules/local/prep_cutadapt_pr
 include { EXTRACT_CUTADAPT_PRIMERS     } from '../modules/local/extract_cutadapt_primers/main.nf'
 include { PROFILE_HMMSEARCH_PFAM       } from '../subworkflows/local/profile_hmmsearch_pfam/main'
 include { DADA2_SWF                    } from '../subworkflows/local/dada2_swf.nf'
-include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_BOLD } from '../subworkflows/local/vsearch_asv_krona_swf.nf'
-include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_MIDORI } from '../subworkflows/local/vsearch_asv_krona_swf.nf'
+include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_BOLD } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
+include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_MIDORI } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
 include { MULTIQC                      } from '../modules/nf-core/multiqc/main'
 
 // Import samplesheetToList from nf-schema //
