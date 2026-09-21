@@ -1,0 +1,36 @@
+nextflow_process {
+    name "Test Process LCA_KRONA_COUNTS"
+    script "../main.nf"
+    process "LCA_KRONA_COUNTS"
+    tag "modules"
+    tag "lca_krona_counts"
+
+    test("Aggregate read counts by lineage and retain unclassified ASVs") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'test'],
+                    file('${projectDir}/modules/local/lca_krona_counts/tests/data/counts.tsv', checkIfExists: true),
+                    file('${projectDir}/modules/local/lca_krona_counts/tests/data/all.tsv', checkIfExists: true),
+                    file('${projectDir}/modules/local/lca_krona_counts/tests/data/top.tsv', checkIfExists: true)
+                ]
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert process.out.all_counts[0][0] == [id: 'test']
+            assert process.out.top_counts[0][0] == [id: 'test']
+            assert path(process.out.all_counts[0][1]).readLines() == [
+                '9\tsk__\tk__Metazoa', '3\tUnclassified'
+            ]
+            assert path(process.out.top_counts[0][1]).readLines() == [
+                '7\tsk__\tk__Metazoa\tp__Chordata',
+                '2\tsk__\tk__Metazoa\tp__Arthropoda',
+                '3\tUnclassified'
+            ]
+            assert path(process.out.versions[0]).text.contains('node:')
+        }
+    }
+}

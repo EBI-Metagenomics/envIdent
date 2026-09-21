@@ -1,0 +1,95 @@
+nextflow_process {
+    name "Test Process LCA"
+    script "../main.nf"
+    process "LCA"
+    tag "modules"
+    tag "lca"
+
+    test("All qualifying hits resolve to genus and the top hit resolves to species") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'test', single_end: false],
+                    file('${projectDir}/modules/local/lca/tests/data/vsearch_formatted.tsv', checkIfExists: true)
+                ]
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.lca_all.size() == 1 },
+                { assert process.out.lca_top.size() == 1 },
+                { assert process.out.lca_all[0][0] == [id: 'test', single_end: false] },
+                { assert process.out.lca_top[0][0] == [id: 'test', single_end: false] },
+                { assert path(process.out.lca_all[0][1]).getFileName().toString() == 'test_lca_all.tsv' },
+                { assert path(process.out.lca_top[0][1]).getFileName().toString() == 'test_lca_top.tsv' },
+                {
+                    assert path(process.out.lca_all[0][1]).readLines() ==
+                        path("${projectDir}/modules/local/lca/tests/data/expected_all.tsv").readLines()
+                },
+                {
+                    assert path(process.out.lca_top[0][1]).readLines() ==
+                        path("${projectDir}/modules/local/lca/tests/data/expected_top.tsv").readLines()
+                },
+                {
+                    assert process.out.versions.size() == 1
+                    assert path(process.out.versions[0]).text.contains('node:')
+                }
+            )
+        }
+    }
+
+    test("Formatter header and seven-rank taxonomy at genus threshold") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'formatted'],
+                    file('${projectDir}/modules/local/lca/tests/data/formatted_header.tsv', checkIfExists: true)
+                ]
+                """
+            }
+        }
+        then {
+            assert process.success
+            for (output in [process.out.lca_all, process.out.lca_top]) {
+                assert path(output[0][1]).readLines() == [
+                    'seq_1\tsk__;k__Metazoa;p__Chordata;c__Actinopteri;o__Clupeiformes;f__Engraulidae;g__Thryssa;s__;'
+                ]
+            }
+        }
+    }
+
+    test("stub") {
+        options "-stub"
+        when {
+            process {
+                """
+                input[0] = [
+                    [id: 'test', single_end: false],
+                    file('${projectDir}/modules/local/lca/tests/data/vsearch_formatted.tsv', checkIfExists: true)
+                ]
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.lca_all.size() == 1 },
+                { assert process.out.lca_top.size() == 1 },
+                { assert process.out.lca_all[0][0] == [id: 'test', single_end: false] },
+                { assert process.out.lca_top[0][0] == [id: 'test', single_end: false] },
+                { assert path(process.out.lca_all[0][1]).getFileName().toString() == 'test_lca_all.tsv' },
+                { assert path(process.out.lca_top[0][1]).getFileName().toString() == 'test_lca_top.tsv' },
+                { assert path(process.out.lca_all[0][1]).size() == 0 },
+                { assert path(process.out.lca_top[0][1]).size() == 0 },
+                {
+                    assert process.out.versions.size() == 1
+                    assert path(process.out.versions[0]).text.contains('node:')
+                }
+            )
+        }
+    }
+}
