@@ -98,7 +98,7 @@ def process(line, keep_accession=False, show_identity=False, show_coverage=False
         out_cols = [seq_id]
         if keep_accession:
             out_cols.append("")
-        out_cols.append("sk__;k__;p__;c__;o__;f__;g__;s__;")
+        out_cols.append("k__;p__;c__;o__;f__;g__;s__;")
         if show_identity:
             out_cols.append("NA")
         if show_coverage:
@@ -129,7 +129,7 @@ def process(line, keep_accession=False, show_identity=False, show_coverage=False
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert taxonomy headers to sk__;k__;... format."
+        description="Convert taxonomy headers to k__;p__;... format."
     )
     parser.add_argument(
         "-i", "--input",
