@@ -128,7 +128,7 @@
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to BOLD database UDB or FASTA file",
-                    "pattern": "^\\S+\\.(?:fasta|fna|fa)(?:\\.gz)?$|^\\S+\\.udb$",
+                    "pattern": "^\\S+\\.(?:fasta|fna|fa|udb)$",
                     "help_text": "Path to the BOLD COI reference database UDB or FASTA file used for taxonomic classification."
                 },
                 "bold_label": {
@@ -149,7 +149,7 @@
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to COI MIDORI database UDB or FASTA file",
-                    "pattern": "^\\S+\\.(?:fasta|fna|fa)(?:\\.gz)?$|^\\S+\\.udb$",
+                    "pattern": "^\\S+\\.(?:fasta|fna|fa|udb)$",
                     "help_text": "Path to the MIDORI COI reference database UDB or FASTA file used for taxonomic classification."
                 },
                 "midori_label": {
