@@ -223,6 +223,17 @@ from the shared ASV read counts table.
 * **Krona Charts**: Interactive HTML visualisations of taxonomic composition
 * **QC Summary Files**: Lists of samples that passed or failed quality control steps
 
+### Optional input preparation
+
+Set `--skip_standardise false` to standardise FASTQ headers with BBMap before
+QC. For interleaved paired-end reads, set `single_end` to `false`, provide the
+interleaved file in `fastq_1`, and leave `fastq_2` empty. Standardisation splits
+it into paired files; it is skipped by default.
+
+On the EBI network, `--use_fire_download` downloads ENA FTP/HTTP read paths via
+FIRE before QC or standardisation. This requires the Nextflow secrets
+`FIRE_ACCESS_KEY` and `FIRE_SECRET_KEY`. FIRE downloading is disabled by default.
+
 ### Configuration Profiles
 
 `--dada2_merge_mode` supports `standard` and `gap`. Separate-strand mode is

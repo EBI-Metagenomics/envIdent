@@ -13,6 +13,8 @@ include { READS_QC as READS_QC_BEFOREHMM   } from '../subworkflows/local/reads_q
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { DOWNLOAD_FROM_FIRE } from '../modules/ebi-metagenomics/downloadfromfire/main'
+include { BBMAP_REFORMAT_STANDARDISE } from '../modules/ebi-metagenomics/bbmap/reformat_standardise/main'
 include { FASTQC as FASTQC_RAW         } from '../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_CLEAN       } from '../modules/nf-core/fastqc/main'
 include { paramsSummaryMap             } from 'plugin/nf-schema'
@@ -75,8 +77,50 @@ workflow ENVIDENT {
         cutadapt_primers = file(params.cutadapt_primers, type: 'dir', checkIfExists: true)
     }
 
+    // Organise input tuple channel //
+    def groupReads = { meta, fq1, fq2 ->
+        def single_file = (fq2 == [])
+        meta['interleaved'] = (!meta.single_end) && single_file
+        if (single_file) {
+            return tuple(meta, [fq1])
+        }
+        else {
+            return tuple(meta, [fq1, fq2])
+        }
+    }
+    ch_input = samplesheet.map(groupReads)
+
+    if (params.use_fire_download) {
+        /*
+         * Internally we need to bypass Nextflow S3 integration until https://github.com/nextflow-io/nextflow/issues/4873 is fixed
+         * The EBI parameter is needed as this only works on EBI network, FIRE is not accessible otherwise
+        */
+        DOWNLOAD_FROM_FIRE(
+            ch_input
+        )
+
+        ch_versions = ch_versions.mix(DOWNLOAD_FROM_FIRE.out.versions.first())
+        ch_input = DOWNLOAD_FROM_FIRE.out.downloaded_files
+    }
+    
+    // Standardise headers and de-interleave as needed
+    if (!params.skip_standardise) {
+        standardise_input = ch_input.multiMap{
+            meta, reads ->
+            reads: [meta, reads]
+            interleaved: meta.interleaved
+        }
+        BBMAP_REFORMAT_STANDARDISE(
+            standardise_input.reads, 
+            standardise_input.interleaved, 
+            'fastq.gz'
+        )
+        ch_versions = ch_versions.mix(BBMAP_REFORMAT_STANDARDISE.out.versions)
+        ch_input = BBMAP_REFORMAT_STANDARDISE.out.reformated
+    }
+    
     FASTQC_RAW(
-        samplesheet.map { meta, reads -> 
+        ch_input.map { meta, reads ->
             def new_meta = meta.clone()
             new_meta.id = meta.id + "_raw"
             [new_meta, reads]
@@ -87,7 +131,7 @@ workflow ENVIDENT {
     // Sanity checking and quality control of reads //
     READS_QC(
         true, 
-        samplesheet,
+        ch_input,
         false,
         false
     )

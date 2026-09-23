@@ -1,0 +1,93 @@
+nextflow_workflow {
+    name "Input preparation metadata"
+    script "../subworkflows/local/utils_nfcore_envident_pipeline/main.nf"
+    workflow "PIPELINE_INITIALISATION"
+    tag "interleaved_input"
+
+    test("Single file with single_end=false and skip_standardise=false") {
+        when {
+            params {
+                input = "${projectDir}/assets/test-fixtures/samplesheets/preparation_false.csv"
+                outdir = "$outputDir"
+                skip_standardise = false
+                COI_midori_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
+                pfam_coi_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.hmm"
+                std_primer_library = "${projectDir}/assets/test-fixtures/test-ref-dbs/standard_primers"
+                cutadapt_primers = "${projectDir}/assets/test-fixtures/test-ref-dbs/cutadapt_primers"
+            }
+            workflow {
+                """
+                input[0] = false
+                input[1] = true
+                input[2] = true
+                input[3] = []
+                input[4] = params.outdir
+                input[5] = params.input
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.out.samplesheet[0][0].single_end == false
+            assert workflow.out.samplesheet[0][2] == []
+        }
+    }
+
+    test("Single file with single_end=false and skip_standardise=true") {
+        when {
+            params {
+                input = "${projectDir}/assets/test-fixtures/samplesheets/preparation_false.csv"
+                outdir = "$outputDir"
+                skip_standardise = true
+                COI_midori_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
+                pfam_coi_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.hmm"
+                std_primer_library = "${projectDir}/assets/test-fixtures/test-ref-dbs/standard_primers"
+                cutadapt_primers = "${projectDir}/assets/test-fixtures/test-ref-dbs/cutadapt_primers"
+            }
+            workflow {
+                """
+                input[0] = false
+                input[1] = true
+                input[2] = true
+                input[3] = []
+                input[4] = params.outdir
+                input[5] = params.input
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.out.samplesheet[0][0].single_end == false
+            assert workflow.out.samplesheet[0][2] == []
+        }
+    }
+
+    test("Single file with single_end=true and skip_standardise=true") {
+        when {
+            params {
+                input = "${projectDir}/assets/test-fixtures/samplesheets/preparation_true.csv"
+                outdir = "$outputDir"
+                skip_standardise = true
+                COI_midori_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
+                pfam_coi_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.hmm"
+                std_primer_library = "${projectDir}/assets/test-fixtures/test-ref-dbs/standard_primers"
+                cutadapt_primers = "${projectDir}/assets/test-fixtures/test-ref-dbs/cutadapt_primers"
+            }
+            workflow {
+                """
+                input[0] = false
+                input[1] = true
+                input[2] = true
+                input[3] = []
+                input[4] = params.outdir
+                input[5] = params.input
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.out.samplesheet[0][0].single_end == true
+            assert workflow.out.samplesheet[0][2] == []
+        }
+    }
+}

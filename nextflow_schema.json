@@ -23,6 +23,16 @@
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 5 columns, and a header row. See [usage docs](https://nf-co.re/envident/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
                 },
+                "use_fire_download": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Download ENA reads via FIRE on the EBI network using FIRE_ACCESS_KEY and FIRE_SECRET_KEY secrets."
+                },
+                "skip_standardise": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Skip FASTQ header standardisation and de-interleaving. Set false for interleaved paired-end input."
+                },
                 "outdir": {
                     "type": "string",
                     "format": "directory-path",

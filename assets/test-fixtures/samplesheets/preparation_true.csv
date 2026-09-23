@@ -1,0 +1,2 @@
+sample,fastq_1,fastq_2,single_end
+input_test,modules/ebi-metagenomics/bbmap/reformat_standardise/tests/data/test-reads/interleaved.fastq.gz,,true
