@@ -1,0 +1,375 @@
+nextflow_process {
+    name "Cutadapt trimming and reports"
+    script "../main.nf"
+    process "CUTADAPT"
+
+    test("Single reads: two_pass") {
+        when {
+            params { outdir = "$outputDir" }
+            process {
+                """
+                input[0] = [[id: 'test', single_end: true], file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'),
+                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta')]]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def asFiles = { value -> value instanceof List ? value : [value] }
+            ['reads', 'log', 'json'].each { channel ->
+                assert process.out[channel].size() == 1
+                assert process.out[channel][0][0] == [id: 'test', single_end: true]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
+            def reads = asFiles(process.out.reads[0][1]).sort()
+            assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
+            reads.eachWithIndex { file, i ->
+                def body = i == 0 ? 'CCCCCCCCCCCC' : 'AAAAAAAAAAAA'
+                def tail = ''
+                assert path(file).linesGzip == [
+                    "@matched/${i + 1}".toString(), body + tail, '+', 'J' * 12 + 'H' * tail.size(),
+                    "@unmatched/${i + 1}".toString(), 'G' * 24, '+', 'K' * 24
+                ]
+            }
+            def reports = asFiles(process.out.json[0][1])
+            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.json', 'test.first_pass.cutadapt.json']
+            reports.each { file ->
+                def report = new groovy.json.JsonSlurper().parseText(path(file).text)
+                assert report.read_counts.input == 2
+                assert report.read_counts.output == 2
+                assert report.input.paired == false
+                def firstPass = path(file).getFileName().toString().contains('first_pass')
+                def expectedMatches = firstPass || true ? 1 : 0
+                assert report.adapters_read1.collect { it.total_matches }.sum(0) == expectedMatches
+                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
+            }
+            def logs = asFiles(process.out.log[0][1])
+            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.log', 'test.first_pass.cutadapt.log']
+            logs.each { assert path(it).text.contains('=== Summary ===') }
+            assert process.out.tsv[0][0] == [id: 'test', single_end: true]
+            def summaries = asFiles(process.out.tsv[0][1])
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_se_summ.tsv', 'test_first_pass_se_summ.tsv']
+            summaries.each { file ->
+                def name = path(file).getFileName().toString()
+                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
+                def expected = name.contains('first_pass')
+                    ? ['0\t0\t0\t1', '0\t8\t20\t1']
+                    : ['0\t0\t0\t1', '12\t8\t0\t1']
+                assert path(file).readLines().sort() == expected.sort()
+            }
+        }
+    }
+
+    test("Single reads: first_only") {
+        when {
+            params { outdir = "$outputDir" }
+            process {
+                """
+                input[0] = [[id: 'test', single_end: true], file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'),
+                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta')]]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def asFiles = { value -> value instanceof List ? value : [value] }
+            ['reads', 'log', 'json'].each { channel ->
+                assert process.out[channel].size() == 1
+                assert process.out[channel][0][0] == [id: 'test', single_end: true]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
+            def reads = asFiles(process.out.reads[0][1]).sort()
+            assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
+            reads.eachWithIndex { file, i ->
+                def body = i == 0 ? 'CCCCCCCCCCCC' : 'AAAAAAAAAAAA'
+                def tail = (i == 0 ? 'GGCATGCA' : 'TCGTACGT')
+                assert path(file).linesGzip == [
+                    "@matched/${i + 1}".toString(), body + tail, '+', 'J' * 12 + 'H' * tail.size(),
+                    "@unmatched/${i + 1}".toString(), 'G' * 24, '+', 'K' * 24
+                ]
+            }
+            def reports = asFiles(process.out.json[0][1])
+            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.json', 'test.first_pass.cutadapt.json']
+            reports.each { file ->
+                def report = new groovy.json.JsonSlurper().parseText(path(file).text)
+                assert report.read_counts.input == 2
+                assert report.read_counts.output == 2
+                assert report.input.paired == false
+                def firstPass = path(file).getFileName().toString().contains('first_pass')
+                def expectedMatches = firstPass || false ? 1 : 0
+                assert report.adapters_read1.collect { it.total_matches }.sum(0) == expectedMatches
+                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
+            }
+            def logs = asFiles(process.out.log[0][1])
+            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.log', 'test.first_pass.cutadapt.log']
+            logs.each { assert path(it).text.contains('=== Summary ===') }
+            assert process.out.tsv[0][0] == [id: 'test', single_end: true]
+            def summaries = asFiles(process.out.tsv[0][1])
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_se_summ.tsv', 'test_first_pass_se_summ.tsv']
+            summaries.each { file ->
+                def name = path(file).getFileName().toString()
+                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
+                def expected = name.contains('first_pass')
+                    ? ['0\t0\t0\t1', '0\t8\t20\t1']
+                    : ['0\t0\t0\t2']
+                assert path(file).readLines().sort() == expected.sort()
+            }
+        }
+    }
+
+    test("Single reads: stub") {
+        options "-stub"
+        when {
+            params { outdir = "$outputDir" }
+            process {
+                """
+                input[0] = [[id: 'test', single_end: true], file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'),
+                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta')]]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def asFiles = { value -> value instanceof List ? value : [value] }
+            ['reads', 'log', 'json'].each { channel ->
+                assert process.out[channel].size() == 1
+                assert process.out[channel][0][0] == [id: 'test', single_end: true]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
+            def reads = asFiles(process.out.reads[0][1]).sort()
+            assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
+            reads.each { assert path(it).size() == 0 }
+            ['log', 'json'].each { channel ->
+                assert asFiles(process.out[channel][0][1]).size() == 1
+                asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
+            }
+            assert process.out.tsv[0][0] == [id: 'test', single_end: true]
+            def summaries = asFiles(process.out.tsv[0][1])
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_se_summ.tsv', 'test_first_pass_se_summ.tsv']
+            summaries.each { file ->
+                def name = path(file).getFileName().toString()
+                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
+                assert path(file).size() == 0
+            }
+        }
+    }
+
+    test("Single reads: no_primers") {
+        when {
+            params { outdir = "$outputDir" }
+            process {
+                """
+                input[0] = [[id: 'test', single_end: true], file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'),
+                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_2.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta')]]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def asFiles = { value -> value instanceof List ? value : [value] }
+            ['reads', 'log', 'json'].each { channel ->
+                assert process.out[channel].size() == 1
+                assert process.out[channel][0][0] == [id: 'test', single_end: true]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
+            def reads = asFiles(process.out.reads[0][1]).sort()
+            assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
+            reads.each { assert path(it).size() == 0 }
+            ['log', 'json'].each { channel ->
+                assert asFiles(process.out[channel][0][1]).size() == 1
+                asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
+            }
+            assert process.out.tsv.size() == 0
+        }
+    }
+
+    test("Paired reads: two_pass") {
+        when {
+            params { outdir = "$outputDir" }
+            process {
+                """
+                input[0] = [[id: 'test', single_end: false], [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq')],
+                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta')]]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def asFiles = { value -> value instanceof List ? value : [value] }
+            ['reads', 'log', 'json'].each { channel ->
+                assert process.out[channel].size() == 1
+                assert process.out[channel][0][0] == [id: 'test', single_end: false]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
+            def reads = asFiles(process.out.reads[0][1]).sort()
+            assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
+            reads.eachWithIndex { file, i ->
+                def body = i == 0 ? 'CCCCCCCCCCCC' : 'AAAAAAAAAAAA'
+                def tail = ''
+                assert path(file).linesGzip == [
+                    "@matched/${i + 1}".toString(), body + tail, '+', 'J' * 12 + 'H' * tail.size(),
+                    "@unmatched/${i + 1}".toString(), 'G' * 24, '+', 'K' * 24
+                ]
+            }
+            def reports = asFiles(process.out.json[0][1])
+            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.json', 'test.first_pass.cutadapt.json']
+            reports.each { file ->
+                def report = new groovy.json.JsonSlurper().parseText(path(file).text)
+                assert report.read_counts.input == 2
+                assert report.read_counts.output == 2
+                assert report.input.paired == true
+                def firstPass = path(file).getFileName().toString().contains('first_pass')
+                def expectedMatches = firstPass || true ? 1 : 0
+                assert report.adapters_read1.collect { it.total_matches }.sum(0) == expectedMatches
+                assert report.adapters_read2.collect { it.total_matches }.sum(0) == expectedMatches
+                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
+            }
+            def logs = asFiles(process.out.log[0][1])
+            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.log', 'test.first_pass.cutadapt.log']
+            logs.each { assert path(it).text.contains('=== Summary ===') }
+            assert process.out.tsv[0][0] == [id: 'test', single_end: false]
+            def summaries = asFiles(process.out.tsv[0][1])
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_1_summ.tsv', 'test_final_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv']
+            summaries.each { file ->
+                def name = path(file).getFileName().toString()
+                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
+                def expected = name.contains('first_pass')
+                    ? ['0\t0\t0\t1', '0\t8\t20\t1']
+                    : ['0\t0\t0\t1', '12\t8\t0\t1']
+                assert path(file).readLines().sort() == expected.sort()
+            }
+        }
+    }
+
+    test("Paired reads: first_only") {
+        when {
+            params { outdir = "$outputDir" }
+            process {
+                """
+                input[0] = [[id: 'test', single_end: false], [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq')],
+                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta')]]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def asFiles = { value -> value instanceof List ? value : [value] }
+            ['reads', 'log', 'json'].each { channel ->
+                assert process.out[channel].size() == 1
+                assert process.out[channel][0][0] == [id: 'test', single_end: false]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
+            def reads = asFiles(process.out.reads[0][1]).sort()
+            assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
+            reads.eachWithIndex { file, i ->
+                def body = i == 0 ? 'CCCCCCCCCCCC' : 'AAAAAAAAAAAA'
+                def tail = (i == 0 ? 'GGCATGCA' : 'TCGTACGT')
+                assert path(file).linesGzip == [
+                    "@matched/${i + 1}".toString(), body + tail, '+', 'J' * 12 + 'H' * tail.size(),
+                    "@unmatched/${i + 1}".toString(), 'G' * 24, '+', 'K' * 24
+                ]
+            }
+            def reports = asFiles(process.out.json[0][1])
+            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.json', 'test.first_pass.cutadapt.json']
+            reports.each { file ->
+                def report = new groovy.json.JsonSlurper().parseText(path(file).text)
+                assert report.read_counts.input == 2
+                assert report.read_counts.output == 2
+                assert report.input.paired == true
+                def firstPass = path(file).getFileName().toString().contains('first_pass')
+                def expectedMatches = firstPass || false ? 1 : 0
+                assert report.adapters_read1.collect { it.total_matches }.sum(0) == expectedMatches
+                assert report.adapters_read2.collect { it.total_matches }.sum(0) == expectedMatches
+                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
+            }
+            def logs = asFiles(process.out.log[0][1])
+            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.log', 'test.first_pass.cutadapt.log']
+            logs.each { assert path(it).text.contains('=== Summary ===') }
+            assert process.out.tsv[0][0] == [id: 'test', single_end: false]
+            def summaries = asFiles(process.out.tsv[0][1])
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_1_summ.tsv', 'test_final_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv']
+            summaries.each { file ->
+                def name = path(file).getFileName().toString()
+                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
+                def expected = name.contains('first_pass')
+                    ? ['0\t0\t0\t1', '0\t8\t20\t1']
+                    : ['0\t0\t0\t2']
+                assert path(file).readLines().sort() == expected.sort()
+            }
+        }
+    }
+
+    test("Paired reads: stub") {
+        options "-stub"
+        when {
+            params { outdir = "$outputDir" }
+            process {
+                """
+                input[0] = [[id: 'test', single_end: false], [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq')],
+                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta')]]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def asFiles = { value -> value instanceof List ? value : [value] }
+            ['reads', 'log', 'json'].each { channel ->
+                assert process.out[channel].size() == 1
+                assert process.out[channel][0][0] == [id: 'test', single_end: false]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
+            def reads = asFiles(process.out.reads[0][1]).sort()
+            assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
+            reads.each { assert path(it).size() == 0 }
+            ['log', 'json'].each { channel ->
+                assert asFiles(process.out[channel][0][1]).size() == 1
+                asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
+            }
+            assert process.out.tsv[0][0] == [id: 'test', single_end: false]
+            def summaries = asFiles(process.out.tsv[0][1])
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_1_summ.tsv', 'test_final_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv']
+            summaries.each { file ->
+                def name = path(file).getFileName().toString()
+                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
+                assert path(file).size() == 0
+            }
+        }
+    }
+
+    test("Paired reads: no_primers") {
+        when {
+            params { outdir = "$outputDir" }
+            process {
+                """
+                input[0] = [[id: 'test', single_end: false], [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq')],
+                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_2.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta')]]
+                """
+            }
+        }
+        then {
+            assert process.success
+            def asFiles = { value -> value instanceof List ? value : [value] }
+            ['reads', 'log', 'json'].each { channel ->
+                assert process.out[channel].size() == 1
+                assert process.out[channel][0][0] == [id: 'test', single_end: false]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
+            def reads = asFiles(process.out.reads[0][1]).sort()
+            assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
+            reads.each { assert path(it).size() == 0 }
+            ['log', 'json'].each { channel ->
+                assert asFiles(process.out[channel][0][1]).size() == 1
+                asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
+            }
+            assert process.out.tsv.size() == 0
+        }
+    }
+}
