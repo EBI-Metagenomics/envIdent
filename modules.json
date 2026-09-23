@@ -39,7 +39,8 @@
           "pimento/generatebcv": {
             "branch": "main",
             "git_sha": "31202bc23f1c8c597d9879e0005e092ff3f32205",
-            "installed_by": ["reads_qc"]
+            "installed_by": ["reads_qc"],
+            "patch": "modules/ebi-metagenomics/pimento/generatebcv/pimento-generatebcv.diff"
           },
           "seqfu/check": {
             "branch": "main",
