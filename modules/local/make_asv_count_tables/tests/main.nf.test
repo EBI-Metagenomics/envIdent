@@ -1,0 +1,40 @@
+nextflow_process {
+    name "Test restored map-based ASV counter"
+    script "../main.nf"
+    process "MAKE_ASV_COUNT_TABLES"
+    tag "modules"
+    tag "make_asv_count_tables"
+
+    test("Count forward entries and retain unclassified ASVs") {
+        when {
+            process {
+                """
+                input[0] = [[id: 'test', single_end: false], [
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/forward.txt'),
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reverse.txt')
+                ], file('${projectDir}/modules/local/make_asv_count_tables/tests/data/lca.tsv')]
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert path(process.out.asv_read_counts_out[0][1]).readLines() == ['asv\tcount', 'seq_1\t7', 'seq_2\t3']
+        }
+    }
+
+    test("No mapped ASVs produces a header-only count table") {
+        when {
+            process {
+                """
+                input[0] = [[id: 'empty', single_end: true],
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/empty_map.txt'),
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/lca.tsv')]
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert path(process.out.asv_read_counts_out[0][1]).readLines() == ['asv\tcount']
+        }
+    }
+}
