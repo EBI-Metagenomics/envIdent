@@ -18,7 +18,7 @@ process FORMAT_VSEARCH {
     def format
 
     if (mode == 'lca') {
-        format = "formatting_vsearch.py -i ${vsearch_out} -o ${outfile} -p -q"
+        format = "formatting_vsearch.py -i ${vsearch_out} -o ${outfile} -p -q --lca"
     } else if (mode == 'clean') {
         format = "formatting_vsearch.py -i ${vsearch_out} -o ${outfile} -a -p"
     } else {

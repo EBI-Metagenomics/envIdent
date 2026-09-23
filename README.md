@@ -193,6 +193,10 @@ come from `--bold_label` (default `BOLD`) and `--midori_label`
 | `krona_lca_all_hits_counts.tsv`, `krona_lca_top_hits_counts.tsv` | Headerless, read-weighted counts grouped by taxonomy; includes unclassified reads |
 | `krona_lca_all_hits.html`, `krona_lca_top_hits.html` | Interactive reports for the respective assignment method |
 
+For LCA input, the matching genus prefix is removed from the species label first.
+If the first remaining underscore-separated word contains `.`, eg. `sp.`, the species rank
+is left empty (`s__;`). Clean hits retain the full label after genus removal.
+
 Taxonomy uses eight ranks: domain, kingdom, phylum, class, order,
 family, genus, and species. Missing ranks retain empty placeholders.
 

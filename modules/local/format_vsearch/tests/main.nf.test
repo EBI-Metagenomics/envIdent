@@ -136,4 +136,48 @@ nextflow_process {
             )
         }
     }
+
+    test("Qualified species in lca mode") {
+        when {
+            process {
+                """
+                input[0] = [[id: 'qualified'], file('${projectDir}/modules/local/format_vsearch/tests/data/qualified_species.tsv', checkIfExists: true)]
+                input[1] = 'lca'
+                """
+            }
+        }
+        then {
+            assert process.success
+            def rows = path(process.out.formatted[0][1]).readLines().drop(1)
+            def expectedSpecies = ['', '', '', '', '', 'gallarum', 'gallarum']
+            assert rows.size() == expectedSpecies.size()
+            rows.eachWithIndex { row, i ->
+                def fields = row.split('\t')
+                assert fields[0] == "seq_${i + 1}"
+                assert fields[1] == "d__;k__Animalia;p__;c__;o__;f__;g__Asphondylia;s__${expectedSpecies[i]};"
+            }
+        }
+    }
+
+    test("Qualified species in clean mode") {
+        when {
+            process {
+                """
+                input[0] = [[id: 'qualified'], file('${projectDir}/modules/local/format_vsearch/tests/data/qualified_species.tsv', checkIfExists: true)]
+                input[1] = 'clean'
+                """
+            }
+        }
+        then {
+            assert process.success
+            def rows = path(process.out.formatted[0][1]).readLines().drop(1)
+            def expectedSpecies = ['sp._HedFrMyg175', 'sp._HedFrFk299', 'aff._xxxx', 'cf._xxxx', 'unknown._xxxx', 'gallarum', 'gallarum_strain.1']
+            assert rows.size() == expectedSpecies.size()
+            rows.eachWithIndex { row, i ->
+                def fields = row.split('\t')
+                assert fields[0] == "seq_${i + 1}"
+                assert fields[2] == "d__;k__Animalia;p__;c__;o__;f__;g__Asphondylia;s__${expectedSpecies[i]};"
+            }
+        }
+    }
 }

@@ -32,21 +32,22 @@ def clean_id(val):
     return re.sub(r"_\d+$", "", val.strip())
 
 
-def parse_species(genus, species_raw):
+def parse_species(genus, species_raw, lca=False):
     species_name = clean_id(species_raw)
 
     # remove genus duplication (Channa_gachua -> gachua)
     if genus and species_name.startswith(genus + "_"):
         species_name = species_name[len(genus) + 1:]
 
-    # fallback: keep only epithet
-    if "_" in species_name:
-        species_name = species_name.split("_")[0]
+    if lca:
+        # Check the epithet after removing the matching genus prefix.
+        first_word = species_name.split("_")[0]
+        return "" if "." in first_word else first_word
 
     return species_name
 
 
-def parse_tax(items):
+def parse_tax(items, lca=False):
     rank_map = {}
     genus = ""
 
@@ -64,7 +65,7 @@ def parse_tax(items):
             genus = clean_id(val)
             rank_map["g"] = genus
         elif letter == "s":
-            rank_map["s"] = parse_species(genus, val)
+            rank_map["s"] = parse_species(genus, val, lca=lca)
         else:
             rank_map[letter] = clean_id(val)
 
@@ -83,7 +84,7 @@ def make_header(keep_accession=False, show_identity=False, show_coverage=False):
     return "\t".join(header)
 
 
-def process(line, keep_accession=False, show_identity=False, show_coverage=False):
+def process(line, keep_accession=False, show_identity=False, show_coverage=False, lca=False):
     cols = line.rstrip("\n").split("\t")
     if len(cols) < 2:
         return None
@@ -113,7 +114,7 @@ def process(line, keep_accession=False, show_identity=False, show_coverage=False
     # fields[0] is the hit accession (e.g. PQ519790.1.<1.>655_root_1),
     # the rest are rank entries
     accession = fields[0].lstrip(">")
-    rank_map = parse_tax(fields[1:])
+    rank_map = parse_tax(fields[1:], lca=lca)
 
     taxonomy = ";".join(f"{r}__{rank_map.get(r, '')}" for r in ranks) + ";"
     
@@ -159,6 +160,10 @@ def main():
         action="store_true",
         help="Include query coverage in the output",
     )
+    parser.add_argument(
+        "--lca", action="store_true",
+        help="Omit species whose first word contains a dot after stripping the genus",
+    )
     args = parser.parse_args()
 
     with args.input as fin, args.output as fout:
@@ -171,6 +176,7 @@ def main():
                 keep_accession=args.keep_accession,
                 show_identity=args.identity,
                 show_coverage=args.coverage,
+                lca=args.lca,
             )
             if out:
                 fout.write(out + "\n")
