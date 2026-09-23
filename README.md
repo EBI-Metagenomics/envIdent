@@ -225,6 +225,10 @@ from the shared ASV read counts table.
 
 ### Configuration Profiles
 
+`--dada2_merge_mode` supports `standard` and `gap`. Separate-strand mode is
+currently disabled because ASV counting does not support its `seq_f_N` and
+`seq_r_N` identifiers.
+
 The pipeline includes pre-configured profiles:
 
 * docker: Use Docker containers

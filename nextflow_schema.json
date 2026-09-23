@@ -218,8 +218,8 @@
                     "type": "string",
                     "description": "DADA2 merge mode for paired-end reads",
                     "default": "standard",
-                    "enum": ["standard", "gap", "separate"],
-                    "help_text": "Specifies the merging strategy for paired-end reads in DADA2. Options include 'standard' for default merging, 'gap' for allowing gaps, and 'separate' for processing reads separately."
+                    "enum": ["standard", "gap"],
+                    "help_text": "Specifies the merging strategy for paired-end reads in DADA2. Options include 'standard' for default merging and 'gap' for allowing gaps. Separate-strand mode is currently unsupported because ASV counting requires merged ASV IDs."
                 },
                 "idcutoff": {
                     "type": "number",

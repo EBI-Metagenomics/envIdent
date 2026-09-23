@@ -47,6 +47,11 @@ workflow PIPELINE_INITIALISATION {
         workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1
     )
 
+    // Keep this check active even when schema validation is disabled.
+    if (params.dada2_merge_mode == 'separate') {
+        error "dada2_merge_mode 'separate' is currently unsupported: ASV counting does not support separate-strand ASV IDs. Use 'standard' or 'gap'."
+    }
+
     //
     // Validate parameters and generate parameter summary to stdout
     //
