@@ -14,6 +14,7 @@ import argparse
 
 # output rank letter -> rank word used in the input format
 RANK_MAP = {
+    "d": "domain",
     "k": "kingdom",
     "p": "phylum",
     "c": "class",
@@ -23,7 +24,7 @@ RANK_MAP = {
     "s": "species",
 }
 WORD_TO_LETTER = {v: k for k, v in RANK_MAP.items()}
-ranks = list(RANK_MAP)  # k, p, c, o, f, g, s
+ranks = list(RANK_MAP)  # d, k, p, c, o, f, g, s
 
 
 def clean_id(val):
@@ -57,7 +58,7 @@ def parse_tax(items):
         rank_word, val = item.split("_", 1)
         letter = WORD_TO_LETTER.get(rank_word)
         if letter is None:
-            continue  # ignores domain, clade, subclass, etc.
+            continue  # ignores clade, subclass, etc.
 
         if letter == "g":
             genus = clean_id(val)
@@ -98,7 +99,7 @@ def process(line, keep_accession=False, show_identity=False, show_coverage=False
         out_cols = [seq_id]
         if keep_accession:
             out_cols.append("")
-        out_cols.append("k__;p__;c__;o__;f__;g__;s__;")
+        out_cols.append(";".join(f"{r}__" for r in ranks) + ";")
         if show_identity:
             out_cols.append("NA")
         if show_coverage:
@@ -129,7 +130,7 @@ def process(line, keep_accession=False, show_identity=False, show_coverage=False
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert taxonomy headers to k__;p__;... format."
+        description="Convert taxonomy headers to d__;k__;p__;... format."
     )
     parser.add_argument(
         "-i", "--input",

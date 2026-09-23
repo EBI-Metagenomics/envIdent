@@ -13,7 +13,7 @@ const fs = require("fs");
 const readline = require("readline");
 
 // Rank order from finest to coarsest, with depth = number of lineage
-// components to keep (sk, k, p, c, o, f, g, s -> depths 1..8) and
+// components to keep (d, k, p, c, o, f, g, s -> depths 1..8) and
 // default PID / qcov thresholds. Override via CLI args.
 const RANKS = [
   { name: "species",      depth: 8, pidThreshold: 96, qcovThreshold: 0 },
@@ -22,13 +22,13 @@ const RANKS = [
   { name: "order",        depth: 5, pidThreshold: 81, qcovThreshold: 0 },
   { name: "class",        depth: 4, pidThreshold: 78, qcovThreshold: 0 },
   { name: "phylum",       depth: 3, pidThreshold: 77, qcovThreshold: 0 },
-  { name: "kingdom",      depth: 2, pidThreshold: 77,  qcovThreshold: 0 },
-  { name: "superkingdom", depth: 1, pidThreshold: 77,  qcovThreshold: 0  },
+  { name: "kingdom",      depth: 2, pidThreshold: 77, qcovThreshold: 0 },
+  { name: "domain",       depth: 1, pidThreshold: 77, qcovThreshold: 0 },
 ];
 
-// Rank prefixes in order from depth 1 (superkingdom) to depth 8 (species).
+// Rank prefixes in order from depth 1 (domain) to depth 8 (species).
 // Used to pad truncated lineages with empty placeholders for dropped ranks.
-const PREFIXES = ["sk__", "k__", "p__", "c__", "o__", "f__", "g__", "s__"];
+const PREFIXES = ["d__", "k__", "p__", "c__", "o__", "f__", "g__", "s__"];
 
 // Parse "species=95,genus=92,family=85" style overrides.
 function parseThresholdArg(str) {

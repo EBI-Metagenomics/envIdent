@@ -56,7 +56,7 @@ nextflow_process {
             assert process.success
             for (output in [process.out.lca_all, process.out.lca_top]) {
                 assert path(output[0][1]).readLines() == [
-                    'seq_1\tsk__;k__Metazoa;p__Chordata;c__Actinopteri;o__Clupeiformes;f__Engraulidae;g__Thryssa;s__;'
+                    'seq_1\td__;k__Metazoa;p__Chordata;c__Actinopteri;o__Clupeiformes;f__Engraulidae;g__Thryssa;s__;'
                 ]
             }
         }
