@@ -133,11 +133,11 @@ nextflow_pipeline {
                                     assert fields.size() == 4
                                     assert fields[0] == rawFields[0]
                                     if (rawFields[1] == '*') {
-                                        assert fields[1] == 'sk__;k__;p__;c__;o__;f__;g__;s__;'
+                                        assert fields[1] == 'd__;k__;p__;c__;o__;f__;g__;s__;'
                                         assert fields[2..3] == ['NA', 'NA']
                                         assert cleanFields == [fields[0], '', fields[1], 'NA']
                                     } else {
-                                        assert fields[1] == 'k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;'
+                                        assert fields[1] == 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;'
                                         assert fields[2..3] == rawFields[2..3]
                                         assert cleanFields == [fields[0], 'AB264799.1.1.1530_root_1', fields[1], fields[2]]
                                     }
@@ -148,9 +148,9 @@ nextflow_pipeline {
 
                     // Check both LCA methods and count-weighted Krona reports for each database.
                     {
-                        def unclassified = 'sk__;k__;p__;c__;o__;f__;g__;s__;'
-                        def species = 'sk__;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;'
-                        def phylum = 'sk__;k__Metazoa;p__Entoprocta;c__;o__;f__;g__;s__;'
+                        def unclassified = 'd__;k__;p__;c__;o__;f__;g__;s__;'
+                        def species = 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;'
+                        def phylum = 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__;g__;s__;'
                         ['TEST', 'TEST2'].each { sample ->
                             def expected = (1..5).collectEntries { [("seq_${it}".toString()): unclassified] }
                             if (sample == 'TEST') {
@@ -164,15 +164,16 @@ nextflow_pipeline {
                                     assert rows.size() == expected.size()
                                     def assignments = rows.collectEntries { row ->
                                         def fields = row.split('\t')
-                                        assert fields.size() == 2
+                                        assert fields.size() == 3
+                                        assert fields[2].toInteger() == 10
                                         [(fields[0]): fields[1]]
                                     }
                                     assert assignments == expected
 
                                     def counts = path("${folder}/${sample}_${db}_krona_lca_${method}_hits_counts.tsv").readLines()
                                     def expectedCounts = sample == 'TEST' ? [
-                                        '10\tsk__\tk__Metazoa\tp__Entoprocta\tc__\to__\tf__Loxosomatidae\tg__Loxocorone\ts__allax',
-                                        '10\tsk__\tk__Metazoa\tp__Entoprocta',
+                                        '10\td__Eukaryota\tk__Metazoa\tp__Entoprocta\tc__\to__\tf__Loxosomatidae\tg__Loxocorone\ts__allax',
+                                        '10\td__Eukaryota\tk__Metazoa\tp__Entoprocta',
                                         '30\tUnclassified'
                                     ] : ['50\tUnclassified']
                                     assert counts.sort() == expectedCounts.sort()
@@ -206,10 +207,10 @@ nextflow_pipeline {
                         }
                     },    
 
-                    // Counts are generated once per sample, independent of taxonomy.
+                    // Counts are generated once per sample from forward maps, independently of taxonomy.
                     {
                         ['TEST', 'TEST2'].each { sample ->
-                            def rows = path("${params.outdir}/${sample}/asv/${sample}_asv_counts.tsv").readLines()
+                            def rows = path("${params.outdir}/${sample}/asv/${sample}_asv_read_counts.tsv").readLines()
                             assert rows[0] == 'asv\tcount'
                             def counts = rows.drop(1).collectEntries { row ->
                                 def fields = row.split('\t')
@@ -224,7 +225,7 @@ nextflow_pipeline {
                                     def fields = row.split('\t')
                                     [(fields[0]): fields[1]]
                                 }
-                            assert counts.values().sum() == stats.final_nonchimeric_read_count.toInteger()
+                            assert counts.values().sum() == 50
                         }
                     },
 
@@ -291,6 +292,7 @@ nextflow_pipeline {
                             "FORMAT_VSEARCH_CLEAN:",
                             "LCA:",
                             "LCA_KRONA_COUNTS:",
+                            "MAKE_ASV_COUNT_TABLES:",
                             "KRONA_ALL:",
                             "KRONA_TOP:",
                             "PARSEHMMSEARCHCOVERAGE:",

@@ -13,7 +13,6 @@ process DADA2 {
     tuple val(meta), path("*_dada2_stats.tsv")                                     , optional: true, emit: dada2_stats
     tuple val(meta), path("*_dada2_errors.txt")                                    , optional: true, emit: dada2_errors
     tuple val(meta), env('stats_fail')                                             , optional: true, emit: dada2_stats_fail
-    tuple val(meta), path("*_asv_counts.tsv")                                      , optional: true, emit: asv_counts
     path "versions.yml"                                                            , emit: versions
     
     script:

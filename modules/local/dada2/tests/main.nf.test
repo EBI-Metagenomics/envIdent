@@ -16,9 +16,9 @@ nextflow_process {
                 """
                 input[0] = [
                     [ id:'test', single_end:false ], // meta map
-                    [ 
+                    [
                         file('${projectDir}/modules/local/dada2/tests/data/test_noambig_1.fastq.gz', checkIfExists: true),
-                        file('${projectDir}/modules/local/dada2/tests/data/test_noambig_2.fastq.gz', checkIfExists: true) 
+                        file('${projectDir}/modules/local/dada2/tests/data/test_noambig_2.fastq.gz', checkIfExists: true)
                     ]
                 ]
                 """
@@ -26,27 +26,41 @@ nextflow_process {
         }
 
         then {
+            assert process.success
+            assert process.out.dada2_out.size() == 1
+            assert process.out.dada2_out[0].size() == 4
             assertAll(
-                { assert process.success },
-                {
-                    assert process.out.asv_counts.size() == 1
-                    def output = process.out.asv_counts[0]
-                    assert output[0] == process.out.dada2_out[0][0]
-                    assert path(output[1]).getFileName().toString() == "${output[0].id}_asv_counts.tsv"
-                    def rows = path(output[1]).readLines()
-                    assert rows[0] == 'asv\tcount'
-                    def counts = rows.drop(1).collect { it.split('\t') }
-                    def ids = path(process.out.dada2_out[0][2]).readLines()
-                        .findAll { it.startsWith('>') }.collect { it.substring(1) }
-                    assert counts.collect { it[0] } == ids
-                    assert counts.every { it[1].toInteger() > 0 }
-                    def stats = path(process.out.dada2_stats[0][1]).readLines()
-                        .collect { it.replace('"', '').split('\t') }
-                    def total = stats.find { it[0] == 'final_nonchimeric_read_count' }[1].toInteger()
-                    assert counts.collect { it[1].toInteger() }.sum() == total
-                },
                 { assert snapshot(process.out.dada2_out).match("dada2_out") },
                 { assert snapshot(process.out.dada2_stats).match("dada2_stats") }
+            )
+        }
+    }
+
+    test("Should generate single-end maps") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+            process {
+                """
+                input[0] = [
+                    [ id:'test_single', single_end:true ], // meta map
+                    [
+                        file('${projectDir}/modules/local/dada2/tests/data/test_noambig_1.fastq.gz', checkIfExists: true)
+                    ]
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.dada2_out.size() == 1
+            assert process.out.dada2_out[0].size() == 4
+            assertAll(
+                { assert snapshot(process.out.dada2_out).match("dada2_out_single") },
+                { assert snapshot(process.out.dada2_stats).match("dada2_stats_single") }
             )
         }
     }
@@ -74,27 +88,10 @@ nextflow_process {
         }
 
         then {
+            assert process.success
+            assert process.out.dada2_out.size() == 1
+            assert process.out.dada2_out[0].size() == 4
             assertAll(
-                { assert process.success },
-                {
-                    assert process.out.asv_counts.size() == 1
-                    def output = process.out.asv_counts[0]
-                    assert output[0] == process.out.dada2_out[0][0]
-                    assert path(output[1]).getFileName().toString() == "${output[0].id}_asv_counts.tsv"
-                    def rows = path(output[1]).readLines()
-                    assert rows[0] == 'asv\tcount'
-                    def counts = rows.drop(1).collect { it.split('\t') }
-                    def ids = path(process.out.dada2_out[0][2]).readLines()
-                        .findAll { it.startsWith('>') }.collect { it.substring(1) }
-                    assert counts.collect { it[0] } == ids
-                    assert counts.every { it[1].toInteger() > 0 }
-                    def stats = path(process.out.dada2_stats[0][1]).readLines()
-                        .collect { it.replace('"', '').split('\t') }
-                    def total = stats.find { it[0] == 'final_nonchimeric_read_count' }[1].toInteger()
-                    // The existing gap-mode FASTA exports a subset of the full sequence table.
-                    assert counts.collect { it[1].toInteger() }.sum() == 388
-                    assert counts.collect { it[1].toInteger() }.sum() <= total
-                },
                 { assert snapshot(process.out.dada2_out).match("dada2_out_gap") },
                 { assert snapshot(process.out.dada2_stats).match("dada2_stats_gap") }
             )
@@ -122,25 +119,10 @@ nextflow_process {
         }
 
         then {
+            assert process.success
+            assert process.out.dada2_out.size() == 1
+            assert process.out.dada2_out[0].size() == 4
             assertAll(
-                { assert process.success },
-                {
-                    assert process.out.asv_counts.size() == 1
-                    def output = process.out.asv_counts[0]
-                    assert output[0] == process.out.dada2_out[0][0]
-                    assert path(output[1]).getFileName().toString() == "${output[0].id}_asv_counts.tsv"
-                    def rows = path(output[1]).readLines()
-                    assert rows[0] == 'asv\tcount'
-                    def counts = rows.drop(1).collect { it.split('\t') }
-                    def ids = path(process.out.dada2_out[0][2]).readLines()
-                        .findAll { it.startsWith('>') }.collect { it.substring(1) }
-                    assert counts.collect { it[0] } == ids
-                    assert counts.every { it[1].toInteger() > 0 }
-                    def stats = path(process.out.dada2_stats[0][1]).readLines()
-                        .collect { it.replace('"', '').split('\t') }
-                    def total = stats.find { it[0] == 'final_nonchimeric_read_count' }[1].toInteger()
-                    assert counts.collect { it[1].toInteger() }.sum() == total
-                },
                 { assert snapshot(process.out.dada2_out).match("dada2_out_separate") },
                 { assert snapshot(process.out.dada2_stats).match("dada2_stats_separate") }
             )

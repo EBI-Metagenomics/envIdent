@@ -36,7 +36,7 @@ is_paired  = !is.na(path_r) && path_r != "NA"
 if (!is_paired) merge_mode = "standard"  # gap/separate only meaningful for PE
 
 # different tax ranks for silva/pr2
-silva_tax_vec = c("Superkingdom", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+silva_tax_vec = c("Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
 pr2_tax_vec = c("Domain", "Supergroup", "Division", "Subdivision", "Class", "Order", "Family", "Genus", "Species")
 
 count_fastq_reads <- function(reads_path){
@@ -186,10 +186,6 @@ if (merge_mode == "separate") {
   seqtab_out = cbind(out_f$seqtab_nc, out_r$seqtab_nc)
   asv_seqs   = c(getUniques(out_f$seqtab)[asvs_left_f], getUniques(out_r$seqtab)[asvs_left_r])
   asv_ids    = c(paste("seq_f", asvs_left_f, sep="_"), paste("seq_r", asvs_left_r, sep="_"))
-  asv_counts = c(
-    colSums(out_f$seqtab_nc)[names(getUniques(out_f$seqtab)[asvs_left_f])],
-    colSums(out_r$seqtab_nc)[names(getUniques(out_r$seqtab)[asvs_left_r])]
-  )
 
   f_map_out = lapply(out_f$asv_map, `[`, 1)
   n_f_asvs  = ncol(out_f$seqtab_nc)
@@ -276,7 +272,6 @@ if (merge_mode == "separate") {
   asvs_left = asvs_left[asvs_left > 0]
   asv_seqs  = getUniques(seqtab)[asvs_left]
   asv_ids   = paste("seq", asvs_left, sep="_")
-  asv_counts = colSums(seqtab_out)[names(asv_seqs)]
 
   total_dada2_reads   = sum(seqtab_out)
   proportion_chimeric = 1 - total_dada2_reads / sum(seqtab)
@@ -299,10 +294,7 @@ if (is_paired){
 uniquesToFasta(asv_seqs, paste0("./", prefix, "_asvs.fasta"), asv_ids)
 
 # Save ASV count table
-stopifnot(length(asv_ids) == length(asv_counts), !anyNA(asv_counts))
-write.table(data.frame(asv=asv_ids, count=unname(asv_counts)),
-            file=paste0("./", prefix, "_asv_counts.tsv"),
-            sep="\t", row.names=FALSE, quote=FALSE)
+write.table(seqtab_out, file=paste0("./", prefix, "_asv_counts.tsv"), sep="\t", row.names=FALSE)
 
 # Save stats report
 report_where_to_cut_f = if (final_where_to_cut_f == 0) -1 else final_where_to_cut_f
