@@ -42,7 +42,7 @@ EnvIdent v0.1 implements the following key features:
 
 **ASV Analysis:**
 - Amplicon Sequence Variant (ASV) calling using DADA2
-- ASV taxonomic classification using MAPseq
+- ASV taxonomic classification using VSEARCH
 - Krona chart visualization for taxonomic results
 
 **Reporting and Quality Control:**
@@ -60,7 +60,7 @@ EnvIdent v0.1 implements the following key features:
 | [FastQC](https://github.com/s-andrews/fastqc) | 0.12.1 | Read quality control |
 | [HMMER](http://hmmer.org/) | 3.4 | Profile HMM searching for COI sequences |
 | [Krona](https://github.com/marbl/Krona)  | 2.8.1 | Interactive taxonomic visualization |
-| [MAPseq](https://github.com/meringlab/MAPseq)  | 2.1.1b | Taxonomic classification of ASVs |
+| [VSEARCH](https://github.com/torognes/vsearch)  | 2.32.0 | Taxonomic classification of ASVs |
 | [mgnify-pipelines-toolkit](https://github.com/EBI-Metagenomics/mgnify-pipelines-toolkit) | 1.0.4 | Toolkit containing various in-house processing scripts |
 | [MultiQC](https://github.com/MultiQC/MultiQC) | 1.27 | Aggregated quality control reporting |
 | [PIMENTO](https://github.com/EBI-Metagenomics/PIMENTO)  | 1.0.3 |  identification and inference |
