@@ -1,6 +1,6 @@
 
 
-[![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.04.2-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A526.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
 [![nf-core template version](https://img.shields.io/badge/nf--core_template-3.3.1-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.3.1)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
@@ -85,7 +85,7 @@ This pipeline uses the following reference databases:
 ### Requirements
 
 The pipeline requires:
-- Nextflow (≥24.04.2)
+- Nextflow (≥26.04.0)
 - Docker, Singularity, or Conda for software management
 - Access to reference databases
 - Database formatted for PIMENTO - a FASTA file with contig ids ending with F for forward strand and R for reverse strand. See [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_s/V3-V5.fasta) for an example
