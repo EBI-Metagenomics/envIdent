@@ -20,9 +20,9 @@ import logging
 
 import pandas as pd
 
-# Rank columns produced by mapseq_to_asv_table.py for BOLD and MIDORI.
-_BOLD_TAX_RANKS = [
-    "Superkingdom", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"
+# Rank columns for BOLD and MIDORI.
+_TAX_RANKS = [
+    "Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"
 ]
 
 logging.basicConfig(level=logging.DEBUG)
@@ -41,7 +41,7 @@ def parse_args():
         "-r", "--rev", required=False, type=str, help="Path to DADA2 reverse map file"
     )
     parser.add_argument(
-        "-hd", "--headers", required=True, type=str, help="Path to fastq headers"
+        "-hd", "--headers", required=False, type=str, help="Path to fastq headers"
     )
     parser.add_argument("-s", "--sample", required=True, type=str, help="Sample ID")
 
@@ -58,7 +58,7 @@ def parse_args():
 
 def order_df(taxa_df):
     if len(taxa_df.columns) == 9:
-        taxa_df = taxa_df.sort_values(_BOLD_TAX_RANKS, ascending=True)
+        taxa_df = taxa_df.sort_values(_TAX_RANKS, ascending=True)
     else:
         logging.error("Data frame not the right size, something wrong.")
         exit(1)
@@ -77,7 +77,7 @@ def make_tax_assignment_dict_bold(taxa_df, asv_dict):
         if asv_count == 0:
             continue
 
-        sk = taxa_df.loc[sorted_index, "Superkingdom"]
+        d = taxa_df.loc[sorted_index, "Domain"]
         k = taxa_df.loc[sorted_index, "Kingdom"]
         p = taxa_df.loc[sorted_index, "Phylum"]
         c = taxa_df.loc[sorted_index, "Class"]
@@ -90,16 +90,16 @@ def make_tax_assignment_dict_bold(taxa_df, asv_dict):
 
         while True:
 
-            if sk != "0":
-                sk = "_".join(sk.split(" "))
-                tax_assignment += sk
+            if d != "0":
+                d = "_".join(d.split(" "))
+                tax_assignment += d
             else:
                 break
 
             if k != "0":
                 k = "_".join(k.split(" "))
                 tax_assignment += f"\t{k}"
-            elif sk != "0":
+            elif d != "0":
                 tax_assignment += "\tk__"
             else:
                 break
@@ -159,7 +159,7 @@ def generate_asv_count_dict(asv_dict):
         res_dict["asv"].append(asv_id)
         res_dict["count"].append(count)
 
-    res_df = pd.DataFrame.from_dict(res_dict)
+    res_df = pd.DataFrame(res_dict, columns=["asv", "count"])
     res_df = res_df.sort_values(by="asv", ascending=True)
     res_df = res_df.sort_values(by="count", ascending=False)
 
@@ -178,13 +178,19 @@ def main():
     else:
         rev_fr = open(rev, "r")
 
-    taxa_df = pd.read_csv(taxa, sep="\t", dtype=str)
-    taxa_df = taxa_df.fillna("0")
-    taxa_df = order_df(taxa_df)
-
+    # LCA output is headerless: ASV ID followed by taxonomy, including no-hit rows.
+    try:
+        taxa_df = pd.read_csv(taxa, sep="\t", header=None, dtype=str)
+    except pd.errors.EmptyDataError:
+        taxa_df = pd.DataFrame(columns=[0, 1])
+    lca = len(taxa_df.columns) == 2
+    if lca:
+        taxa_df.columns = ["ASV", "taxonomy"]
+    else:
+        # Retain support for the original headed taxonomy-table input.
+        taxa_df = pd.read_csv(taxa, sep="\t", dtype=str).fillna("0")
+        taxa_df = order_df(taxa_df)
     asv_list = taxa_df.ASV.to_list()
-
-    headers = [read.split(" ")[0][1:] for read in list(open(headers, "r"))]
 
     asv_dict = defaultdict(int)
 
@@ -202,7 +208,7 @@ def main():
     if paired_end:
         rev_fr.close()
 
-    if asv_dict:  # if there are matches between taxonomic and ASV annotations
+    if asv_dict and not lca:  # LCA/Krona aggregation is performed downstream
     
         tax_assignment_dict = make_tax_assignment_dict_bold(taxa_df,asv_dict) 
 

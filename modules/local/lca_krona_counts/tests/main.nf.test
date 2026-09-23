@@ -23,13 +23,20 @@ nextflow_process {
             assert process.out.all_counts[0][0] == [id: 'test']
             assert process.out.top_counts[0][0] == [id: 'test']
             assert path(process.out.all_counts[0][1]).readLines() == [
-                '9\tsk__\tk__Metazoa', '3\tUnclassified'
+                '9\td__\tk__Metazoa', '3\tUnclassified'
             ]
             assert path(process.out.top_counts[0][1]).readLines() == [
-                '7\tsk__\tk__Metazoa\tp__Chordata',
-                '2\tsk__\tk__Metazoa\tp__Arthropoda',
+                '7\td__\tk__Metazoa\tp__Chordata',
+                '2\td__\tk__Metazoa\tp__Arthropoda',
                 '3\tUnclassified'
             ]
+            ['all', 'top'].each { method ->
+                def original = path("${projectDir}/modules/local/lca_krona_counts/tests/data/${method}.tsv").readLines()
+                def counts = ['seq_1': 7, 'seq_2': 2, 'seq_3': 3]
+                assert path(process.out["lca_${method}"][0][1]).readLines() == original.collect { row ->
+                    "${row}\t${counts[row.split('\t')[0]] ?: 0}".toString()
+                }
+            }
             assert path(process.out.versions[0]).text.contains('node:')
         }
     }

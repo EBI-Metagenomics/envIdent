@@ -27,8 +27,11 @@ include { PREP_CUTADAPT_PRIMERS        } from '../modules/local/prep_cutadapt_pr
 include { EXTRACT_CUTADAPT_PRIMERS     } from '../modules/local/extract_cutadapt_primers/main.nf'
 include { PROFILE_HMMSEARCH_PFAM       } from '../subworkflows/local/profile_hmmsearch_pfam/main'
 include { DADA2_SWF                    } from '../subworkflows/local/dada2_swf.nf'
-include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_BOLD } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
-include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_MIDORI } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
+include { VSEARCH_ASV_LCA as VSEARCH_ASV_LCA_BOLD } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
+include { VSEARCH_ASV_LCA as VSEARCH_ASV_LCA_MIDORI } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
+include { MAKE_ASV_COUNT_TABLES } from '../modules/local/make_asv_count_tables/main'
+include { LCA_KRONA_REPORTS as LCA_KRONA_REPORTS_BOLD } from '../subworkflows/local/vsearch_asv_krona_swf/main'
+include { LCA_KRONA_REPORTS as LCA_KRONA_REPORTS_MIDORI } from '../subworkflows/local/vsearch_asv_krona_swf/main'
 include { MULTIQC                      } from '../modules/nf-core/multiqc/main'
 
 // Import samplesheetToList from nf-schema //
@@ -239,22 +242,49 @@ workflow ENVIDENT {
 
     if (params.COI_bold_ref_db) {
         ref_db = file(params.COI_bold_ref_db, type: 'file', checkIfExists: true)
-        VSEARCH_ASV_KRONA_BOLD(
+        VSEARCH_ASV_LCA_BOLD(
             DADA2_SWF.out.dada2_out,
-            ref_db,
-            DADA2_SWF.out.asv_counts
+            ref_db
         )
-        ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_BOLD.out.versions)
+        ch_versions = ch_versions.mix(VSEARCH_ASV_LCA_BOLD.out.versions)
     }
 
     if (params.COI_midori_ref_db) {
         ref_db = file(params.COI_midori_ref_db, type: 'file', checkIfExists: true)
-        VSEARCH_ASV_KRONA_MIDORI(
+        VSEARCH_ASV_LCA_MIDORI(
             DADA2_SWF.out.dada2_out,
-            ref_db,
-            DADA2_SWF.out.asv_counts
+            ref_db
         )
-        ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_MIDORI.out.versions)
+        ch_versions = ch_versions.mix(VSEARCH_ASV_LCA_MIDORI.out.versions)
+    }
+
+    if (params.COI_bold_ref_db || params.COI_midori_ref_db) {
+        // Either complete LCA table supplies the ASV IDs, including no-hit ASVs.
+        count_taxonomy = params.COI_bold_ref_db
+            ? VSEARCH_ASV_LCA_BOLD.out.lca_all
+            : VSEARCH_ASV_LCA_MIDORI.out.lca_all
+        map_count_input = DADA2_SWF.out.dada2_out
+            .map { meta, maps, asv_seqs, filt_reads -> [meta, maps] }
+            .join(count_taxonomy, failOnDuplicate: true, failOnMismatch: true)
+        MAKE_ASV_COUNT_TABLES(map_count_input)
+        ch_versions = ch_versions.mix(MAKE_ASV_COUNT_TABLES.out.versions)
+
+        if (params.COI_bold_ref_db) {
+            LCA_KRONA_REPORTS_BOLD(
+                MAKE_ASV_COUNT_TABLES.out.asv_read_counts_out,
+                VSEARCH_ASV_LCA_BOLD.out.lca_all,
+                VSEARCH_ASV_LCA_BOLD.out.lca_top
+            )
+            ch_versions = ch_versions.mix(LCA_KRONA_REPORTS_BOLD.out.versions)
+        }
+        if (params.COI_midori_ref_db) {
+            LCA_KRONA_REPORTS_MIDORI(
+                MAKE_ASV_COUNT_TABLES.out.asv_read_counts_out,
+                VSEARCH_ASV_LCA_MIDORI.out.lca_all,
+                VSEARCH_ASV_LCA_MIDORI.out.lca_top
+            )
+            ch_versions = ch_versions.mix(LCA_KRONA_REPORTS_MIDORI.out.versions)
+        }
     }
 
     //

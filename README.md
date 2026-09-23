@@ -132,7 +132,7 @@ Example output structure for a sample (sample1). The qc_passed and qc_failed csv
 results/
 ├── sample1/
 │   ├── asv/
-│   │   ├── sample1_asv_counts.tsv
+│   │   ├── sample1_asv_read_counts.tsv
 │   │   ├── sample1_dada2_stats.tsv
 │   │   └── sample1_asvs.fasta
 │   ├── hmmsearch-COI/
@@ -193,11 +193,23 @@ come from `--bold_label` (default `BOLD`) and `--midori_label`
 | `krona_lca_all_hits_counts.tsv`, `krona_lca_top_hits_counts.tsv` | Headerless, read-weighted counts grouped by taxonomy; includes unclassified reads |
 | `krona_lca_all_hits.html`, `krona_lca_top_hits.html` | Interactive reports for the respective assignment method |
 
+Taxonomy uses eight ranks: domain, kingdom, phylum, class, order,
+family, genus, and species. Missing ranks retain empty placeholders.
+
 ASVs without reference hits remain in the output tables. Raw VSEARCH rows use
-`*` for the missing target. Both formatted tables and both LCA assignment tables
-retain the ASV ID with `sk__;k__;p__;c__;o__;f__;g__;s__;`. Formatted no-hit rows
+`*` for the missing target. Both formatted tables and LCA assignment tables
+retain the ASV ID with `d__;k__;p__;c__;o__;f__;g__;s__;`. Formatted no-hit rows
 have an empty accession and `NA` identity/coverage where those columns are present.
 Their reads remain included under `Unclassified` in the Krona counts and reports.
+
+`asv/<sample>_asv_read_counts.tsv` is generated once per sample by
+`make_asv_count_table.py`, counting forward-map entries for ASV IDs in the all-hits LCA table.
+BOLD supplies the IDs when enabled; otherwise MIDORI does. No-hit ASVs remain
+in those tables, so their counts are retained.
+
+Both final `taxonomy_lca_all_hits.tsv` and `taxonomy_lca_top_hits.tsv` files are
+headerless, with columns `ASV ID`, `taxonomy`, and `count`. The third column comes
+from the shared ASV read counts table.
 
 ### Key Output Files
 
