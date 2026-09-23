@@ -188,6 +188,13 @@ workflow ENVIDENT {
     )
     ch_versions = ch_versions.mix(READS_QC_BEFOREHMM.out.versions) 
 
+    // Exclude samples with no FASTA records after QC/merging from HMM profiling.
+    reads_before_hmm = READS_QC_BEFOREHMM.out.reads_fasta
+        .branch { _meta, reads ->
+            qc_pass: reads.countFasta() > 0
+            qc_empty: true
+        }
+
     // Pfam profiling
     pfam_db = params.pfam_coi_db ?
     channel
@@ -196,7 +203,7 @@ workflow ENVIDENT {
     channel.empty()
 
     PROFILE_HMMSEARCH_PFAM(
-        READS_QC_BEFOREHMM.out.reads_fasta,
+        reads_before_hmm.qc_pass,
         pfam_db,
         READS_QC_BEFOREHMM.out.fastp_summary_json
     )
@@ -387,8 +394,12 @@ workflow ENVIDENT {
         .map { id, meta, _low_percent -> "${meta.id},reads_percentage_fail" }
         .set { reads_percentage_fails }
 
+    reads_before_hmm.qc_empty
+        .map { meta, _reads -> "${meta.id},empty_after_qc" }
+        .set { empty_after_qc_fails }
+
     // Save all failed runs to file //
-    all_failed_runs = seqfu_fails.concat( sfxhd_fails, libstrat_fails, min_reads_fails, reads_percentage_fails)
+    all_failed_runs = seqfu_fails.concat( sfxhd_fails, libstrat_fails, min_reads_fails, reads_percentage_fails, empty_after_qc_fails)
     all_failed_runs.collectFile(name: "qc_failed_runs.csv", storeDir: "${params.outdir}", newLine: true, cache: false)
 
     // Extract passed runs, describe whether those passed runs also ASV results //
