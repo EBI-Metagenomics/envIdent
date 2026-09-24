@@ -28,9 +28,9 @@ process CUTADAPT {
     def first_trimmed = meta.single_end
         ? "-o ${prefix}.first_pass.fastq.gz --info-file ${prefix}.first_pass.tsv"
         : "-o ${prefix}_1.first_pass.fastq.gz -p ${prefix}_2.first_pass.fastq.gz --info-file ${prefix}_1.first_pass.tsv --info-file-paired ${prefix}_2.first_pass.tsv"
-    def final_trimmed = meta.single_end
-        ? "-o ${prefix}.trim.fastq.gz --info-file ${prefix}.final.tsv"
-        : "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz --info-file ${prefix}_1.final.tsv --info-file-paired ${prefix}_2.final.tsv"
+    def second_trimmed = meta.single_end
+        ? "-o ${prefix}.trim.fastq.gz --info-file ${prefix}.second_pass.tsv"
+        : "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz --info-file ${prefix}_1.second_pass.tsv --info-file-paired ${prefix}_2.second_pass.tsv"
     def first_primer_args = primers[0].size() > 0 ? "-g file:${primers[0]}" : ""
     if (!meta.single_end && primers[1].size() > 0) {
         first_primer_args += " -G file:${primers[1]}"
@@ -41,7 +41,7 @@ process CUTADAPT {
     }
 
     // Produces summary tsvs of the positions primers were trimmed at
-    def stages = ['first_pass', 'final']
+    def stages = ['first_pass', 'second_pass']
 
     def stats_cmd = stages.collect { stage ->
 
@@ -57,11 +57,12 @@ process CUTADAPT {
             .withIndex()
             .collect { input_file, i ->
                 """
+                printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${output_files[i]}
                 awk -F'\\t' '{print length(\$5),length(\$6),length(\$7)}' ${input_file} |
                     sort |
                     uniq -c |
                     awk 'OFS="\\t" {print \$2,\$3,\$4,\$1}' |
-                    sort -nr -k4,4 > ${output_files[i]}
+                    sort -nr -k4,4 >> ${output_files[i]}
                 """
             }
             .join('\n')
@@ -71,10 +72,16 @@ process CUTADAPT {
     if(first_primer_args == ""){
         if (!meta.single_end){
             """
-            touch ${prefix}.cutadapt.log
+            touch ${prefix}.first_pass.cutadapt.log
+            touch ${prefix}.second_pass.cutadapt.log
             touch ${prefix}_1.trim.fastq.gz
             touch ${prefix}_2.trim.fastq.gz
-            touch ${prefix}.cutadapt.json
+            echo '{"message": "No primers were inputted so trimming not performed"}' > ${prefix}.first_pass.cutadapt.json
+            echo '{"message": "No primers were inputted so trimming not performed"}' > ${prefix}.second_pass.cutadapt.json
+            printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${prefix}_first_pass_1_summ.tsv
+            printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${prefix}_first_pass_2_summ.tsv
+            printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${prefix}_second_pass_1_summ.tsv
+            printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${prefix}_second_pass_2_summ.tsv
 
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
@@ -84,9 +91,13 @@ process CUTADAPT {
         }
         else{
             """
-            touch ${prefix}.cutadapt.log
+            touch ${prefix}.first_pass.cutadapt.log
+            touch ${prefix}.second_pass.cutadapt.log
             touch ${prefix}.trim.fastq.gz
-            touch ${prefix}.cutadapt.json
+            printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${prefix}_first_pass_se_summ.tsv
+            printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${prefix}_second_pass_se_summ.tsv
+            echo '{"message": "No primers were inputted so trimming not performed"}' > ${prefix}.first_pass.cutadapt.json
+            echo '{"message": "No primers were inputted so trimming not performed"}' > ${prefix}.second_pass.cutadapt.json
 
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
@@ -110,11 +121,11 @@ process CUTADAPT {
         cutadapt \\
             --cores $task.cpus \\
             $args \\
-            ${final_trimmed} \\
+            ${second_trimmed} \\
             ${second_primer_args} \\
             ${meta.single_end ? "${prefix}.first_pass.fastq.gz" : "${prefix}_1.first_pass.fastq.gz ${prefix}_2.first_pass.fastq.gz"} \\
-            --json ${prefix}.cutadapt.json \\
-            > ${prefix}.cutadapt.log
+            --json ${prefix}.second_pass.cutadapt.json \\
+            > ${prefix}.second_pass.cutadapt.log
         
         ${stats_cmd}
 
@@ -131,13 +142,17 @@ process CUTADAPT {
         ? "${prefix}.trim.fastq.gz"
         : "${prefix}_1.trim.fastq.gz ${prefix}_2.trim.fastq.gz"
     def summaries = meta.single_end
-        ? "${prefix}_first_pass_se_summ.tsv ${prefix}_final_se_summ.tsv"
-        : "${prefix}_first_pass_1_summ.tsv ${prefix}_first_pass_2_summ.tsv ${prefix}_final_1_summ.tsv ${prefix}_final_2_summ.tsv"
+        ? "${prefix}_first_pass_se_summ.tsv ${prefix}_second_pass_se_summ.tsv"
+        : "${prefix}_first_pass_1_summ.tsv ${prefix}_first_pass_2_summ.tsv ${prefix}_second_pass_1_summ.tsv ${prefix}_second_pass_2_summ.tsv"
     """
-    touch ${prefix}.cutadapt.log
-    touch ${prefix}.cutadapt.json
+    touch ${prefix}.first_pass.cutadapt.log
+    touch ${prefix}.second_pass.cutadapt.log
+    touch ${prefix}.first_pass.cutadapt.json
+    touch ${prefix}.second_pass.cutadapt.json
     touch ${trimmed}
-    touch ${summaries}
+    for summary in ${summaries}; do
+        printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > \$summary
+    done
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

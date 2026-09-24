@@ -33,7 +33,7 @@ nextflow_process {
                 ]
             }
             def reports = asFiles(process.out.json[0][1])
-            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.json', 'test.first_pass.cutadapt.json']
+            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.json', 'test.first_pass.cutadapt.json'].sort()
             reports.each { file ->
                 def report = new groovy.json.JsonSlurper().parseText(path(file).text)
                 assert report.read_counts.input == 2
@@ -45,18 +45,19 @@ nextflow_process {
                 assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
             }
             def logs = asFiles(process.out.log[0][1])
-            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.log', 'test.first_pass.cutadapt.log']
+            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.log', 'test.first_pass.cutadapt.log'].sort()
             logs.each { assert path(it).text.contains('=== Summary ===') }
             assert process.out.tsv[0][0] == [id: 'test', single_end: true]
             def summaries = asFiles(process.out.tsv[0][1])
-            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_se_summ.tsv', 'test_first_pass_se_summ.tsv']
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_se_summ.tsv', 'test_first_pass_se_summ.tsv'].sort()
             summaries.each { file ->
                 def name = path(file).getFileName().toString()
                 assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
                 def expected = name.contains('first_pass')
                     ? ['0\t0\t0\t1', '0\t8\t20\t1']
                     : ['0\t0\t0\t1', '12\t8\t0\t1']
-                assert path(file).readLines().sort() == expected.sort()
+                assert path(file).readLines().first() == 'Pre-primer length\tPrimer length\tPost-primer length\tRead count'
+                assert path(file).readLines().drop(1).sort() == expected.sort()
             }
         }
     }
@@ -91,7 +92,7 @@ nextflow_process {
                 ]
             }
             def reports = asFiles(process.out.json[0][1])
-            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.json', 'test.first_pass.cutadapt.json']
+            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.json', 'test.first_pass.cutadapt.json'].sort()
             reports.each { file ->
                 def report = new groovy.json.JsonSlurper().parseText(path(file).text)
                 assert report.read_counts.input == 2
@@ -103,18 +104,19 @@ nextflow_process {
                 assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
             }
             def logs = asFiles(process.out.log[0][1])
-            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.log', 'test.first_pass.cutadapt.log']
+            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.log', 'test.first_pass.cutadapt.log'].sort()
             logs.each { assert path(it).text.contains('=== Summary ===') }
             assert process.out.tsv[0][0] == [id: 'test', single_end: true]
             def summaries = asFiles(process.out.tsv[0][1])
-            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_se_summ.tsv', 'test_first_pass_se_summ.tsv']
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_se_summ.tsv', 'test_first_pass_se_summ.tsv'].sort()
             summaries.each { file ->
                 def name = path(file).getFileName().toString()
                 assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
                 def expected = name.contains('first_pass')
                     ? ['0\t0\t0\t1', '0\t8\t20\t1']
                     : ['0\t0\t0\t2']
-                assert path(file).readLines().sort() == expected.sort()
+                assert path(file).readLines().first() == 'Pre-primer length\tPrimer length\tPost-primer length\tRead count'
+                assert path(file).readLines().drop(1).sort() == expected.sort()
             }
         }
     }
@@ -143,16 +145,16 @@ nextflow_process {
             assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
             reads.each { assert path(it).size() == 0 }
             ['log', 'json'].each { channel ->
-                assert asFiles(process.out[channel][0][1]).size() == 1
+                assert asFiles(process.out[channel][0][1]).collect { path(it).getFileName().toString() }.sort() == ["test.first_pass.cutadapt.${channel}", "test.second_pass.cutadapt.${channel}"].collect { it.toString() }
                 asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
             }
             assert process.out.tsv[0][0] == [id: 'test', single_end: true]
             def summaries = asFiles(process.out.tsv[0][1])
-            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_se_summ.tsv', 'test_first_pass_se_summ.tsv']
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_se_summ.tsv', 'test_first_pass_se_summ.tsv'].sort()
             summaries.each { file ->
                 def name = path(file).getFileName().toString()
                 assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
-                assert path(file).size() == 0
+                assert path(file).readLines() == ['Pre-primer length\tPrimer length\tPost-primer length\tRead count']
             }
         }
     }
@@ -180,10 +182,25 @@ nextflow_process {
             assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
             reads.each { assert path(it).size() == 0 }
             ['log', 'json'].each { channel ->
-                assert asFiles(process.out[channel][0][1]).size() == 1
-                asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
+                assert asFiles(process.out[channel][0][1]).collect { path(it).getFileName().toString() }.sort() == ["test.first_pass.cutadapt.${channel}", "test.second_pass.cutadapt.${channel}"].collect { it.toString() }
+                asFiles(process.out[channel][0][1]).each { file ->
+                    if (channel == 'json') {
+                        assert new groovy.json.JsonSlurper().parseText(path(file).text) ==
+                            [message: 'No primers were inputted so trimming not performed']
+                        assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
+                    } else {
+                        assert path(file).size() == 0
+                    }
+                }
             }
-            assert process.out.tsv.size() == 0
+            assert process.out.tsv.size() == 1
+            assert process.out.tsv[0][0] == [id: 'test', single_end: true]
+            def summaries = asFiles(process.out.tsv[0][1])
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_first_pass_se_summ.tsv', 'test_second_pass_se_summ.tsv']
+            summaries.each { file ->
+                assert path(file).readLines() == ['Pre-primer length\tPrimer length\tPost-primer length\tRead count']
+                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").exists()
+            }
         }
     }
 
@@ -217,7 +234,7 @@ nextflow_process {
                 ]
             }
             def reports = asFiles(process.out.json[0][1])
-            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.json', 'test.first_pass.cutadapt.json']
+            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.json', 'test.first_pass.cutadapt.json'].sort()
             reports.each { file ->
                 def report = new groovy.json.JsonSlurper().parseText(path(file).text)
                 assert report.read_counts.input == 2
@@ -230,18 +247,19 @@ nextflow_process {
                 assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
             }
             def logs = asFiles(process.out.log[0][1])
-            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.log', 'test.first_pass.cutadapt.log']
+            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.log', 'test.first_pass.cutadapt.log'].sort()
             logs.each { assert path(it).text.contains('=== Summary ===') }
             assert process.out.tsv[0][0] == [id: 'test', single_end: false]
             def summaries = asFiles(process.out.tsv[0][1])
-            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_1_summ.tsv', 'test_final_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv']
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_1_summ.tsv', 'test_second_pass_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv'].sort()
             summaries.each { file ->
                 def name = path(file).getFileName().toString()
                 assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
                 def expected = name.contains('first_pass')
                     ? ['0\t0\t0\t1', '0\t8\t20\t1']
                     : ['0\t0\t0\t1', '12\t8\t0\t1']
-                assert path(file).readLines().sort() == expected.sort()
+                assert path(file).readLines().first() == 'Pre-primer length\tPrimer length\tPost-primer length\tRead count'
+                assert path(file).readLines().drop(1).sort() == expected.sort()
             }
         }
     }
@@ -276,7 +294,7 @@ nextflow_process {
                 ]
             }
             def reports = asFiles(process.out.json[0][1])
-            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.json', 'test.first_pass.cutadapt.json']
+            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.json', 'test.first_pass.cutadapt.json'].sort()
             reports.each { file ->
                 def report = new groovy.json.JsonSlurper().parseText(path(file).text)
                 assert report.read_counts.input == 2
@@ -289,18 +307,19 @@ nextflow_process {
                 assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
             }
             def logs = asFiles(process.out.log[0][1])
-            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.cutadapt.log', 'test.first_pass.cutadapt.log']
+            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.log', 'test.first_pass.cutadapt.log'].sort()
             logs.each { assert path(it).text.contains('=== Summary ===') }
             assert process.out.tsv[0][0] == [id: 'test', single_end: false]
             def summaries = asFiles(process.out.tsv[0][1])
-            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_1_summ.tsv', 'test_final_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv']
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_1_summ.tsv', 'test_second_pass_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv'].sort()
             summaries.each { file ->
                 def name = path(file).getFileName().toString()
                 assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
                 def expected = name.contains('first_pass')
                     ? ['0\t0\t0\t1', '0\t8\t20\t1']
                     : ['0\t0\t0\t2']
-                assert path(file).readLines().sort() == expected.sort()
+                assert path(file).readLines().first() == 'Pre-primer length\tPrimer length\tPost-primer length\tRead count'
+                assert path(file).readLines().drop(1).sort() == expected.sort()
             }
         }
     }
@@ -329,16 +348,16 @@ nextflow_process {
             assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
             reads.each { assert path(it).size() == 0 }
             ['log', 'json'].each { channel ->
-                assert asFiles(process.out[channel][0][1]).size() == 1
+                assert asFiles(process.out[channel][0][1]).collect { path(it).getFileName().toString() }.sort() == ["test.first_pass.cutadapt.${channel}", "test.second_pass.cutadapt.${channel}"].collect { it.toString() }
                 asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
             }
             assert process.out.tsv[0][0] == [id: 'test', single_end: false]
             def summaries = asFiles(process.out.tsv[0][1])
-            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_final_1_summ.tsv', 'test_final_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv']
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_1_summ.tsv', 'test_second_pass_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv'].sort()
             summaries.each { file ->
                 def name = path(file).getFileName().toString()
                 assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
-                assert path(file).size() == 0
+                assert path(file).readLines() == ['Pre-primer length\tPrimer length\tPost-primer length\tRead count']
             }
         }
     }
@@ -366,10 +385,25 @@ nextflow_process {
             assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
             reads.each { assert path(it).size() == 0 }
             ['log', 'json'].each { channel ->
-                assert asFiles(process.out[channel][0][1]).size() == 1
-                asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
+                assert asFiles(process.out[channel][0][1]).collect { path(it).getFileName().toString() }.sort() == ["test.first_pass.cutadapt.${channel}", "test.second_pass.cutadapt.${channel}"].collect { it.toString() }
+                asFiles(process.out[channel][0][1]).each { file ->
+                    if (channel == 'json') {
+                        assert new groovy.json.JsonSlurper().parseText(path(file).text) ==
+                            [message: 'No primers were inputted so trimming not performed']
+                        assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
+                    } else {
+                        assert path(file).size() == 0
+                    }
+                }
             }
-            assert process.out.tsv.size() == 0
+            assert process.out.tsv.size() == 1
+            assert process.out.tsv[0][0] == [id: 'test', single_end: false]
+            def summaries = asFiles(process.out.tsv[0][1])
+            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv', 'test_second_pass_1_summ.tsv', 'test_second_pass_2_summ.tsv']
+            summaries.each { file ->
+                assert path(file).readLines() == ['Pre-primer length\tPrimer length\tPost-primer length\tRead count']
+                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").exists()
+            }
         }
     }
 }
