@@ -10,7 +10,7 @@ nextflow_workflow {
                 input = "${projectDir}/assets/test-fixtures/samplesheets/preparation_false.csv"
                 outdir = "$outputDir"
                 skip_standardise = false
-                COI_midori_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
+                COI_midori2_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
                 pfam_coi_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.hmm"
                 std_primer_library = "${projectDir}/assets/test-fixtures/test-ref-dbs/standard_primers"
                 cutadapt_primers = "${projectDir}/assets/test-fixtures/test-ref-dbs/cutadapt_primers"
@@ -39,7 +39,7 @@ nextflow_workflow {
                 input = "${projectDir}/assets/test-fixtures/samplesheets/preparation_false.csv"
                 outdir = "$outputDir"
                 skip_standardise = true
-                COI_midori_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
+                COI_midori2_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
                 pfam_coi_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.hmm"
                 std_primer_library = "${projectDir}/assets/test-fixtures/test-ref-dbs/standard_primers"
                 cutadapt_primers = "${projectDir}/assets/test-fixtures/test-ref-dbs/cutadapt_primers"
@@ -68,7 +68,7 @@ nextflow_workflow {
                 input = "${projectDir}/assets/test-fixtures/samplesheets/preparation_true.csv"
                 outdir = "$outputDir"
                 skip_standardise = true
-                COI_midori_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
+                COI_midori2_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
                 pfam_coi_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.hmm"
                 std_primer_library = "${projectDir}/assets/test-fixtures/test-ref-dbs/standard_primers"
                 cutadapt_primers = "${projectDir}/assets/test-fixtures/test-ref-dbs/cutadapt_primers"

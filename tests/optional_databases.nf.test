@@ -3,7 +3,7 @@ nextflow_workflow {
     script "../subworkflows/local/utils_nfcore_envident_pipeline/main.nf"
     workflow "PIPELINE_INITIALISATION"
 
-    test("Validate midori-only configuration") {
+    test("Validate midori2-only configuration") {
         when {
             params {
                 input = "${projectDir}/assets/test-fixtures/samplesheets/test_samplesheet.csv"
@@ -11,7 +11,7 @@ nextflow_workflow {
                 pfam_coi_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.hmm"
                 std_primer_library = "${projectDir}/assets/test-fixtures/test-ref-dbs/standard_primers"
                 cutadapt_primers = "${projectDir}/assets/test-fixtures/test-ref-dbs/cutadapt_primers"
-                COI_midori_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
+                COI_midori2_ref_db = "${projectDir}/assets/test-fixtures/test-ref-dbs/COI.fasta"
             }
             workflow {
                 """

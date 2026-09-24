@@ -149,24 +149,24 @@
                 }
             }
         },
-        "midori_database_options": {
-            "title": "MIDORI Database Options",
+        "midori2_database_options": {
+            "title": "MIDORI2 Database Options",
             "type": "object",
             "fa_icon": "fas fa-database",
-            "description": "Configuration options for MIDORI (Molecular Identification Database) database files and parameters.",
+            "description": "Configuration options for MIDORI2 (Molecular Identification Database) database files and parameters.",
             "properties": {
-                "COI_midori_ref_db": {
+                "COI_midori2_ref_db": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to COI MIDORI database UDB or FASTA file",
+                    "description": "Path to COI MIDORI2 database UDB or FASTA file",
                     "pattern": "^\\S+\\.(?:fasta|fna|fa|udb)$",
-                    "help_text": "Path to the MIDORI COI reference database UDB or FASTA file used for taxonomic classification."
+                    "help_text": "Path to the MIDORI2 COI reference database UDB or FASTA file used for taxonomic classification."
                 },
-                "midori_label": {
+                "midori2_label": {
                     "type": "string",
-                    "description": "Label for MIDORI database classification",
-                    "default": "MIDORI",
-                    "help_text": "Label used to identify the MIDORI database classification method in output files."
+                    "description": "Label for MIDORI2 database classification",
+                    "default": "MIDORI2",
+                    "help_text": "Label used to identify the MIDORI2 database classification method in output files."
                 }
             }
         },
@@ -350,7 +350,7 @@
             "$ref": "#/$defs/bold_database_options"
         },
         {
-            "$ref": "#/$defs/midori_database_options"
+            "$ref": "#/$defs/midori2_database_options"
         }
     ]
 }

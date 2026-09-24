@@ -157,16 +157,16 @@ results/
 │   │   │   ├── sample1_BOLD_krona_lca_top_hits_counts.tsv
 │   │   │   ├── sample1_BOLD_krona_lca_all_hits.html
 │   │   │   └── sample1_BOLD_krona_lca_top_hits.html
-│   │   ├── MIDORI/
-│   │   │   ├── sample1_MIDORI_vsearch_raw_hits.tsv
-│   │   │   ├── sample1_MIDORI_vsearch_hits_with_accessions.tsv
-│   │   │   ├── sample1_MIDORI_vsearch_hits_for_lca.tsv
-│   │   │   ├── sample1_MIDORI_taxonomy_lca_all_hits.tsv
-│   │   │   ├── sample1_MIDORI_taxonomy_lca_top_hits.tsv
-│   │   │   ├── sample1_MIDORI_krona_lca_all_hits_counts.tsv
-│   │   │   ├── sample1_MIDORI_krona_lca_top_hits_counts.tsv
-│   │   │   ├── sample1_MIDORI_krona_lca_all_hits.html
-│   │   │   └── sample1_MIDORI_krona_lca_top_hits.html
+│   │   ├── MIDORI2/
+│   │   │   ├── sample1_MIDORI2_vsearch_raw_hits.tsv
+│   │   │   ├── sample1_MIDORI2_vsearch_hits_with_accessions.tsv
+│   │   │   ├── sample1_MIDORI2_vsearch_hits_for_lca.tsv
+│   │   │   ├── sample1_MIDORI2_taxonomy_lca_all_hits.tsv
+│   │   │   ├── sample1_MIDORI2_taxonomy_lca_top_hits.tsv
+│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits_counts.tsv
+│   │   │   ├── sample1_MIDORI2_krona_lca_top_hits_counts.tsv
+│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits.html
+│   │   │   └── sample1_MIDORI2_krona_lca_top_hits.html
 ├── pipeline_info/
 │   ├── execution_report_YYYY-MM-DD_HH-mm-ss.html
 │   ├── execution_timeline_YYYY-MM-DD_HH-mm-ss.html
@@ -180,8 +180,8 @@ results/
 ```
 
 Taxonomy filenames use `<sample>_<database>_<description>`. The database labels
-come from `--bold_label` (default `BOLD`) and `--midori_label`
-(default `MIDORI`); each label controls both the folder and filename prefix.
+come from `--bold_label` (default `BOLD`) and `--midori2_label`
+(default `MIDORI2`); each label controls both the folder and filename prefix.
 
 | Description | Contents |
 | --- | --- |
@@ -208,7 +208,7 @@ Their reads remain included under `Unclassified` in the Krona counts and reports
 
 `asv/<sample>_asv_read_counts.tsv` is generated once per sample by
 `make_asv_count_table.py`, counting forward-map entries for ASV IDs in the all-hits LCA table.
-BOLD supplies the IDs when enabled; otherwise MIDORI does. No-hit ASVs remain
+BOLD supplies the IDs when enabled; otherwise MIDORI2 does. No-hit ASVs remain
 in those tables, so their counts are retained.
 
 Both final `taxonomy_lca_all_hits.tsv` and `taxonomy_lca_top_hits.tsv` files are
