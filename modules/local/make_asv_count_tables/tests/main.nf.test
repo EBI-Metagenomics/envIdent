@@ -1,5 +1,5 @@
 nextflow_process {
-    name "Test restored map-based ASV counter"
+    name "Test toolkit map-based ASV counter"
     script "../main.nf"
     process "MAKE_ASV_COUNT_TABLES"
     tag "modules"
@@ -12,13 +12,16 @@ nextflow_process {
                 input[0] = [[id: 'test', single_end: false], [
                     file('${projectDir}/modules/local/make_asv_count_tables/tests/data/forward.txt'),
                     file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reverse.txt')
-                ], file('${projectDir}/modules/local/make_asv_count_tables/tests/data/lca.tsv')]
+                ], [
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reads.fastq.gz'),
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reads_reverse.fastq.gz')
+                ]]
                 """
             }
         }
         then {
             assert process.success
-            assert path(process.out.asv_read_counts_out[0][1]).readLines() == ['asv\tcount', 'seq_1\t7', 'seq_2\t3']
+            assert path(process.out.asv_read_counts[0][1]).readLines() == ['asv\tcount', 'seq_1\t7', 'seq_2\t3', 'seq_9\t1']
         }
     }
 
@@ -28,13 +31,13 @@ nextflow_process {
                 """
                 input[0] = [[id: 'empty', single_end: true],
                     file('${projectDir}/modules/local/make_asv_count_tables/tests/data/empty_map.txt'),
-                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/lca.tsv')]
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reads.fastq.gz')]
                 """
             }
         }
         then {
             assert process.success
-            assert path(process.out.asv_read_counts_out[0][1]).readLines() == ['asv\tcount']
+            assert path(process.out.asv_read_counts[0][1]).readLines() == ['asv\tcount']
         }
     }
 }
