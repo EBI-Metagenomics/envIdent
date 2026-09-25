@@ -140,7 +140,7 @@ workflow ENVIDENT {
     // Filter and branch reads based on minimum read count with logging
     READS_QC.out.reads.branch{ meta, reads ->
                                     def read_files = reads instanceof List ? reads : [reads]
-                                    def count = read_files.collect { read -> read.toAbsolutePath().countFastq() }.sum()
+                                    def count = read_files[0].toAbsolutePath().countFastq()
                                     qc_pass: count >= params.min_read_count
                                     qc_fail: count < params.min_read_count
                                 }
