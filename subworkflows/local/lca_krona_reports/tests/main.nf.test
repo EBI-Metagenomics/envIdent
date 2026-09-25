@@ -3,15 +3,15 @@ nextflow_workflow {
     script "../main.nf"
     workflow "LCA_KRONA_REPORTS"
     tag "subworkflows"
-    tag "vsearch_asv_krona"
+    tag "lca_krona_reports"
 
     test("Append counts and report assigned and unclassified ASVs") {
         when {
             workflow {
                 """
-                input[0] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/vsearch_asv_krona_swf/tests/data/mixed_counts.tsv')])
-                input[1] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/vsearch_asv_krona_swf/tests/data/mixed_all.tsv')])
-                input[2] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/vsearch_asv_krona_swf/tests/data/mixed_top.tsv')])
+                input[0] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/mixed_counts.tsv')])
+                input[1] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/mixed_all.tsv')])
+                input[2] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/mixed_top.tsv')])
                 """
             }
         }
@@ -20,7 +20,7 @@ nextflow_workflow {
             assert workflow.out.versions.size() == 3
             def counts = ['seq_1': 7, 'seq_2': 3]
             ['all', 'top'].each { method ->
-                def original = path("${projectDir}/subworkflows/local/vsearch_asv_krona_swf/tests/data/mixed_${method}.tsv").readLines()
+                def original = path("${projectDir}/subworkflows/local/lca_krona_reports/tests/data/mixed_${method}.tsv").readLines()
                 def output = workflow.out["lca_${method}"]
                 assert output.size() == 1
                 assert output[0][0] == [id: 'test']
@@ -42,9 +42,9 @@ nextflow_workflow {
         when {
             workflow {
                 """
-                input[0] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/vsearch_asv_krona_swf/tests/data/no_hits_counts.tsv')])
-                input[1] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/vsearch_asv_krona_swf/tests/data/no_hits_all.tsv')])
-                input[2] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/vsearch_asv_krona_swf/tests/data/no_hits_top.tsv')])
+                input[0] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/no_hits_counts.tsv')])
+                input[1] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/no_hits_all.tsv')])
+                input[2] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/no_hits_top.tsv')])
                 """
             }
         }
@@ -53,7 +53,7 @@ nextflow_workflow {
             assert workflow.out.versions.size() == 3
             def counts = ['seq_2': 3]
             ['all', 'top'].each { method ->
-                def original = path("${projectDir}/subworkflows/local/vsearch_asv_krona_swf/tests/data/no_hits_${method}.tsv").readLines()
+                def original = path("${projectDir}/subworkflows/local/lca_krona_reports/tests/data/no_hits_${method}.tsv").readLines()
                 def output = workflow.out["lca_${method}"]
                 assert output.size() == 1
                 assert output[0][0] == [id: 'test']
