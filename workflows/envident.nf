@@ -442,31 +442,37 @@ workflow ENVIDENT {
         .map { meta, _reads -> "${meta.id},empty_after_qc" }
         .set { empty_after_qc_fails }
 
-    // Save all failed runs to file //
-    all_failed_runs = seqfu_fails.concat( sfxhd_fails, libstrat_fails, min_reads_fails, reads_percentage_fails, empty_after_qc_fails)
-    all_failed_runs.collectFile(name: "qc_failed_runs.csv", storeDir: "${params.outdir}", newLine: true, cache: false)
-
-    // Extract passed runs, describe whether those passed runs also ASV results //
-    DADA2_SWF.out.dada2_report.map { meta, dada2_report -> [ ["id": meta.id, "single_end": meta.single_end], dada2_report ] }
+    // Classify DADA2 results, giving the failure flag precedence over available reports.
+    DADA2_SWF.out.dada2_report.map { meta, _dada2_report -> [["id": meta.id, "single_end": meta.single_end], "has_dada2_report"] }
     .concat(
         ch_passed_samples.map { meta -> [["id": meta.id, "single_end": meta.single_end], "qc_pass"] },
         dada2_stats_fail
     )
     .groupTuple()
-    .map { meta, results ->
-        if ( results.size() == 3 ) {
-            return "${meta.id},all_results"
-        }
-        else {
-            if (results.find { it == "true" }) {
-                return "${meta.id},dada2_stats_fail"
-            } else {
-                return "${meta.id},no_asvs"
-            }
-        }
-        error "Unexpected. meta: ${meta}, results: ${results}"
+    .branch { meta, results ->
+        failed: results.contains("true")
+        passed: results.contains("qc_pass") &&
+            results.contains("has_dada2_report") &&
+            results.contains("false")
+        no_asvs: true
     }
-    .set { final_passed_runs }
+    .set { dada2_qc_results }
+
+    dada2_qc_results.failed
+        .map { meta, _results -> "${meta.id},dada2_stats_fail" }
+        .set { dada2_failed_runs }
+
+    dada2_qc_results.no_asvs
+        .map { meta, _results -> "${meta.id},no_asvs" }
+        .set { no_asvs_failed_runs }
+
+    // Save all failed runs to file //
+    all_failed_runs = seqfu_fails.concat( sfxhd_fails, libstrat_fails, min_reads_fails, reads_percentage_fails, empty_after_qc_fails, dada2_failed_runs, no_asvs_failed_runs)
+    all_failed_runs.collectFile(name: "qc_failed_runs.csv", storeDir: "${params.outdir}", newLine: true, cache: false)
+
+    dada2_qc_results.passed
+        .map { meta, _results -> "${meta.id},all_results" }
+        .set { final_passed_runs }
 
     // Save all passed runs to file //
     final_passed_runs.collectFile(name: "qc_passed_runs.csv", storeDir: "${params.outdir}", newLine: true, cache: false)
