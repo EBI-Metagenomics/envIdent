@@ -208,9 +208,10 @@ have an empty accession and `NA` identity/coverage where those columns are prese
 Their reads remain included under `Unclassified` in the Krona counts and reports.
 
 `asv/<sample>_asv_read_counts.tsv` is generated once per sample by
-`make_asv_count_table.py`, counting forward-map entries for ASV IDs in the all-hits LCA table.
-BOLD supplies the IDs when enabled; otherwise MIDORI does. No-hit ASVs remain
-in those tables, so their counts are retained.
+the MGnify pipelines toolkit's `make_asv_count_table`, counting nonzero forward-map
+entries for the filtered reads from DADA2. Counts are independent of taxonomy and
+are generated even when both database branches are disabled. BOLD and MIDORI
+share this table. Empty counts retain the `asv` and `count` header.
 
 Both final `taxonomy_lca_all_hits.tsv` and `taxonomy_lca_top_hits.tsv` files are
 headerless, with columns `ASV ID`, `taxonomy`, and `count`. The third column comes
