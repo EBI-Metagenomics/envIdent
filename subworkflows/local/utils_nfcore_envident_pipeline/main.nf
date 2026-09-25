@@ -47,9 +47,12 @@ workflow PIPELINE_INITIALISATION {
         workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1
     )
 
-    // Keep this check active even when schema validation is disabled.
-    if (params.dada2_merge_mode == 'separate') {
-        error "dada2_merge_mode 'separate' is currently unsupported: ASV counting does not support separate-strand ASV IDs. Use 'standard' or 'gap'."
+    // Check database dependencies even when schema validation is disabled.
+    if (params.run_coi_bold && !params.coi_bold_ref_db) {
+        error "--run_coi_bold requires --coi_bold_ref_db"
+    }
+    if (params.run_coi_midori && !params.coi_midori_ref_db) {
+        error "--run_coi_midori requires --coi_midori_ref_db"
     }
 
     //

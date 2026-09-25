@@ -124,7 +124,13 @@
             "fa_icon": "fas fa-database",
             "description": "Configuration options for BOLD (Barcode of Life Data System) database files and parameters.",
             "properties": {
-                "COI_bold_ref_db": {
+                "run_coi_bold": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run COI taxonomic classification against BOLD",
+                    "help_text": "Enabled by default. Requires coi_bold_ref_db; set run_coi_bold to false to skip."
+                },
+                "coi_bold_ref_db": {
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to BOLD database UDB or FASTA file",
@@ -145,7 +151,13 @@
             "fa_icon": "fas fa-database",
             "description": "Configuration options for MIDORI (Molecular Identification Database) database files and parameters.",
             "properties": {
-                "COI_midori_ref_db": {
+                "run_coi_midori": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run COI taxonomic classification against MIDORI",
+                    "help_text": "Enabled by default. Requires coi_midori_ref_db; set run_coi_midori to false to skip."
+                },
+                "coi_midori_ref_db": {
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to COI MIDORI database UDB or FASTA file",

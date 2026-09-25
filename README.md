@@ -78,6 +78,7 @@ This pipeline uses the following reference databases:
 | MIDORI2 | COI taxonomic classification | Configurable via parameters |
 
 > [!NOTE]
+Running with both COI reference databases is enabled by default (`run_coi_bold = true` and `run_coi_midori = true`). Supply their `--coi_bold_ref_db` and `--coi_midori_ref_db` paths. Use `--run_coi_bold false` or `--run_coi_midori false` to skip a datbase, whether or not its database is configured.
 > Database paths can be configured in the pipeline parameters. Contact the development team for access to preprocessed databases.
 
 ## How to Run

@@ -240,8 +240,8 @@ workflow ENVIDENT {
 
     // ASV taxonomic assignments + generate Krona plots for each run+amp_region //
 
-    if (params.COI_bold_ref_db) {
-        ref_db = file(params.COI_bold_ref_db, type: 'file', checkIfExists: true)
+    if (params.run_coi_bold) {
+        ref_db = file(params.coi_bold_ref_db, type: 'file', checkIfExists: true)
         VSEARCH_ASV_LCA_BOLD(
             DADA2_SWF.out.dada2_out,
             ref_db
@@ -249,8 +249,8 @@ workflow ENVIDENT {
         ch_versions = ch_versions.mix(VSEARCH_ASV_LCA_BOLD.out.versions)
     }
 
-    if (params.COI_midori_ref_db) {
-        ref_db = file(params.COI_midori_ref_db, type: 'file', checkIfExists: true)
+    if (params.run_coi_midori) {
+        ref_db = file(params.coi_midori_ref_db, type: 'file', checkIfExists: true)
         VSEARCH_ASV_LCA_MIDORI(
             DADA2_SWF.out.dada2_out,
             ref_db
@@ -258,9 +258,9 @@ workflow ENVIDENT {
         ch_versions = ch_versions.mix(VSEARCH_ASV_LCA_MIDORI.out.versions)
     }
 
-    if (params.COI_bold_ref_db || params.COI_midori_ref_db) {
+    if (params.run_coi_bold || params.run_coi_midori) {
         // Either complete LCA table supplies the ASV IDs, including no-hit ASVs.
-        count_taxonomy = params.COI_bold_ref_db
+        count_taxonomy = params.run_coi_bold
             ? VSEARCH_ASV_LCA_BOLD.out.lca_all
             : VSEARCH_ASV_LCA_MIDORI.out.lca_all
         map_count_input = DADA2_SWF.out.dada2_out
@@ -269,7 +269,7 @@ workflow ENVIDENT {
         MAKE_ASV_COUNT_TABLES(map_count_input)
         ch_versions = ch_versions.mix(MAKE_ASV_COUNT_TABLES.out.versions)
 
-        if (params.COI_bold_ref_db) {
+        if (params.run_coi_bold) {
             LCA_KRONA_REPORTS_BOLD(
                 MAKE_ASV_COUNT_TABLES.out.asv_read_counts_out,
                 VSEARCH_ASV_LCA_BOLD.out.lca_all,
@@ -277,7 +277,7 @@ workflow ENVIDENT {
             )
             ch_versions = ch_versions.mix(LCA_KRONA_REPORTS_BOLD.out.versions)
         }
-        if (params.COI_midori_ref_db) {
+        if (params.run_coi_midori) {
             LCA_KRONA_REPORTS_MIDORI(
                 MAKE_ASV_COUNT_TABLES.out.asv_read_counts_out,
                 VSEARCH_ASV_LCA_MIDORI.out.lca_all,
