@@ -196,7 +196,7 @@ come from `--bold_label` (default `BOLD`) and `--midori_label`
 
 For LCA input, the matching genus prefix is removed from the species label first.
 If the first remaining underscore-separated word contains `.`, eg. `sp.`, the species rank
-is left empty (`s__;`). Clean hits retain the full label after genus removal.
+is left empty (`s__;`). Hits in the accessions output file retain the full label after genus removal.
 
 Taxonomy uses eight ranks: domain, kingdom, phylum, class, order,
 family, genus, and species. Missing ranks retain empty placeholders.
