@@ -13,8 +13,8 @@ nextflow_process {
                     file('${projectDir}/modules/local/make_asv_count_tables/tests/data/forward.txt'),
                     file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reverse.txt')
                 ], [
-                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reads.fastq.gz'),
-                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reads_reverse.fastq.gz')
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_1.fastp.fastq.gz'),
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_2.fastp.fastq.gz')
                 ]]
                 """
             }
@@ -31,7 +31,7 @@ nextflow_process {
                 """
                 input[0] = [[id: 'empty', single_end: true],
                     file('${projectDir}/modules/local/make_asv_count_tables/tests/data/empty_map.txt'),
-                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reads.fastq.gz')]
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_1.fastp.fastq.gz')]
                 """
             }
         }
