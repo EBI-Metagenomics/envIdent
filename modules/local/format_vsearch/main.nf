@@ -15,13 +15,13 @@ process FORMAT_VSEARCH {
 
     script:  
     def flags = ''  
-    if (mode == 'lca') {  
-    flags = '-q --lca'  
-    } else if ( mode == 'clean' ) {  
-    flags = '-a'  
-    } else {  
-    error "Unknown FORMAT_VSEARCH mode '${mode}': expected 'lca' or 'clean'"  
-    }  
+    if (mode == 'lca') {
+        flags = '-q --lca'
+    } else if (mode == 'clean') {
+        flags = '-a'
+    } else {
+        error "Unknown FORMAT_VSEARCH mode '${mode}': expected 'lca' or 'clean'"
+    }
     """  
     formatting_vsearch.py \\
     -i ${vsearch_out} \\
