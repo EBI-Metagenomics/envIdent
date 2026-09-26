@@ -40,7 +40,7 @@ ranks: list[str] = list(RANK_MAP)  # d, k, p, c, o, f, g, s
 
 
 def clean_id(val: str) -> str:
-    """Strip surrounding whitespace and a trailing numeric tax ID like _64606.
+    """Strip surrounding whitespace and a trailing numeric tax ID.
 
     e.g. ``"Channa_gachua_64606"`` -> ``"Channa_gachua"``.
     """
@@ -171,13 +171,25 @@ def process(
 
     Raises:
         ValueError: If the line does not have at least 2 tab-separated
-            columns, or if the taxonomy field is not ``"*"`` and does not
+            columns; if ``show_identity`` is True but there is no 3rd
+            column; if ``show_coverage`` is True but there is no 4th
+            column; or if the taxonomy field is not ``"*"`` and does not
             have the form ``"accession;rank_val;..."``.
     """
     cols = line.rstrip("\n").split("\t")
     if len(cols) < 2:
         raise ValueError(
             f"expected at least 2 tab-separated columns (query, taxonomy), got {len(cols)}: {line!r}"
+        )
+    if show_identity and len(cols) < 3:
+        raise ValueError(
+            "--identity/-p was requested but the line has no 3rd column "
+            f"(percent identity): {line!r}"
+        )
+    if show_coverage and len(cols) < 4:
+        raise ValueError(
+            "--coverage/-q was requested but the line has no 4th column "
+            f"(query coverage): {line!r}"
         )
 
     seq_id = cols[0]
@@ -304,6 +316,7 @@ def main() -> None:
         finally:
             if not success:
                 os.remove(tmp_path)
+        os.chmod(tmp_path, 0o644)
         os.replace(tmp_path, args.output)  # atomic: same filesystem as dest_dir
     else:
         # Stdout can't be "un-printed" if a later line fails, and it's
