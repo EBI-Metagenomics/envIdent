@@ -26,10 +26,12 @@ nextflow_process {
                 { assert path(process.out.lca_all[0][1]).getFileName().toString() == 'test_lca_all.tsv' },
                 { assert path(process.out.lca_top[0][1]).getFileName().toString() == 'test_lca_top.tsv' },
                 {
+                    // expected_all.tsv checks genus-level resolution: g__Acanthamoeba;s__;
                     assert path(process.out.lca_all[0][1]).readLines() ==
                         path("${projectDir}/modules/local/lca/tests/data/expected_all.tsv").readLines()
                 },
                 {
+                    // expected_top.tsv checks species-level resolution: g__Acanthamoeba;s__jacobsi;
                     assert path(process.out.lca_top[0][1]).readLines() ==
                         path("${projectDir}/modules/local/lca/tests/data/expected_top.tsv").readLines()
                 },
