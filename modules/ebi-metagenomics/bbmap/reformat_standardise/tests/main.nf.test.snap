@@ -15,10 +15,10 @@
             ],
             null
         ],
-        "timestamp": "2026-04-22T14:38:28.64422",
+        "timestamp": "2026-09-26T16:04:43.205269",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
         }
     },
     "paired-end fastq": {
@@ -37,10 +37,10 @@
             ],
             null
         ],
-        "timestamp": "2026-04-22T14:38:24.838777",
+        "timestamp": "2026-09-26T16:04:36.458532",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
         }
     }
 }
