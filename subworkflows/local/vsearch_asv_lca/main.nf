@@ -1,7 +1,7 @@
-include { VSEARCH_USEARCHGLOBAL as VSEARCH } from '../../../modules/nf-core/vsearch/usearchglobal/main'
-include { FORMAT_VSEARCH as FORMAT_VSEARCH_LCA } from '../../../modules/local/format_vsearch/main'
+include { VSEARCH_USEARCHGLOBAL as VSEARCH       } from '../../../modules/nf-core/vsearch/usearchglobal/main'
+include { FORMAT_VSEARCH as FORMAT_VSEARCH_LCA   } from '../../../modules/local/format_vsearch/main'
 include { FORMAT_VSEARCH as FORMAT_VSEARCH_CLEAN } from '../../../modules/local/format_vsearch/main'
-include { LCA } from '../../../modules/local/lca/main'
+include { LCA                                    } from '../../../modules/local/lca/main'
 
 workflow VSEARCH_ASV_LCA {
     
