@@ -37,7 +37,7 @@ process CUTADAPT {
     }
 
     // Two sequential passes: primers are trimmed and independently logged/
-    // stat's made for the 5' pass and the 3' pass. cutadapt is happy to receive
+    // stats made for the 5' pass and the 3' pass. cutadapt is happy to receive
     // an empty primer arg for a pass that has nothing to trim, so we only
     // skip cutadapt entirely when NEITHER pass has any primers at all.
     // Each pass carries everything needed to build its own cutadapt call,
