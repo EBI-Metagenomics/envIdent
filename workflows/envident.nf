@@ -244,10 +244,15 @@ workflow ENVIDENT {
 
     // ASV taxonomic assignments + generate Krona plots for each run+amp_region //
 
+    vsearch_input = DADA2_SWF.out.dada2_out
+        .map { meta, maps, asv_seqs, filt_reads ->
+            [ meta, asv_seqs ]    
+        }
+
     if (params.run_coi_bold) {
         ref_db = file(params.coi_bold_ref_db, type: 'file', checkIfExists: true)
         VSEARCH_ASV_KRONA_BOLD(
-            DADA2_SWF.out.dada2_out,
+            vsearch_input,
             ref_db,
             MAKE_ASV_COUNT_TABLES.out.asv_read_counts
         )
@@ -257,7 +262,7 @@ workflow ENVIDENT {
     if (params.run_coi_midori) {
         ref_db = file(params.coi_midori_ref_db, type: 'file', checkIfExists: true)
         VSEARCH_ASV_KRONA_MIDORI(
-            DADA2_SWF.out.dada2_out,
+            vsearch_input,
             ref_db,
             MAKE_ASV_COUNT_TABLES.out.asv_read_counts
         )

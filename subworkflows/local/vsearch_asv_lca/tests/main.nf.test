@@ -15,9 +15,7 @@ nextflow_workflow {
                 """
                 input[0] = Channel.of([
                     [id: 'test', single_end: false],
-                    [],
-                    file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/query.fasta'),
-                    []
+                    file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/query.fasta')
                 ])
                 input[1] = file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/reference.fasta')
                 """
@@ -69,8 +67,8 @@ nextflow_workflow {
             workflow {
                 """
                 input[0] = Channel.of([
-                    [id: 'no_hits', single_end: false], [],
-                    file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/no_hits.fasta'), []
+                    [id: 'no_hits', single_end: false],
+                    file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/no_hits.fasta')
                 ])
                 input[1] = file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/reference.fasta')
                 """

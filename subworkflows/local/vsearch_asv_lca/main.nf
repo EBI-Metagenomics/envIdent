@@ -6,17 +6,12 @@ include { LCA                                    } from '../../../modules/local/
 workflow VSEARCH_ASV_LCA {
     
     take:
-        dada2_output // [meta, maps, asv_seqs, filtered_reads]
-        ref_db       // Reference FASTA with taxonomy in sequence headers
+        vsearch_input // [meta, asv_seqs]
+        ref_db        // Reference FASTA with taxonomy in sequence headers
 
     main:
 
         ch_versions = channel.empty()
-
-        vsearch_input = dada2_output
-                       .map { meta, maps, asv_seqs, filt_reads ->
-                            [ meta, asv_seqs ]
-                        }
 
         VSEARCH(
             vsearch_input,
