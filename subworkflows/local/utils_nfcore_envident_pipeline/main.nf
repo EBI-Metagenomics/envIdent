@@ -51,8 +51,8 @@ workflow PIPELINE_INITIALISATION {
     if (params.run_coi_bold && !params.coi_bold_ref_db) {
         error "--run_coi_bold requires --coi_bold_ref_db"
     }
-    if (params.run_coi_midori && !params.coi_midori_ref_db) {
-        error "--run_coi_midori requires --coi_midori_ref_db"
+    if (params.run_coi_midori2 && !params.coi_midori2_ref_db) {
+        error "--run_coi_midori2 requires --coi_midori2_ref_db"
     }
 
     //

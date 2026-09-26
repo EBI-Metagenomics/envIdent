@@ -138,7 +138,7 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Run COI taxonomic classification against BOLD",
-                    "help_text": "Enabled by default. Requires coi_bold_ref_db; set run_coi_bold to false to skip. Set both run_coi_bold and run_coi_midori to false to generate ASVs and read counts without taxonomic assignments or Krona reports."
+                    "help_text": "Enabled by default. Requires coi_bold_ref_db; set run_coi_bold to false to skip. Set both run_coi_bold and run_coi_midori2 to false to generate ASVs and read counts without taxonomic assignments or Krona reports."
                 },
                 "coi_bold_ref_db": {
                     "type": "string",
@@ -165,7 +165,7 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Run COI taxonomic classification against MIDORI2",
-                    "help_text": "Enabled by default. Requires coi_midori_ref_db; set run_coi_midori to false to skip. Set both run_coi_bold and run_coi_midori2 to false to generate ASVs and read counts without taxonomic assignments or Krona reports."
+                    "help_text": "Enabled by default. Requires coi_midori2_ref_db; set run_coi_midori2 to false to skip. Set both run_coi_bold and run_coi_midori2 to false to generate ASVs and read counts without taxonomic assignments or Krona reports."
                 },
                 "coi_midori2_ref_db": {
                     "type": "string",

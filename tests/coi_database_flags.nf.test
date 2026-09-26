@@ -5,7 +5,7 @@ nextflow_pipeline {
     test("Enabled bold requires its reference path: bold") {
         when {
             params {
-                run_coi_midori = false
+                run_coi_midori2 = false
                 coi_bold_ref_db = null
                 outdir = "$outputDir"
             }
@@ -16,17 +16,17 @@ nextflow_pipeline {
         }
     }
 
-    test("Enabled midori requires its reference path: midori") {
+    test("Enabled midori2 requires its reference path: midori2") {
         when {
             params {
                 run_coi_bold = false
-                coi_midori_ref_db = null
+                coi_midori2_ref_db = null
                 outdir = "$outputDir"
             }
         }
         then {
             assert !workflow.success
-            assert workflow.stdout.join('\n').contains('--run_coi_midori requires --coi_midori_ref_db')
+            assert workflow.stdout.join('\n').contains('--run_coi_midori2 requires --coi_midori2_ref_db')
         }
     }
 }
