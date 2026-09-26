@@ -36,7 +36,7 @@ is_paired  = !is.na(path_r) && path_r != "NA"
 if (!is_paired) merge_mode = "standard"  # gap/separate only meaningful for PE
 
 # different tax ranks for silva/pr2
-silva_tax_vec = c("Superkingdom", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+silva_tax_vec = c("Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
 pr2_tax_vec = c("Domain", "Supergroup", "Division", "Subdivision", "Class", "Order", "Family", "Genus", "Species")
 
 count_fastq_reads <- function(reads_path){

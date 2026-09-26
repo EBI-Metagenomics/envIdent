@@ -1,59 +1,43 @@
 nextflow_process {
-
-    name "Test Process MAKE_ASV_COUNT_TABLES"
+    name "Test toolkit map-based ASV counter"
     script "../main.nf"
     process "MAKE_ASV_COUNT_TABLES"
     tag "modules"
     tag "make_asv_count_tables"
 
-    test("Taxonomy-filtered read counts and Krona output") {
-
+    test("Count forward entries and retain unclassified ASVs") {
         when {
-            params {
-                outdir = "$outputDir"
-            }
             process {
                 """
-                input[0] = [
-                    [ id:'test', single_end:false, var_region:'16S-V3-V4' ], // meta map
-                    [
-                        file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_1_map.txt', checkIfExists: true),
-                        file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_2_map.txt', checkIfExists: true)
-                    ],
-                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_taxa.tsv', checkIfExists: true),
-                    [
-                        file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_1.fastp.fastq.gz', checkIfExists: true),
-                        file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_2.fastp.fastq.gz', checkIfExists: true)
-                    ]
-                ]
-                input[1] = "DADA2-BOLD"
+                input[0] = [[id: 'test', single_end: false], [
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/forward.txt'),
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/reverse.txt')
+                ], [
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_1.fastp.fastq.gz'),
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_2.fastp.fastq.gz')
+                ]]
                 """
             }
         }
-
         then {
-            assertAll(
-                { assert process.success },
-                { assert process.out.asv_read_counts_out.size() == 1 },
-                { assert process.out.asv_read_counts_out.get(0).get(0).id == "test" },
-                { assert path(process.out.asv_read_counts_out.get(0).get(1)).getFileName().toString() == "test_16S-V3-V4_DADA2-BOLD_asv_read_counts.tsv" },
-                { assert path(process.out.asv_read_counts_out.get(0).get(1)).readLines().first() == "asv\tcount" },
-                { assert path(process.out.asv_read_counts_out.get(0).get(1)).readLines().size() == 3 },
-                { assert process.out.asv_count_tables_out.size() == 1 },
-                {
-                    def counts = path(process.out.asv_read_counts_out.get(0).get(1)).readLines().drop(1).collectEntries {
-                        def fields = it.split('\t')
-                        [(fields[0]): fields[1].toInteger()]
-                    }
-                    def maps = path("${projectDir}/modules/local/make_asv_count_tables/tests/data/test_1_map.txt").readLines()
-                    assert counts == ['seq_11': maps.count('11'), 'seq_255': maps.count('255')]
-                    def krona = path(process.out.asv_count_tables_out.get(0).get(1)).readLines()
-                    assert krona.size() == 1
-                    assert krona[0] == "${counts.values().sum()}\tsk__Eukaryota\tk__Metazoa\tp__Arthropoda"
-                }
-            )
+            assert process.success
+            assert path(process.out.asv_read_counts[0][1]).readLines() == ['asv\tcount', 'seq_1\t7', 'seq_2\t3', 'seq_9\t1']
         }
-
     }
 
+    test("No mapped ASVs produces a header-only count table") {
+        when {
+            process {
+                """
+                input[0] = [[id: 'empty', single_end: true],
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/empty_map.txt'),
+                    file('${projectDir}/modules/local/make_asv_count_tables/tests/data/test_1.fastp.fastq.gz')]
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert path(process.out.asv_read_counts[0][1]).readLines() == ['asv\tcount']
+        }
+    }
 }

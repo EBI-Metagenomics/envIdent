@@ -47,6 +47,14 @@ workflow PIPELINE_INITIALISATION {
         workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1
     )
 
+    // Check database dependencies even when schema validation is disabled.
+    if (params.run_coi_bold && !params.coi_bold_ref_db) {
+        error "--run_coi_bold requires --coi_bold_ref_db"
+    }
+    if (params.run_coi_midori && !params.coi_midori_ref_db) {
+        error "--run_coi_midori requires --coi_midori_ref_db"
+    }
+
     //
     // Validate parameters and generate parameter summary to stdout
     //

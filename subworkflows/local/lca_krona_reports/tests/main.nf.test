@@ -1,0 +1,73 @@
+nextflow_workflow {
+    name "Test LCA_KRONA_REPORTS"
+    script "../main.nf"
+    workflow "LCA_KRONA_REPORTS"
+    tag "subworkflows"
+    tag "lca_krona_reports"
+
+    test("Append counts and report assigned and unclassified ASVs") {
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/mixed_counts.tsv')])
+                input[1] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/mixed_all.tsv')])
+                input[2] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/mixed_top.tsv')])
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.out.versions.size() == 3
+            def counts = ['seq_1': 7, 'seq_2': 3]
+            ['all', 'top'].each { method ->
+                def original = path("${projectDir}/subworkflows/local/lca_krona_reports/tests/data/mixed_${method}.tsv").readLines()
+                def output = workflow.out["lca_${method}"]
+                assert output.size() == 1
+                assert output[0][0] == [id: 'test']
+                assert path(output[0][1]).readLines() == original.collect { row ->
+                    "${row}\t${counts[row.split('\t')[0]]}".toString()
+                }
+                def kronaCounts = path(workflow.out["krona_${method}_counts"][0][1]).readLines()
+                assert kronaCounts.sort() == ['3\tUnclassified', method == 'all' ? '7\td__\tk__Metazoa' : '7\td__\tk__Metazoa\tp__Chordata'].sort()
+                def html = path(workflow.out["krona_${method}"][0][1])
+                assert html.getFileName().toString() == "test_lca_${method}.html"
+                assert html.text.contains('<html>')
+                assert html.text.contains('Unclassified')
+                assert html.text.contains('k__Metazoa')
+            }
+        }
+    }
+
+    test("Report only unclassified ASVs") {
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/no_hits_counts.tsv')])
+                input[1] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/no_hits_all.tsv')])
+                input[2] = Channel.of([[id: 'test'], file('${projectDir}/subworkflows/local/lca_krona_reports/tests/data/no_hits_top.tsv')])
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.out.versions.size() == 3
+            def counts = ['seq_2': 3]
+            ['all', 'top'].each { method ->
+                def original = path("${projectDir}/subworkflows/local/lca_krona_reports/tests/data/no_hits_${method}.tsv").readLines()
+                def output = workflow.out["lca_${method}"]
+                assert output.size() == 1
+                assert output[0][0] == [id: 'test']
+                assert path(output[0][1]).readLines() == original.collect { row ->
+                    "${row}\t${counts[row.split('\t')[0]]}".toString()
+                }
+                def kronaCounts = path(workflow.out["krona_${method}_counts"][0][1]).readLines()
+                assert kronaCounts.sort() == ['3\tUnclassified']
+                def html = path(workflow.out["krona_${method}"][0][1])
+                assert html.getFileName().toString() == "test_lca_${method}.html"
+                assert html.text.contains('<html>')
+                assert html.text.contains('Unclassified')
+
+            }
+        }
+    }
+}

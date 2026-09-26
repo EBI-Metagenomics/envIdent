@@ -13,23 +13,24 @@ include { READS_QC as READS_QC_BEFOREHMM   } from '../subworkflows/local/reads_q
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC as FASTQC_RAW         } from '../modules/nf-core/fastqc/main'
-include { FASTQC as FASTQC_CLEAN       } from '../modules/nf-core/fastqc/main'
-include { paramsSummaryMap             } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc         } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML       } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText       } from '../subworkflows/local/utils_nfcore_envident_pipeline'
+include { FASTQC as FASTQC_RAW                             } from '../modules/nf-core/fastqc/main'
+include { FASTQC as FASTQC_CLEAN                           } from '../modules/nf-core/fastqc/main'
+include { paramsSummaryMap                                 } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc                             } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML                           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText                           } from '../subworkflows/local/utils_nfcore_envident_pipeline'
 include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_F } from '../subworkflows/local/primer_identification_swf.nf'
 include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_R } from '../subworkflows/local/primer_identification_swf.nf'
-include { CONCAT_PRIMER_CUTADAPT       } from '../subworkflows/local/concat_primer_cutadapt.nf'
-include { SUPPLIED_PRIMERS             } from '../modules/local/supplied_primers/main.nf'
-include { PREP_CUTADAPT_PRIMERS        } from '../modules/local/prep_cutadapt_primers/main.nf'
-include { EXTRACT_CUTADAPT_PRIMERS     } from '../modules/local/extract_cutadapt_primers/main.nf'
-include { PROFILE_HMMSEARCH_PFAM       } from '../subworkflows/local/profile_hmmsearch_pfam/main'
-include { DADA2_SWF                    } from '../subworkflows/local/dada2_swf.nf'
-include { MAPSEQ_ASV_KRONA as MAPSEQ_ASV_KRONA_BOLD         } from '../subworkflows/local/mapseq_asv_krona_swf.nf'
-include { MAPSEQ_ASV_KRONA as MAPSEQ_ASV_KRONA_MIDORI       } from '../subworkflows/local/mapseq_asv_krona_swf.nf'
-include { MULTIQC                      } from '../modules/nf-core/multiqc/main'
+include { CONCAT_PRIMER_CUTADAPT                           } from '../subworkflows/local/concat_primer_cutadapt.nf'
+include { SUPPLIED_PRIMERS                                 } from '../modules/local/supplied_primers/main.nf'
+include { PREP_CUTADAPT_PRIMERS                            } from '../modules/local/prep_cutadapt_primers/main.nf'
+include { EXTRACT_CUTADAPT_PRIMERS                         } from '../modules/local/extract_cutadapt_primers/main.nf'
+include { PROFILE_HMMSEARCH_PFAM                           } from '../subworkflows/local/profile_hmmsearch_pfam/main'
+include { DADA2_SWF                                        } from '../subworkflows/local/dada2_swf.nf'
+include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_BOLD      } from '../subworkflows/local/vsearch_asv_krona/main'
+include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_MIDORI    } from '../subworkflows/local/vsearch_asv_krona/main'
+include { MAKE_ASV_COUNT_TABLES                            } from '../modules/local/make_asv_count_tables/main'
+include { MULTIQC                                          } from '../modules/nf-core/multiqc/main'
 
 // Import samplesheetToList from nf-schema //
 include { samplesheetToList            } from 'plugin/nf-schema'
@@ -49,31 +50,16 @@ workflow ENVIDENT {
     samplesheet // channel: samplesheet read in from --input
     main:
     
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
 
      /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        INITIALISE REFERENCE DATABASE INPUT TUPLES
+        INITIALISE PRIMER LIBRARIES
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-    // Regular ASV resolution method //
-    dada2_krona_bold_tuple = tuple(
-        file(params.bold_db_fasta, checkIfExists: true),
-        file(params.bold_db_tax, checkIfExists: true),
-        file(params.bold_db_mscluster, checkIfExists: true),
-        params.dada2_bold_label
-    )
-
-    dada2_krona_midori_tuple = tuple(
-        file(params.midori_db_fasta, checkIfExists: true),
-        file(params.midori_db_tax, checkIfExists: true),
-        file(params.midori_db_mscluster, checkIfExists: true),
-        params.dada2_midori_label
-    )
-
-    // Initialiase standard primer library for PIMENTO if user-given//
+    // Initialise standard primer library for PIMENTO if user-given//
     // If there are no primers provided, it will fallback to use the default PIMENTO standard primer library
     std_primer_library = []
 
@@ -202,10 +188,10 @@ workflow ENVIDENT {
 
     // Pfam profiling
     pfam_db = params.pfam_coi_db ?
-    Channel
+    channel
         .fromPath(params.pfam_coi_db, checkIfExists: true)
         .first() :
-    Channel.empty()
+    channel.empty()
 
     PROFILE_HMMSEARCH_PFAM(
         READS_QC_BEFOREHMM.out.reads_fasta,
@@ -250,19 +236,39 @@ workflow ENVIDENT {
                                 return [key, stats_fail]
                             }
 
-    // ASV taxonomic assignments + generate Krona plots for each run+amp_region //
-    MAPSEQ_ASV_KRONA_BOLD(
-        DADA2_SWF.out.dada2_out,
-        dada2_krona_bold_tuple
-    )
-    ch_versions = ch_versions.mix(MAPSEQ_ASV_KRONA_BOLD.out.versions)
+    // Generate one taxonomy-independent count table directly from DADA2 maps.
+    map_count_input = DADA2_SWF.out.dada2_out
+        .map { meta, maps, _asv_seqs, filt_reads -> [meta, maps, filt_reads] }
+    MAKE_ASV_COUNT_TABLES(map_count_input)
+    ch_versions = ch_versions.mix(MAKE_ASV_COUNT_TABLES.out.versions)
 
-    MAPSEQ_ASV_KRONA_MIDORI(
-        DADA2_SWF.out.dada2_out,
-        dada2_krona_midori_tuple
-    )
-    ch_versions = ch_versions.mix(MAPSEQ_ASV_KRONA_MIDORI.out.versions)
-    
+    // ASV taxonomic assignments + generate Krona plots for each run+amp_region //
+
+    vsearch_input = DADA2_SWF.out.dada2_out
+        .map { meta, maps, asv_seqs, filt_reads ->
+            [ meta, asv_seqs ]    
+        }
+
+    if (params.run_coi_bold) {
+        ref_db = file(params.coi_bold_ref_db, type: 'file', checkIfExists: true)
+        VSEARCH_ASV_KRONA_BOLD(
+            vsearch_input,
+            ref_db,
+            MAKE_ASV_COUNT_TABLES.out.asv_read_counts
+        )
+        ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_BOLD.out.versions)
+    }
+
+    if (params.run_coi_midori) {
+        ref_db = file(params.coi_midori_ref_db, type: 'file', checkIfExists: true)
+        VSEARCH_ASV_KRONA_MIDORI(
+            vsearch_input,
+            ref_db,
+            MAKE_ASV_COUNT_TABLES.out.asv_read_counts
+        )
+        ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_MIDORI.out.versions)
+    }
+
     //
     // MODULE: MultiQC
     //
@@ -283,24 +289,24 @@ workflow ENVIDENT {
         ).set { ch_collated_versions }
 
 
-    ch_multiqc_config        = Channel.fromPath(
+    ch_multiqc_config        = channel.fromPath(
         "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config = params.multiqc_config ?
-        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_config, checkIfExists: true) :
+        channel.empty()
     ch_multiqc_logo          = params.multiqc_logo ?
-        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_logo, checkIfExists: true) :
+        channel.empty()
 
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
+    ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
         file(params.multiqc_methods_description, checkIfExists: true) :
         file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = Channel.value(
+    ch_methods_description                = channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)

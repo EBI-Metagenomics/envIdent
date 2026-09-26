@@ -42,7 +42,7 @@ EnvIdent v0.1 implements the following key features:
 
 **ASV Analysis:**
 - Amplicon Sequence Variant (ASV) calling using DADA2
-- ASV taxonomic classification using MAPseq
+- ASV taxonomic classification using VSEARCH
 - Krona chart visualization for taxonomic results
 
 **Reporting and Quality Control:**
@@ -60,7 +60,7 @@ EnvIdent v0.1 implements the following key features:
 | [FastQC](https://github.com/s-andrews/fastqc) | 0.12.1 | Read quality control |
 | [HMMER](http://hmmer.org/) | 3.4 | Profile HMM searching for COI sequences |
 | [Krona](https://github.com/marbl/Krona)  | 2.8.1 | Interactive taxonomic visualization |
-| [MAPseq](https://github.com/meringlab/MAPseq)  | 2.1.1b | Taxonomic classification of ASVs |
+| [VSEARCH](https://github.com/torognes/vsearch)  | 2.32.0 | Taxonomic classification of ASVs |
 | [mgnify-pipelines-toolkit](https://github.com/EBI-Metagenomics/mgnify-pipelines-toolkit) | 1.0.4 | Toolkit containing various in-house processing scripts |
 | [MultiQC](https://github.com/MultiQC/MultiQC) | 1.27 | Aggregated quality control reporting |
 | [PIMENTO](https://github.com/EBI-Metagenomics/PIMENTO)  | 1.0.3 |  identification and inference |
@@ -78,6 +78,7 @@ This pipeline uses the following reference databases:
 | MIDORI2 | COI taxonomic classification | Configurable via parameters |
 
 > [!NOTE]
+Running with both COI reference databases is enabled by default (`run_coi_bold = true` and `run_coi_midori = true`). Supply their `--coi_bold_ref_db` and `--coi_midori_ref_db` paths. Use `--run_coi_bold false` or `--run_coi_midori false` to skip a database. Set both run_coi_bold and run_coi_midori to false to generate ASVs and read counts without taxonomic assignments or Krona reports.
 > Database paths can be configured in the pipeline parameters. Contact the development team for access to preprocessed databases.
 
 ## How to Run
@@ -132,9 +133,8 @@ Example output structure for a sample (sample1). The qc_passed and qc_failed csv
 results/
 ├── sample1/
 │   ├── asv/
-│   │   ├── sample1_DADA2-BOLD_asv_read_counts.tsv
-│   │   ├── sample1_DADA2-MIDORI_asv_read_counts.tsv
-│   │   └── sample1_dada2_stats.tsv
+│   │   ├── sample1_asv_read_counts.tsv
+│   │   ├── sample1_dada2_stats.tsv
 │   │   └── sample1_asvs.fasta
 │   ├── hmmsearch-COI/
 │   │   ├── sample1_Pfam-A.domtbl
@@ -148,16 +148,26 @@ results/
 │   │   └── sample1_2.fastq.gz
 │   │   └── sample1_suffix_header_err.json
 │   ├── taxonomy-summary/
-│   │   ├── DADA2-BOLD/
-│   │   |   ├── ERR8441464_DADA2-BOLD_asv_krona_counts.txt
-│   │   |   ├── ERR8441464_DADA2-BOLD_asv_taxa.tsv
-│   │   |   ├── ERR8441464_DADA2-BOLD.html
-│   │   |   └── ERR8441464_DADA2-BOLD.mseq
-│   │   ├── DADA2-MIDORI/
-│   │   |   ├── ERR8441464_DADA2-MIDORI_asv_krona_counts.txt
-│   │   |   ├── ERR8441464_DADA2-MIDORI_asv_taxa.tsv
-│   │   |   ├── ERR8441464_DADA2-MIDORI.html
-│   │   |   └── ERR8441464_DADA2-MIDORI.mseq
+│   │   ├── BOLD/
+│   │   │   ├── sample1_BOLD_vsearch_raw_hits.tsv
+│   │   │   ├── sample1_BOLD_vsearch_hits_with_accessions.tsv
+│   │   │   ├── sample1_BOLD_vsearch_hits_for_lca.tsv
+│   │   │   ├── sample1_BOLD_taxonomy_lca_all_hits.tsv
+│   │   │   ├── sample1_BOLD_taxonomy_lca_top_hits.tsv
+│   │   │   ├── sample1_BOLD_krona_lca_all_hits_counts.tsv
+│   │   │   ├── sample1_BOLD_krona_lca_top_hits_counts.tsv
+│   │   │   ├── sample1_BOLD_krona_lca_all_hits.html
+│   │   │   └── sample1_BOLD_krona_lca_top_hits.html
+│   │   ├── MIDORI/
+│   │   │   ├── sample1_MIDORI_vsearch_raw_hits.tsv
+│   │   │   ├── sample1_MIDORI_vsearch_hits_with_accessions.tsv
+│   │   │   ├── sample1_MIDORI_vsearch_hits_for_lca.tsv
+│   │   │   ├── sample1_MIDORI_taxonomy_lca_all_hits.tsv
+│   │   │   ├── sample1_MIDORI_taxonomy_lca_top_hits.tsv
+│   │   │   ├── sample1_MIDORI_krona_lca_all_hits_counts.tsv
+│   │   │   ├── sample1_MIDORI_krona_lca_top_hits_counts.tsv
+│   │   │   ├── sample1_MIDORI_krona_lca_all_hits.html
+│   │   │   └── sample1_MIDORI_krona_lca_top_hits.html
 ├── pipeline_info/
 │   ├── execution_report_YYYY-MM-DD_HH-mm-ss.html
 │   ├── execution_timeline_YYYY-MM-DD_HH-mm-ss.html
@@ -170,6 +180,41 @@ results/
 └── qc_failed_runs.csv
 ```
 
+Taxonomy filenames use `<sample>_<database>_<description>`. The database labels
+come from `--bold_label` (default `BOLD`) and `--midori_label`
+(default `MIDORI`); each label controls both the folder and filename prefix.
+
+| Description | Contents |
+| --- | --- |
+| `vsearch_raw_hits.tsv` | Original VSEARCH output, without a header |
+| `vsearch_hits_with_accessions.tsv` | Readable hits with the standard taxonomy ranks, retaining reference database accessions |
+| `vsearch_hits_for_lca.tsv` | Individual hits with taxonomy, identity and query coverage for LCA script input |
+| `taxonomy_lca_all_hits.tsv` | ASV assignments calculated from all hits above the percentage identity threshold at the selected rank |
+| `taxonomy_lca_top_hits.tsv` | ASV assignments from highest-identity qualifying hits, above the percentage identity threshold at the selected rank |
+| `krona_lca_all_hits_counts.tsv`, `krona_lca_top_hits_counts.tsv` | Headerless, read-weighted counts grouped by taxonomy; includes unclassified reads |
+| `krona_lca_all_hits.html`, `krona_lca_top_hits.html` | Interactive reports for the respective assignment method |
+
+For LCA input, the matching genus prefix is removed from the species label first.
+If the first remaining underscore-separated word contains `.`, eg. `sp.`, the species rank
+is left empty (`s__;`). Hits in the accessions output file retain the full label after genus removal.
+
+Taxonomy uses eight ranks: domain, kingdom, phylum, class, order,
+family, genus, and species. Missing ranks retain empty placeholders.
+
+ASVs without reference hits remain in the output tables. Raw VSEARCH rows use
+`*` for the missing target. Both formatted tables and LCA assignment tables
+retain the ASV ID with `d__;k__;p__;c__;o__;f__;g__;s__;`. Formatted no-hit rows
+have an empty accession and `NA` identity/coverage where those columns are present.
+Their reads remain included under `Unclassified` in the Krona counts and reports.
+
+`asv/<sample>_asv_read_counts.tsv` is generated once per sample, counting nonzero forward-map
+entries for the filtered reads from DADA2. Counts are independent of taxonomy and
+are generated even when both database branches are disabled.
+
+Both final `taxonomy_lca_all_hits.tsv` and `taxonomy_lca_top_hits.tsv` files are
+headerless, with columns `ASV ID`, `taxonomy`, and `count`. The third column comes
+from the shared ASV read counts table.
+
 ### Key Output Files
 
 * **MultiQC Report**: Comprehensive quality control summary across all samples
@@ -180,12 +225,16 @@ results/
 
 ### Configuration Profiles
 
+`--dada2_merge_mode` supports `standard` and `gap`. Separate-strand mode is
+currently disabled.
+
 The pipeline includes pre-configured profiles:
 
 * docker: Use Docker containers
 * singularity: Use Singularity containers
 * conda: Use Conda environments
-* example_slurm: Optimized for SLURM clusters
+* example_slurm: Optimised for SLURM clusters
+* example_macbook: Optimised for MacBooks
 * test: Small test dataset for validation
 
 ## Citations

@@ -1,0 +1,22 @@
+{
+    "lca_formatted": {
+        "content": [
+            "query\ttaxonomy\tpid\tqcov\ntest\td__Eukaryota;k__Metazoa;p__Chordata;c__Actinopteri;o__Clupeiformes;f__Engraulidae;g__Thryssa;s__mystax;\t100.0\t100.0\ntest\td__;k__Plantae;p__Tracheophyta;c__Liliopsida;o__Poales;f__Poaceae;g__Triticum;s__Triticumaestivum;\t83.3\t100.0\ntest\td__Eukaryota;k__Metazoa;p__Chordata;c__Amphibia;o__Anura;f__Megophryidae;g__Oreolalax;s__major;\t75.9\t100.0\n"
+        ],
+        "timestamp": "2026-09-23T09:25:44.6497",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "clean_formatted": {
+        "content": [
+            "query\taccession\ttaxonomy\tpid\ntest\tPQ519790.1.<1.>655_root_1\td__Eukaryota;k__Metazoa;p__Chordata;c__Actinopteri;o__Clupeiformes;f__Engraulidae;g__Thryssa;s__mystax;\t100.0\ntest\tGBAAY84290-24.COI-5P\td__;k__Plantae;p__Tracheophyta;c__Liliopsida;o__Poales;f__Poaceae;g__Triticum;s__Triticumaestivum;\t83.3\ntest\tPQ307056.1.<1.>553_root_1\td__Eukaryota;k__Metazoa;p__Chordata;c__Amphibia;o__Anura;f__Megophryidae;g__Oreolalax;s__major;\t75.9\n"
+        ],
+        "timestamp": "2026-09-23T09:25:49.535835",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

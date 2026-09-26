@@ -124,45 +124,24 @@
             "fa_icon": "fas fa-database",
             "description": "Configuration options for BOLD (Barcode of Life Data System) database files and parameters.",
             "properties": {
-                "bold_db_fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "description": "Path to BOLD database FASTA file",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "help_text": "Path to the BOLD COI5P reference database FASTA file used for taxonomic classification."
+                "run_coi_bold": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run COI taxonomic classification against BOLD",
+                    "help_text": "Enabled by default. Requires coi_bold_ref_db; set run_coi_bold to false to skip. Set both run_coi_bold and run_coi_midori to false to generate ASVs and read counts without taxonomic assignments or Krona reports."
                 },
-                "bold_db_tax": {
+                "coi_bold_ref_db": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to BOLD database taxonomy file",
-                    "pattern": "^\\S+\\.(tax|txt)$",
-                    "help_text": "Path to the BOLD taxonomy file containing taxonomic information for the reference sequences."
-                },
-                "bold_db_otu": {
-                    "type": "string",
-                    "format": "file-path",
-                    "description": "Path to BOLD database OTU file",
-                    "pattern": "^\\S+\\.otu$",
-                    "help_text": "Path to the BOLD OTU (Operational Taxonomic Unit) file for clustering analysis."
-                },
-                "bold_db_mscluster": {
-                    "type": "string",
-                    "format": "file-path",
-                    "description": "Path to BOLD database mscluster file",
-                    "pattern": "^\\S+\\.mscluster$",
-                    "help_text": "Path to the BOLD mscluster file used for sequence clustering operations."
+                    "description": "Path to BOLD database UDB or FASTA file",
+                    "pattern": "^\\S+\\.(?:fasta|fna|fa|udb)$",
+                    "help_text": "Path to the BOLD COI reference database UDB or FASTA file used for taxonomic classification."
                 },
                 "bold_label": {
                     "type": "string",
                     "description": "Label for BOLD database classification",
                     "default": "BOLD",
                     "help_text": "Label used to identify the BOLD database classification method in output files."
-                },
-                "dada2_bold_label": {
-                    "type": "string",
-                    "description": "Label for DADA2-BOLD database classification",
-                    "default": "DADA2-BOLD",
-                    "help_text": "Label used to identify the DADA2-BOLD database classification method in output files."
                 }
             }
         },
@@ -172,45 +151,24 @@
             "fa_icon": "fas fa-database",
             "description": "Configuration options for MIDORI (Molecular Identification Database) database files and parameters.",
             "properties": {
-                "midori_db_fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "description": "Path to MIDORI database FASTA file",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "help_text": "Path to the MIDORI COI reference database FASTA file used for taxonomic classification."
+                "run_coi_midori": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run COI taxonomic classification against MIDORI",
+                    "help_text": "Enabled by default. Requires coi_midori_ref_db; set run_coi_midori to false to skip. Set both run_coi_bold and run_coi_midori to false to generate ASVs and read counts without taxonomic assignments or Krona reports."
                 },
-                "midori_db_tax": {
+                "coi_midori_ref_db": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to MIDORI database taxonomy file",
-                    "pattern": "^\\S+\\.(tax|txt)$",
-                    "help_text": "Path to the MIDORI taxonomy file containing taxonomic information for the reference sequences."
-                },
-                "midori_db_otu": {
-                    "type": "string",
-                    "format": "file-path",
-                    "description": "Path to MIDORI database OTU file",
-                    "pattern": "^\\S+\\.otu$",
-                    "help_text": "Path to the MIDORI OTU (Operational Taxonomic Unit) file for clustering analysis."
-                },
-                "midori_db_mscluster": {
-                    "type": "string",
-                    "format": "file-path",
-                    "description": "Path to MIDORI database mscluster file",
-                    "pattern": "^\\S+\\.mscluster$",
-                    "help_text": "Path to the MIDORI mscluster file used for sequence clustering operations."
+                    "description": "Path to COI MIDORI database UDB or FASTA file",
+                    "pattern": "^\\S+\\.(?:fasta|fna|fa|udb)$",
+                    "help_text": "Path to the MIDORI COI reference database UDB or FASTA file used for taxonomic classification."
                 },
                 "midori_label": {
                     "type": "string",
                     "description": "Label for MIDORI database classification",
                     "default": "MIDORI",
                     "help_text": "Label used to identify the MIDORI database classification method in output files."
-                },
-                "dada2_midori_label": {
-                    "type": "string",
-                    "description": "Label for DADA2-MIDORI database classification",
-                    "default": "DADA2-MIDORI",
-                    "help_text": "Label used to identify the DADA2-MIDORI database classification method in output files."
                 }
             }
         },
@@ -272,8 +230,16 @@
                     "type": "string",
                     "description": "DADA2 merge mode for paired-end reads",
                     "default": "standard",
-                    "enum": ["standard", "gap", "separate"],
-                    "help_text": "Specifies the merging strategy for paired-end reads in DADA2. Options include 'standard' for default merging, 'gap' for allowing gaps, and 'separate' for processing reads separately."
+                    "enum": ["standard", "gap"],
+                    "help_text": "Specifies the merging strategy for paired-end reads in DADA2. Options include 'standard' for default merging and 'gap' for allowing gaps. Separate-strand mode is currently unsupported because ASV counting requires merged ASV IDs."
+                },
+                "idcutoff": {
+                    "type": "number",
+                    "description": "Identity cutoff for taxonomic classification with VSEARCH",
+                    "default": 0.5,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "help_text": "Sets the identity threshold for taxonomic classification of sequences with VSEARCH. Sequences with identity below this cutoff will not be assigned to a taxon."
                 },
                 "publish_dir_mode": {
                     "type": "string",

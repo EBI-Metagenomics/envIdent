@@ -69,6 +69,44 @@
             "nextflow": "26.04.0"
         }
     },
+    "dada2_stats_single": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test_single",
+                        "single_end": true
+                    },
+                    "test_single_dada2_stats.tsv:md5,4db360844b836fb0c565cc64636b7f93"
+                ]
+            ]
+        ],
+        "timestamp": "2026-09-22T16:29:36.762113",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "dada2_out_single": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test_single",
+                        "single_end": true
+                    },
+                    "test_single_map.txt:md5,c475891bc7188cfd982e0a613e5df32f",
+                    "test_single_asvs.fasta:md5,dce3127b095e61f06b52dcfd71e11dd9",
+                    "test_single_1_filt.fastq.gz:md5,39b21b7b342effcb31ce71eb0f5a8613"
+                ]
+            ]
+        ],
+        "timestamp": "2026-09-22T16:29:36.709576",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
     "dada2_out": {
         "content": [
             [

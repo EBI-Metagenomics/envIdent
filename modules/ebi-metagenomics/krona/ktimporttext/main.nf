@@ -25,7 +25,7 @@ process KRONA_KTIMPORTTEXT {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     
-    if (meta.containsKey("var_region")){
+    if (meta.var_region){
         prefix = prefix + "_${meta.var_region}"
     }
 
@@ -44,6 +44,9 @@ process KRONA_KTIMPORTTEXT {
     stub:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    if (meta.var_region) {
+        prefix = prefix + "_${meta.var_region}"
+    }
 
     """
     touch ${prefix}.html

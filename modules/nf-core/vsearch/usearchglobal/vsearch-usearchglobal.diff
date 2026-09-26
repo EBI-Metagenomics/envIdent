@@ -1,0 +1,202 @@
+Changes in component 'nf-core/vsearch/usearchglobal'
+Changes in 'vsearch/usearchglobal/environment.yml':
+--- modules/nf-core/vsearch/usearchglobal/environment.yml
++++ modules/nf-core/vsearch/usearchglobal/environment.yml
+@@ -4,4 +4,4 @@ channels:
+   - conda-forge
+   - bioconda
+ dependencies:
+-  - bioconda::vsearch=2.31.0
++  - bioconda::vsearch=2.32.0
+
+Changes in 'vsearch/usearchglobal/meta.yml':
+--- modules/nf-core/vsearch/usearchglobal/meta.yml
++++ modules/nf-core/vsearch/usearchglobal/meta.yml
+@@ -15,7 +15,7 @@ tools:
+         of amplicon sequences for metagenomics, genomics, and population genetics. (USEARCH
+         alternative)"
+       homepage: "https://github.com/torognes/vsearch"
+-      documentation: https://github.com/torognes/vsearch/releases/download/v2.31.0/vsearch_manual.pdf
++      documentation: https://github.com/torognes/vsearch/releases/download/v2.32.0/vsearch_manual.pdf
+       tool_dev_url: "https://github.com/torognes/vsearch"
+       doi: "10.7717/peerj.2584"
+       licence: ["GPL v3-or-later OR BSD-2-clause"]
+
+Changes in 'vsearch/usearchglobal/main.nf':
+--- modules/nf-core/vsearch/usearchglobal/main.nf
++++ modules/nf-core/vsearch/usearchglobal/main.nf
+@@ -4,8 +4,8 @@
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/vsearch:2.31.0--hd2be7a0_0':
+-        'quay.io/biocontainers/vsearch:2.31.0--hd2be7a0_0' }"
++        'https://depot.galaxyproject.org/singularity/vsearch:2.32.0--hd2be7a0_0':
++        'quay.io/biocontainers/vsearch:2.32.0--hd2be7a0_0' }"
+ 
+     input:
+     tuple val(meta), path(queryfasta)
+@@ -24,7 +24,7 @@
+     tuple val(meta), path('*.tsv')    , optional: true, emit: tsv
+     tuple val(meta), path('*.txt')    , optional: true, emit: txt
+     tuple val(meta), path('*.uc')     , optional: true, emit: uc
+-    tuple val("${task.process}"), val('vsearch'), eval('vsearch --version 2>&1 | sed -n "1s/.*v\\([0-9.]*\\).*/\\\\1/p"'), emit: versions_vsearch, topic: versions
++    path "versions.yml"               , emit: versions
+ 
+     when:
+     task.ext.when == null || task.ext.when
+@@ -73,20 +73,30 @@
+         $args \\
+         ${columns} \\
+         ${outfmt} ${prefix}.${out_ext}
++
++    cat <<-END_VERSIONS > versions.yml
++    "${task.process}":
++        vsearch: \$(vsearch --version 2>&1 | sed -n "1s/.*v\\([0-9.]*\\).*/\\\\1/p")
++    END_VERSIONS
+     """
+     stub:
+     def prefix = task.ext.prefix ?: "${meta.id}"
+-    out_ext = outoption == "alnout" ? 'aln' :
+-                    outoption == "biomout" ? 'biom' :
+-                    outoption == "blast6out" ? 'txt' :
+-                    outoption == "mothur_shared_out" ? 'mothur' :
+-                    outoption == "otutabout" ? 'otu' :
+-                    outoption == "samout" ? 'sam' :
+-                    outoption == "uc" ? 'uc' :
+-                    outoption == "userout" ? 'tsv' :
+-                    outoption == "lcaout" ? 'lca' :
+-                    'aln'
++    out_ext = outoption == "alnout"              ? 'aln'    :
++              outoption == "biomout"             ? 'biom'   :
++              outoption == "blast6out"           ? 'txt'    :
++              outoption == "mothur_shared_out"   ? 'mothur' :
++              outoption == "otutabout"           ? 'otu'    :
++              outoption == "samout"              ? 'sam'    :
++              outoption == "uc"                  ? 'uc'     :
++              outoption == "userout"             ? 'tsv'    :
++              outoption == "lcaout"              ? 'lca'    :
++              'aln'
+     """
+     touch ${prefix}.${out_ext}
++    
++    cat <<-END_VERSIONS > versions.yml
++    "${task.process}":
++        vsearch: \$(vsearch --version 2>&1 | sed -n "1s/.*v\\([0-9.]*\\).*/\\\\1/p")
++    END_VERSIONS
+     """
+ }
+
+Changes in 'vsearch/usearchglobal/tests/main.nf.test.snap':
+--- modules/nf-core/vsearch/usearchglobal/tests/main.nf.test.snap
++++ modules/nf-core/vsearch/usearchglobal/tests/main.nf.test.snap
+@@ -3,20 +3,16 @@
+         "content": [
+             "test.aln",
+             {
+-                "versions_vsearch": [
+-                    [
+-                        "VSEARCH_USEARCHGLOBAL",
+-                        "vsearch",
+-                        "2.31.0"
+-                    ]
++                "versions": [
++                    "versions.yml:md5,990bf95681f3887deac6466469beb53a"
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-26T11:08:51.159702",
+         "meta": {
+-            "nf-test": "0.9.3",
+-            "nextflow": "25.10.3"
+-        },
+-        "timestamp": "2026-02-13T10:32:26.366205054"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     },
+     "test-vsearch-usearchglobal-userout": {
+         "content": [
+@@ -54,11 +50,7 @@
+                     
+                 ],
+                 "9": [
+-                    [
+-                        "VSEARCH_USEARCHGLOBAL",
+-                        "vsearch",
+-                        "2.31.0"
+-                    ]
++                    "versions.yml:md5,990bf95681f3887deac6466469beb53a"
+                 ],
+                 "aln": [
+                     
+@@ -92,20 +84,16 @@
+                 "uc": [
+                     
+                 ],
+-                "versions_vsearch": [
+-                    [
+-                        "VSEARCH_USEARCHGLOBAL",
+-                        "vsearch",
+-                        "2.31.0"
+-                    ]
++                "versions": [
++                    "versions.yml:md5,990bf95681f3887deac6466469beb53a"
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-26T11:08:59.339478",
+         "meta": {
+-            "nf-test": "0.9.3",
+-            "nextflow": "25.10.3"
+-        },
+-        "timestamp": "2026-02-13T10:32:37.374732562"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     },
+     "test-vsearch-usearchglobal-userout -stub": {
+         "content": [
+@@ -143,11 +131,7 @@
+                     
+                 ],
+                 "9": [
+-                    [
+-                        "VSEARCH_USEARCHGLOBAL",
+-                        "vsearch",
+-                        "2.31.0"
+-                    ]
++                    "versions.yml:md5,990bf95681f3887deac6466469beb53a"
+                 ],
+                 "aln": [
+                     
+@@ -181,19 +165,15 @@
+                 "uc": [
+                     
+                 ],
+-                "versions_vsearch": [
+-                    [
+-                        "VSEARCH_USEARCHGLOBAL",
+-                        "vsearch",
+-                        "2.31.0"
+-                    ]
++                "versions": [
++                    "versions.yml:md5,990bf95681f3887deac6466469beb53a"
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-26T11:09:04.478912",
+         "meta": {
+-            "nf-test": "0.9.3",
+-            "nextflow": "25.10.3"
+-        },
+-        "timestamp": "2026-02-13T21:44:02.93679669"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     }
+ }
+\ No newline at end of file
+
+'modules/nf-core/vsearch/usearchglobal/tests/main.nf.test' is unchanged
+************************************************************

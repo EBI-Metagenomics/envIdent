@@ -1,0 +1,94 @@
+nextflow_workflow {
+    name "Test VSEARCH_ASV_LCA"
+    script "../main.nf"
+    config "./nextflow.config"
+    workflow "VSEARCH_ASV_LCA"
+    tag "subworkflows"
+    tag "vsearch_asv_lca"
+
+    test("Search and retain taxonomy for matched and unmatched ASVs") {
+        when {
+            params {
+                idcutoff = 0.97
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id: 'test', single_end: false],
+                    file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/query.fasta')
+                ])
+                input[1] = file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/reference.fasta')
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            assert workflow.out.vsearch_out.size() == 1
+            assert workflow.out.lca_input.size() == 1
+            assert workflow.out.clean_hits.size() == 1
+            assert workflow.out.versions.size() == 4
+            def raw = path(workflow.out.vsearch_out[0][1]).readLines()
+            assert raw.size() == 2
+            assert raw.collect { it.split('\t')[0] }.toSet() == ['seq_1', 'seq_2'].toSet()
+            assert raw.find { it.startsWith('seq_2\t') }.split('\t')[1] == '*'
+
+            def taxonomy = 'd__;k__Metazoa;p__Chordata;c__Actinopteri;o__Clupeiformes;f__Engraulidae;g__Thryssa;s__mystax;'
+            // Search completion order can vary; check headers separately from data rows.
+            def lcaRows = path(workflow.out.lca_input[0][1]).readLines()
+            assert lcaRows[0] == 'query\ttaxonomy\tpid\tqcov'
+            assert lcaRows.drop(1).sort() == [
+                "seq_1\t${taxonomy}\t100.0\t100.0",
+                'seq_2\td__;k__;p__;c__;o__;f__;g__;s__;\tNA\tNA'
+            ].sort()
+            for (output in [workflow.out.lca_all, workflow.out.lca_top]) {
+                assert output.size() == 1
+                assert output[0][0] == [id: 'test', single_end: false]
+                assert path(output[0][1]).readLines().sort() == [
+                    "seq_1\t${taxonomy}",
+                    'seq_2\td__;k__;p__;c__;o__;f__;g__;s__;'
+                ].sort()
+            }
+            def accession = path("${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/reference.fasta").readLines()[0].substring(1).split(';')[0]
+            def cleanRows = path(workflow.out.clean_hits[0][1]).readLines()
+            assert cleanRows[0] == 'query\taccession\ttaxonomy\tpid'
+            assert cleanRows.drop(1).sort() == [
+                "seq_1\t${accession}\t${taxonomy}\t100.0",
+                'seq_2\t\td__;k__;p__;c__;o__;f__;g__;s__;\tNA'
+            ].sort()
+            assert workflow.out.lca_input[0][0] == [id: 'test', single_end: false]
+            assert workflow.out.clean_hits[0][0] == [id: 'test', single_end: false]
+        }
+    }
+    test("No reference hits retain empty taxonomy") {
+        when {
+            params {
+                idcutoff = 0.97
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id: 'no_hits', single_end: false],
+                    file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/no_hits.fasta')
+                ])
+                input[1] = file('${projectDir}/subworkflows/local/vsearch_asv_lca/tests/data/reference.fasta')
+                """
+            }
+        }
+        then {
+            assert workflow.success
+            def emptyTaxonomy = 'd__;k__;p__;c__;o__;f__;g__;s__;'
+            def raw = path(workflow.out.vsearch_out[0][1]).readLines()
+            assert raw.size() == 1
+            assert raw[0].split('\t')[0..1] == ['seq_2', '*']
+            assert path(workflow.out.lca_input[0][1]).readLines() == [
+                'query\ttaxonomy\tpid\tqcov', "seq_2\t${emptyTaxonomy}\tNA\tNA"
+            ]
+            assert path(workflow.out.clean_hits[0][1]).readLines() == [
+                'query\taccession\ttaxonomy\tpid', "seq_2\t\t${emptyTaxonomy}\tNA"
+            ]
+            for (output in [workflow.out.lca_all, workflow.out.lca_top]) {
+                assert path(output[0][1]).readLines() == ["seq_2\t${emptyTaxonomy}"]
+            }
+        }
+    }
+}

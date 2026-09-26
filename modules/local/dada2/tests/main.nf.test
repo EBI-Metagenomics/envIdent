@@ -1,7 +1,7 @@
 nextflow_process {
 
     name "Test Process DADA2"
-    script "modules/local/dada2/main.nf"
+    script "../main.nf"
     process "DADA2"
     tag "modules"
     tag "dada2"
@@ -16,9 +16,9 @@ nextflow_process {
                 """
                 input[0] = [
                     [ id:'test', single_end:false ], // meta map
-                    [ 
+                    [
                         file('${projectDir}/modules/local/dada2/tests/data/test_noambig_1.fastq.gz', checkIfExists: true),
-                        file('${projectDir}/modules/local/dada2/tests/data/test_noambig_2.fastq.gz', checkIfExists: true) 
+                        file('${projectDir}/modules/local/dada2/tests/data/test_noambig_2.fastq.gz', checkIfExists: true)
                     ]
                 ]
                 """
@@ -26,15 +26,48 @@ nextflow_process {
         }
 
         then {
+            assert process.success
+            assert process.out.dada2_out.size() == 1
+            assert process.out.dada2_out[0].size() == 4
             assertAll(
-                { assert process.success },
                 { assert snapshot(process.out.dada2_out).match("dada2_out") },
                 { assert snapshot(process.out.dada2_stats).match("dada2_stats") }
             )
         }
     }
 
+    test("Should generate single-end maps") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+            process {
+                """
+                input[0] = [
+                    [ id:'test_single', single_end:true ], // meta map
+                    [
+                        file('${projectDir}/modules/local/dada2/tests/data/test_noambig_1.fastq.gz', checkIfExists: true)
+                    ]
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.dada2_out.size() == 1
+            assert process.out.dada2_out[0].size() == 4
+            assertAll(
+                { assert snapshot(process.out.dada2_out).match("dada2_out_single") },
+                { assert snapshot(process.out.dada2_stats).match("dada2_stats_single") }
+            )
+        }
+    }
+
     test("Should run in gap mode (justConcatenate)") {
+
+        tag "dada2_gap"
 
         when {
             params {
@@ -55,8 +88,10 @@ nextflow_process {
         }
 
         then {
+            assert process.success
+            assert process.out.dada2_out.size() == 1
+            assert process.out.dada2_out[0].size() == 4
             assertAll(
-                { assert process.success },
                 { assert snapshot(process.out.dada2_out).match("dada2_out_gap") },
                 { assert snapshot(process.out.dada2_stats).match("dada2_stats_gap") }
             )
@@ -84,8 +119,10 @@ nextflow_process {
         }
 
         then {
+            assert process.success
+            assert process.out.dada2_out.size() == 1
+            assert process.out.dada2_out[0].size() == 4
             assertAll(
-                { assert process.success },
                 { assert snapshot(process.out.dada2_out).match("dada2_out_separate") },
                 { assert snapshot(process.out.dada2_stats).match("dada2_stats_separate") }
             )
