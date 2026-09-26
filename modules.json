@@ -39,7 +39,8 @@
           "pimento/generatebcv": {
             "branch": "main",
             "git_sha": "31202bc23f1c8c597d9879e0005e092ff3f32205",
-            "installed_by": ["reads_qc"]
+            "installed_by": ["reads_qc"],
+            "patch": "modules/ebi-metagenomics/pimento/generatebcv/pimento-generatebcv.diff"
           },
           "seqfu/check": {
             "branch": "main",
@@ -56,7 +57,7 @@
             "branch": "master",
             "git_sha": "3a0ac08f5e8a748df4bc8b3998623121adec36fe",
             "installed_by": ["modules"]
-          }          
+          }
         }
       },
       "subworkflows": {
@@ -65,7 +66,7 @@
             "branch": "master",
             "git_sha": "1a545fcbd762911c21a64ced3dbef99b2b51ac75",
             "installed_by": ["subworkflows"]
-        },
+          },
           "reads_qc": {
             "branch": "main",
             "git_sha": "1c8e5da1c3a7caa29a0b519b38418392d232621f",
@@ -83,8 +84,22 @@
           }
         }
       }
+    },
+    "git@github.com:EBI-Metagenomics/nf-modules.git": {
+      "modules": {
+        "ebi-metagenomics": {
+          "downloadfromfire": {
+            "branch": "main",
+            "git_sha": "afc056e9aa0376982a10d458402e200c05d87609",
+            "installed_by": ["modules"]
+          },
+          "bbmap/reformat_standardise": {
+            "branch": "main",
+            "git_sha": "945bc3f876117a9034cd3a66bc37b19e42035ede",
+            "installed_by": ["modules"]
+          }
+        }
+      }
     }
   }
 }
-
-

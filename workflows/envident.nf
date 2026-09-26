@@ -13,22 +13,24 @@ include { READS_QC as READS_QC_BEFOREHMM   } from '../subworkflows/local/reads_q
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { DOWNLOAD_FROM_FIRE                               } from '../modules/ebi-metagenomics/downloadfromfire/main'
+include { BBMAP_REFORMAT_STANDARDISE                       } from '../modules/ebi-metagenomics/bbmap/reformat_standardise/main'
 include { FASTQC as FASTQC_RAW                             } from '../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_CLEAN                           } from '../modules/nf-core/fastqc/main'
 include { paramsSummaryMap                                 } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc                             } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML                           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText                           } from '../subworkflows/local/utils_nfcore_envident_pipeline'
-include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_F } from '../subworkflows/local/primer_identification_swf.nf'
-include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_R } from '../subworkflows/local/primer_identification_swf.nf'
-include { CONCAT_PRIMER_CUTADAPT                           } from '../subworkflows/local/concat_primer_cutadapt.nf'
-include { SUPPLIED_PRIMERS                                 } from '../modules/local/supplied_primers/main.nf'
-include { PREP_CUTADAPT_PRIMERS                            } from '../modules/local/prep_cutadapt_primers/main.nf'
-include { EXTRACT_CUTADAPT_PRIMERS                         } from '../modules/local/extract_cutadapt_primers/main.nf'
+include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_F } from '../subworkflows/local/primer_identification_swf'
+include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_R } from '../subworkflows/local/primer_identification_swf'
+include { CONCAT_PRIMER_CUTADAPT                           } from '../subworkflows/local/concat_primer_cutadapt'
+include { SUPPLIED_PRIMERS                                 } from '../modules/local/supplied_primers/main'
+include { PREP_CUTADAPT_PRIMERS                            } from '../modules/local/prep_cutadapt_primers/main'
+include { EXTRACT_CUTADAPT_PRIMERS                         } from '../modules/local/extract_cutadapt_primers/main'
 include { PROFILE_HMMSEARCH_PFAM                           } from '../subworkflows/local/profile_hmmsearch_pfam/main'
-include { DADA2_SWF                                        } from '../subworkflows/local/dada2_swf.nf'
+include { DADA2_SWF                                        } from '../subworkflows/local/dada2_swf'
 include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_BOLD      } from '../subworkflows/local/vsearch_asv_krona/main'
-include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_MIDORI    } from '../subworkflows/local/vsearch_asv_krona/main'
+include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_MIDORI2   } from '../subworkflows/local/vsearch_asv_krona/main'
 include { MAKE_ASV_COUNT_TABLES                            } from '../modules/local/make_asv_count_tables/main'
 include { MULTIQC                                          } from '../modules/nf-core/multiqc/main'
 
@@ -73,8 +75,50 @@ workflow ENVIDENT {
         cutadapt_primers = file(params.cutadapt_primers, type: 'dir', checkIfExists: true)
     }
 
+    // Organise input tuple channel //
+    def groupReads = { meta, fq1, fq2 ->
+        def single_file = (fq2 == [])
+        meta['interleaved'] = (!meta.single_end) && single_file
+        if (single_file) {
+            return tuple(meta, [fq1])
+        }
+        else {
+            return tuple(meta, [fq1, fq2])
+        }
+    }
+    ch_input = samplesheet.map(groupReads)
+
+    if (params.use_fire_download) {
+        /*
+         * Internally we need to bypass Nextflow S3 integration until https://github.com/nextflow-io/nextflow/issues/4873 is fixed
+         * The EBI parameter is needed as this only works on EBI network, FIRE is not accessible otherwise
+        */
+        DOWNLOAD_FROM_FIRE(
+            ch_input
+        )
+
+        ch_versions = ch_versions.mix(DOWNLOAD_FROM_FIRE.out.versions.first())
+        ch_input = DOWNLOAD_FROM_FIRE.out.downloaded_files
+    }
+    
+    // Standardise headers and de-interleave as needed
+    if (!params.skip_standardise) {
+        standardise_input = ch_input.multiMap{
+            meta, reads ->
+            reads: [meta, reads]
+            interleaved: meta.interleaved
+        }
+        BBMAP_REFORMAT_STANDARDISE(
+            standardise_input.reads, 
+            standardise_input.interleaved, 
+            'fastq.gz'
+        )
+        ch_versions = ch_versions.mix(BBMAP_REFORMAT_STANDARDISE.out.versions)
+        ch_input = BBMAP_REFORMAT_STANDARDISE.out.reformated
+    }
+    
     FASTQC_RAW(
-        samplesheet.map { meta, reads -> 
+        ch_input.map { meta, reads ->
             def new_meta = meta.clone()
             new_meta.id = meta.id + "_raw"
             [new_meta, reads]
@@ -85,7 +129,7 @@ workflow ENVIDENT {
     // Sanity checking and quality control of reads //
     READS_QC(
         true, 
-        samplesheet,
+        ch_input,
         false,
         false
     )
@@ -94,7 +138,7 @@ workflow ENVIDENT {
     // Filter and branch reads based on minimum read count with logging
     READS_QC.out.reads.branch{ meta, reads ->
                                     def read_files = reads instanceof List ? reads : [reads]
-                                    def count = read_files.collect { read -> read.toAbsolutePath().countFastq() }.sum()
+                                    def count = read_files[0].toAbsolutePath().countFastq()
                                     qc_pass: count >= params.min_read_count
                                     qc_fail: count < params.min_read_count
                                 }
@@ -186,6 +230,13 @@ workflow ENVIDENT {
     )
     ch_versions = ch_versions.mix(READS_QC_BEFOREHMM.out.versions) 
 
+    // Exclude samples with no FASTA records after QC/merging from HMM profiling.
+    reads_before_hmm = READS_QC_BEFOREHMM.out.reads_fasta
+        .branch { _meta, reads ->
+            qc_pass: reads.countFasta() > 0
+            qc_empty: true
+        }
+
     // Pfam profiling
     pfam_db = params.pfam_coi_db ?
     channel
@@ -194,7 +245,7 @@ workflow ENVIDENT {
     channel.empty()
 
     PROFILE_HMMSEARCH_PFAM(
-        READS_QC_BEFOREHMM.out.reads_fasta,
+        reads_before_hmm.qc_pass,
         pfam_db,
         READS_QC_BEFOREHMM.out.fastp_summary_json
     )
@@ -259,14 +310,14 @@ workflow ENVIDENT {
         ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_BOLD.out.versions)
     }
 
-    if (params.run_coi_midori) {
-        ref_db = file(params.coi_midori_ref_db, type: 'file', checkIfExists: true)
-        VSEARCH_ASV_KRONA_MIDORI(
+    if (params.run_coi_midori2) {
+        ref_db = file(params.coi_midori2_ref_db, type: 'file', checkIfExists: true)
+        VSEARCH_ASV_KRONA_MIDORI2(
             vsearch_input,
             ref_db,
             MAKE_ASV_COUNT_TABLES.out.asv_read_counts
         )
-        ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_MIDORI.out.versions)
+        ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_MIDORI2.out.versions)
     }
 
     //
@@ -369,31 +420,41 @@ workflow ENVIDENT {
         .map { id, meta, _low_percent -> "${meta.id},reads_percentage_fail" }
         .set { reads_percentage_fails }
 
-    // Save all failed runs to file //
-    all_failed_runs = seqfu_fails.concat( sfxhd_fails, libstrat_fails, min_reads_fails, reads_percentage_fails)
-    all_failed_runs.collectFile(name: "qc_failed_runs.csv", storeDir: "${params.outdir}", newLine: true, cache: false)
+    reads_before_hmm.qc_empty
+        .map { meta, _reads -> "${meta.id},empty_after_qc" }
+        .set { empty_after_qc_fails }
 
-    // Extract passed runs, describe whether those passed runs also ASV results //
-    DADA2_SWF.out.dada2_report.map { meta, dada2_report -> [ ["id": meta.id, "single_end": meta.single_end], dada2_report ] }
+    // Classify DADA2 results, giving the failure flag precedence over available reports.
+    DADA2_SWF.out.dada2_report.map { meta, _dada2_report -> [["id": meta.id, "single_end": meta.single_end], "has_dada2_report"] }
     .concat(
         ch_passed_samples.map { meta -> [["id": meta.id, "single_end": meta.single_end], "qc_pass"] },
         dada2_stats_fail
     )
     .groupTuple()
-    .map { meta, results ->
-        if ( results.size() == 3 ) {
-            return "${meta.id},all_results"
-        }
-        else {
-            if (results.find { it == "true" }) {
-                return "${meta.id},dada2_stats_fail"
-            } else {
-                return "${meta.id},no_asvs"
-            }
-        }
-        error "Unexpected. meta: ${meta}, results: ${results}"
+    .branch { meta, results ->
+        failed: results.contains("true")
+        passed: results.contains("qc_pass") &&
+            results.contains("has_dada2_report") &&
+            results.contains("false")
+        no_asvs: true
     }
-    .set { final_passed_runs }
+    .set { dada2_qc_results }
+
+    dada2_qc_results.failed
+        .map { meta, _results -> "${meta.id},dada2_stats_fail" }
+        .set { dada2_failed_runs }
+
+    dada2_qc_results.no_asvs
+        .map { meta, _results -> "${meta.id},no_asvs" }
+        .set { no_asvs_failed_runs }
+
+    // Save all failed runs to file //
+    all_failed_runs = seqfu_fails.concat( sfxhd_fails, libstrat_fails, min_reads_fails, reads_percentage_fails, empty_after_qc_fails, dada2_failed_runs, no_asvs_failed_runs)
+    all_failed_runs.collectFile(name: "qc_failed_runs.csv", storeDir: "${params.outdir}", newLine: true, cache: false)
+
+    dada2_qc_results.passed
+        .map { meta, _results -> "${meta.id},all_results" }
+        .set { final_passed_runs }
 
     // Save all passed runs to file //
     final_passed_runs.collectFile(name: "qc_passed_runs.csv", storeDir: "${params.outdir}", newLine: true, cache: false)

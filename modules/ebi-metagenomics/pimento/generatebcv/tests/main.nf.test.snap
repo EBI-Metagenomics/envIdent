@@ -14,12 +14,12 @@
             [
                 {
                     "PIMENTO_GENERATEBCV": {
-                        "mi-pimento": "1.0.2"
+                        "mi-pimento": "1.3.3"
                     }
                 }
             ]
         ],
-        "timestamp": "2026-09-17T11:09:50.79344",
+        "timestamp": "2026-09-23T14:47:13.6731",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -40,12 +40,12 @@
             [
                 {
                     "PIMENTO_GENERATEBCV": {
-                        "mi-pimento": "1.0.2"
+                        "mi-pimento": "1.3.3"
                     }
                 }
             ]
         ],
-        "timestamp": "2026-09-17T11:09:34.927615",
+        "timestamp": "2026-09-23T14:47:06.365344",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -66,12 +66,12 @@
             [
                 {
                     "PIMENTO_GENERATEBCV": {
-                        "mi-pimento": "1.0.2"
+                        "mi-pimento": "1.3.3"
                     }
                 }
             ]
         ],
-        "timestamp": "2026-09-17T11:08:58.237223",
+        "timestamp": "2026-09-23T14:46:51.892767",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -92,12 +92,12 @@
             [
                 {
                     "PIMENTO_GENERATEBCV": {
-                        "mi-pimento": "1.0.2"
+                        "mi-pimento": "1.3.3"
                     }
                 }
             ]
         ],
-        "timestamp": "2026-09-17T11:08:35.829821",
+        "timestamp": "2026-09-23T14:46:43.4394",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -118,12 +118,12 @@
             [
                 {
                     "PIMENTO_GENERATEBCV": {
-                        "mi-pimento": "1.0.2"
+                        "mi-pimento": "1.3.3"
                     }
                 }
             ]
         ],
-        "timestamp": "2026-09-17T11:09:21.222273",
+        "timestamp": "2026-09-23T14:46:59.064707",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

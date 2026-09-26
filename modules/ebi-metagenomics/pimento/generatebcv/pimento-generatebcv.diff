@@ -1,0 +1,27 @@
+Changes in component 'ebi-metagenomics/pimento/generatebcv'
+Changes in 'pimento/generatebcv/main.nf':
+--- modules/ebi-metagenomics/pimento/generatebcv/main.nf
++++ modules/ebi-metagenomics/pimento/generatebcv/main.nf
+@@ -5,8 +5,8 @@
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/mi-pimento:1.0.2--pyhdfd78af_0':
+-        'biocontainers/mi-pimento:1.0.2--pyhdfd78af_0' }"
++        "https://depot.galaxyproject.org/singularity/mi-pimento:${params.pimento_version}":
++        "biocontainers/mi-pimento:${params.pimento_version}"}"
+ 
+     input:
+     tuple val(meta), val(fwd_flag), val(rev_flag), path(fastq)
+
+Changes in 'pimento/generatebcv/environment.yml':
+--- modules/ebi-metagenomics/pimento/generatebcv/environment.yml
++++ modules/ebi-metagenomics/pimento/generatebcv/environment.yml
+@@ -4,4 +4,4 @@
+   - conda-forge
+   - bioconda
+ dependencies:
+-  - "bioconda::mi-pimento=1.0.2"
++  - "bioconda::mi-pimento=1.3.3"
+
+************************************************************

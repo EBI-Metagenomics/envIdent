@@ -83,7 +83,7 @@ nextflow_pipeline {
                     {
                         ['TEST', 'TEST2'].each { test_name ->
                             def rc_primer = new groovy.json.JsonSlurper().parseText(
-                                path("${params.outdir}/${test_name}/primer-identification/${test_name}.cutadapt.json").text
+                                path("${params.outdir}/${test_name}/primer-identification/${test_name}.second_pass.cutadapt.json").text
                             )
                             assert rc_primer.adapters_read1.every { it.name.contains('COI') && it.total_matches == 0 }
                             assert rc_primer.adapters_read2.every { it.name.contains('COI') && it.total_matches == 0 }                    
@@ -108,7 +108,7 @@ nextflow_pipeline {
                         ['TEST', 'TEST2'].each { sample ->
                             def asvIds = path("${params.outdir}/${sample}/asv/${sample}_asvs.fasta")
                                 .readLines().findAll { it.startsWith('>') }.collect { it.substring(1) }
-                            ['BOLD', 'MIDORI'].each { db ->
+                            ['BOLD', 'MIDORI2'].each { db ->
                                 def folder = "${params.outdir}/${sample}/taxonomy-summary/${db}"
                                 def filenames = getAllFilesFromDir(folder).collect { it.name }
                                 assert filenames.size() == 9
@@ -157,7 +157,7 @@ nextflow_pipeline {
                                 expected.seq_1 = species
                                 expected.seq_2 = phylum
                             }
-                            ['BOLD', 'MIDORI'].each { db ->
+                            ['BOLD', 'MIDORI2'].each { db ->
                                 def folder = "${params.outdir}/${sample}/taxonomy-summary/${db}"
                                 ['all', 'top'].each { method ->
                                     def rows = path("${folder}/${sample}_${db}_taxonomy_lca_${method}_hits.tsv").readLines()

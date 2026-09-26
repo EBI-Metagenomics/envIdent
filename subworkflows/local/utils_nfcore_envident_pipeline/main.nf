@@ -51,8 +51,8 @@ workflow PIPELINE_INITIALISATION {
     if (params.run_coi_bold && !params.coi_bold_ref_db) {
         error "--run_coi_bold requires --coi_bold_ref_db"
     }
-    if (params.run_coi_midori && !params.coi_midori_ref_db) {
-        error "--run_coi_midori requires --coi_midori_ref_db"
+    if (params.run_coi_midori2 && !params.coi_midori2_ref_db) {
+        error "--run_coi_midori2 requires --coi_midori2_ref_db"
     }
 
     //
@@ -82,19 +82,6 @@ workflow PIPELINE_INITIALISATION {
 
     Channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
-        .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [single_end:true], [fastq_1] ]
-                } else {
-                    return [ meta.id, meta + [single_end:false], [fastq_1, fastq_2] ]
-                }
-        }
-        .groupTuple()
-        .map { samplesheet ->
-            def validated = validateInputSamplesheet(samplesheet)
-            return tuple(validated[0], validated[1].flatten())
-        }
         .set { ch_samplesheet }
 
     emit:

@@ -1,0 +1,57 @@
+nextflow_process {
+    name "Test EXTRACT_MARKER_HITS_FROM_READS"
+    script "../main.nf"
+    process "EXTRACT_MARKER_HITS_FROM_READS"
+    tag "modules"
+    tag "extract_marker_hits_from_reads"
+
+    test("Extract single-end reads matching marker IDs") {
+        when {
+            process {
+                """
+                input[0] = [[id: 'test', single_end: true], file('${projectDir}/modules/local/extract_marker_hits_from_reads/tests/data/reads_1.fastq'), file('${projectDir}/modules/local/extract_marker_hits_from_reads/tests/data/hits.domtbl.gz')]
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert process.out.extracted_reads.size() == 1
+            assert process.out.extracted_reads[0][0] == [id: 'test', single_end: true]
+            def output = process.out.extracted_reads[0][1]
+            def files = (output instanceof List ? output : [output]).sort()
+            assert files.collect { path(it).getFileName().toString() } == ['test_extracted_reads.fastq.gz']
+            files.eachWithIndex { file, i ->
+                def original = path("${projectDir}/modules/local/extract_marker_hits_from_reads/tests/data/reads_${i + 1}.fastq").readLines()
+                // Keep reads 1 and 3 in input order, once each despite duplicate hits.
+                assert path(file).linesGzip == original[0..3] + original[8..11]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('seqkit: 2.13.0')
+        }
+    }
+
+    test("Extract both mates matching marker IDs") {
+        when {
+            process {
+                """
+                input[0] = [[id: 'test', single_end: false], [file('${projectDir}/modules/local/extract_marker_hits_from_reads/tests/data/reads_1.fastq'), file('${projectDir}/modules/local/extract_marker_hits_from_reads/tests/data/reads_2.fastq')], file('${projectDir}/modules/local/extract_marker_hits_from_reads/tests/data/hits.domtbl.gz')]
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert process.out.extracted_reads.size() == 1
+            assert process.out.extracted_reads[0][0] == [id: 'test', single_end: false]
+            def output = process.out.extracted_reads[0][1]
+            def files = (output instanceof List ? output : [output]).sort()
+            assert files.collect { path(it).getFileName().toString() } == ['test_extracted_reads_1.fastq.gz', 'test_extracted_reads_2.fastq.gz']
+            files.eachWithIndex { file, i ->
+                def original = path("${projectDir}/modules/local/extract_marker_hits_from_reads/tests/data/reads_${i + 1}.fastq").readLines()
+                // Keep reads 1 and 3 in input order, once each despite duplicate hits.
+                assert path(file).linesGzip == original[0..3] + original[8..11]
+            }
+            assert process.out.versions.size() == 1
+            assert path(process.out.versions[0]).text.contains('seqkit: 2.13.0')
+        }
+    }
+}

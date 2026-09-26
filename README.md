@@ -1,6 +1,6 @@
 
 
-[![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.04.2-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A526.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
 [![nf-core template version](https://img.shields.io/badge/nf--core_template-3.3.1-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.3.1)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
@@ -78,7 +78,7 @@ This pipeline uses the following reference databases:
 | MIDORI2 | COI taxonomic classification | Configurable via parameters |
 
 > [!NOTE]
-Running with both COI reference databases is enabled by default (`run_coi_bold = true` and `run_coi_midori = true`). Supply their `--coi_bold_ref_db` and `--coi_midori_ref_db` paths. Use `--run_coi_bold false` or `--run_coi_midori false` to skip a database. Set both run_coi_bold and run_coi_midori to false to generate ASVs and read counts without taxonomic assignments or Krona reports.
+Running with both COI reference databases is enabled by default (`run_coi_bold = true` and `run_coi_midori2 = true`). Supply their `--coi_bold_ref_db` and `--coi_midori2_ref_db` paths. Use `--run_coi_bold false` or `--run_coi_midori2 false` to skip a database. Set both run_coi_bold and run_coi_midori2 to false to generate ASVs and read counts without taxonomic assignments or Krona reports.
 > Database paths can be configured in the pipeline parameters. Contact the development team for access to preprocessed databases.
 
 ## How to Run
@@ -86,7 +86,7 @@ Running with both COI reference databases is enabled by default (`run_coi_bold =
 ### Requirements
 
 The pipeline requires:
-- Nextflow (≥24.04.2)
+- Nextflow (≥26.04.0)
 - Docker, Singularity, or Conda for software management
 - Access to reference databases
 - Database formatted for PIMENTO - a FASTA file with contig ids ending with F for forward strand and R for reverse strand. See [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_s/V3-V5.fasta) for an example
@@ -158,16 +158,16 @@ results/
 │   │   │   ├── sample1_BOLD_krona_lca_top_hits_counts.tsv
 │   │   │   ├── sample1_BOLD_krona_lca_all_hits.html
 │   │   │   └── sample1_BOLD_krona_lca_top_hits.html
-│   │   ├── MIDORI/
-│   │   │   ├── sample1_MIDORI_vsearch_raw_hits.tsv
-│   │   │   ├── sample1_MIDORI_vsearch_hits_with_accessions.tsv
-│   │   │   ├── sample1_MIDORI_vsearch_hits_for_lca.tsv
-│   │   │   ├── sample1_MIDORI_taxonomy_lca_all_hits.tsv
-│   │   │   ├── sample1_MIDORI_taxonomy_lca_top_hits.tsv
-│   │   │   ├── sample1_MIDORI_krona_lca_all_hits_counts.tsv
-│   │   │   ├── sample1_MIDORI_krona_lca_top_hits_counts.tsv
-│   │   │   ├── sample1_MIDORI_krona_lca_all_hits.html
-│   │   │   └── sample1_MIDORI_krona_lca_top_hits.html
+│   │   ├── MIDORI2/
+│   │   │   ├── sample1_MIDORI2_vsearch_raw_hits.tsv
+│   │   │   ├── sample1_MIDORI2_vsearch_hits_with_accessions.tsv
+│   │   │   ├── sample1_MIDORI2_vsearch_hits_for_lca.tsv
+│   │   │   ├── sample1_MIDORI2_taxonomy_lca_all_hits.tsv
+│   │   │   ├── sample1_MIDORI2_taxonomy_lca_top_hits.tsv
+│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits_counts.tsv
+│   │   │   ├── sample1_MIDORI2_krona_lca_top_hits_counts.tsv
+│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits.html
+│   │   │   └── sample1_MIDORI2_krona_lca_top_hits.html
 ├── pipeline_info/
 │   ├── execution_report_YYYY-MM-DD_HH-mm-ss.html
 │   ├── execution_timeline_YYYY-MM-DD_HH-mm-ss.html
@@ -181,8 +181,8 @@ results/
 ```
 
 Taxonomy filenames use `<sample>_<database>_<description>`. The database labels
-come from `--bold_label` (default `BOLD`) and `--midori_label`
-(default `MIDORI`); each label controls both the folder and filename prefix.
+come from `--bold_label` (default `BOLD`) and `--midori2_label`
+(default `MIDORI2`); each label controls both the folder and filename prefix.
 
 | Description | Contents |
 | --- | --- |
@@ -222,6 +222,17 @@ from the shared ASV read counts table.
 * **Taxonomic Classifications**: TSV files with taxonomic assignments for ASVs
 * **Krona Charts**: Interactive HTML visualisations of taxonomic composition
 * **QC Summary Files**: Lists of samples that passed or failed quality control steps
+
+### Optional input preparation
+
+Set `--skip_standardise false` to standardise FASTQ headers with BBMap before
+QC. For interleaved paired-end reads, set `single_end` to `false`, provide the
+interleaved file in `fastq_1`, and leave `fastq_2` empty. Standardisation splits
+it into paired files; it is skipped by default.
+
+On the EBI network, `--use_fire_download` downloads ENA FTP/HTTP read paths via
+FIRE before QC or standardisation. This requires the Nextflow secrets
+`FIRE_ACCESS_KEY` and `FIRE_SECRET_KEY`. FIRE downloading is disabled by default.
 
 ### Configuration Profiles
 
