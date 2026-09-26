@@ -43,7 +43,7 @@ nextflow_process {
         }
     }
 
-    test("Formatter header and seven-rank taxonomy at genus threshold") {
+    test("Formatted header and seven-rank taxonomy at genus threshold") {
         when {
             process {
                 """
