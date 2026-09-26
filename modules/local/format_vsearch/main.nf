@@ -13,20 +13,20 @@ process FORMAT_VSEARCH {
     tuple val(meta), path("${meta.id}_${mode}_formatted.tsv"), emit: formatted    
     path "versions.yml", emit: versions
 
-    script:
-    def outfile = "${meta.id}_${mode}_formatted.tsv"
-    def format
-
+    script:  
+    def flags = ''  
     if (mode == 'lca') {
-        format = "formatting_vsearch.py -i ${vsearch_out} -o ${outfile} -p -q --lca"
+        flags = '-q --lca'
     } else if (mode == 'clean') {
-        format = "formatting_vsearch.py -i ${vsearch_out} -o ${outfile} -a -p"
+        flags = '-a'
     } else {
         error "Unknown FORMAT_VSEARCH mode '${mode}': expected 'lca' or 'clean'"
     }
-
-    """
-    ${format}
+    """  
+    formatting_vsearch.py \\
+    -i ${vsearch_out} \\
+    -o ${meta.id}_${mode}_formatted.tsv \\
+    -p ${flags}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version |& sed '1!d ; s/python //')

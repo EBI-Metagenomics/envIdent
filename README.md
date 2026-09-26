@@ -78,6 +78,7 @@ This pipeline uses the following reference databases:
 | MIDORI2 | COI taxonomic classification | Configurable via parameters |
 
 > [!NOTE]
+Running with both COI reference databases is enabled by default (`run_coi_bold = true` and `run_coi_midori = true`). Supply their `--coi_bold_ref_db` and `--coi_midori_ref_db` paths. Use `--run_coi_bold false` or `--run_coi_midori false` to skip a database. Set both run_coi_bold and run_coi_midori to false to generate ASVs and read counts without taxonomic assignments or Krona reports.
 > Database paths can be configured in the pipeline parameters. Contact the development team for access to preprocessed databases.
 
 ## How to Run
@@ -195,7 +196,7 @@ come from `--bold_label` (default `BOLD`) and `--midori2_label`
 
 For LCA input, the matching genus prefix is removed from the species label first.
 If the first remaining underscore-separated word contains `.`, eg. `sp.`, the species rank
-is left empty (`s__;`). Clean hits retain the full label after genus removal.
+is left empty (`s__;`). Hits in the accessions output file retain the full label after genus removal.
 
 Taxonomy uses eight ranks: domain, kingdom, phylum, class, order,
 family, genus, and species. Missing ranks retain empty placeholders.
@@ -206,10 +207,9 @@ retain the ASV ID with `d__;k__;p__;c__;o__;f__;g__;s__;`. Formatted no-hit rows
 have an empty accession and `NA` identity/coverage where those columns are present.
 Their reads remain included under `Unclassified` in the Krona counts and reports.
 
-`asv/<sample>_asv_read_counts.tsv` is generated once per sample by
-`make_asv_count_table.py`, counting forward-map entries for ASV IDs in the all-hits LCA table.
-BOLD supplies the IDs when enabled; otherwise MIDORI2 does. No-hit ASVs remain
-in those tables, so their counts are retained.
+`asv/<sample>_asv_read_counts.tsv` is generated once per sample, counting nonzero forward-map
+entries for the filtered reads from DADA2. Counts are independent of taxonomy and
+are generated even when both database branches are disabled.
 
 Both final `taxonomy_lca_all_hits.tsv` and `taxonomy_lca_top_hits.tsv` files are
 headerless, with columns `ASV ID`, `taxonomy`, and `count`. The third column comes
@@ -237,15 +237,15 @@ FIRE before QC or standardisation. This requires the Nextflow secrets
 ### Configuration Profiles
 
 `--dada2_merge_mode` supports `standard` and `gap`. Separate-strand mode is
-currently disabled because ASV counting does not support its `seq_f_N` and
-`seq_r_N` identifiers.
+currently disabled.
 
 The pipeline includes pre-configured profiles:
 
 * docker: Use Docker containers
 * singularity: Use Singularity containers
 * conda: Use Conda environments
-* example_slurm: Optimized for SLURM clusters
+* example_slurm: Optimised for SLURM clusters
+* example_macbook: Optimised for MacBooks
 * test: Small test dataset for validation
 
 ## Citations

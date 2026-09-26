@@ -13,28 +13,28 @@ include { READS_QC as READS_QC_BEFOREHMM   } from '../subworkflows/local/reads_q
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { DOWNLOAD_FROM_FIRE } from '../modules/ebi-metagenomics/downloadfromfire/main'
-include { BBMAP_REFORMAT_STANDARDISE } from '../modules/ebi-metagenomics/bbmap/reformat_standardise/main'
-include { FASTQC as FASTQC_RAW         } from '../modules/nf-core/fastqc/main'
-include { FASTQC as FASTQC_CLEAN       } from '../modules/nf-core/fastqc/main'
-include { paramsSummaryMap             } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc         } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML       } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText       } from '../subworkflows/local/utils_nfcore_envident_pipeline'
+include { DOWNLOAD_FROM_FIRE                               } from '../modules/ebi-metagenomics/downloadfromfire/main'
+include { BBMAP_REFORMAT_STANDARDISE                       } from '../modules/ebi-metagenomics/bbmap/reformat_standardise/main'
+include { FASTQC as FASTQC_RAW                             } from '../modules/nf-core/fastqc/main'
+include { FASTQC as FASTQC_CLEAN                           } from '../modules/nf-core/fastqc/main'
+include { paramsSummaryMap                                 } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc                             } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML                           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText                           } from '../subworkflows/local/utils_nfcore_envident_pipeline'
 include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_F } from '../subworkflows/local/primer_identification_swf.nf'
 include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_R } from '../subworkflows/local/primer_identification_swf.nf'
-include { CONCAT_PRIMER_CUTADAPT       } from '../subworkflows/local/concat_primer_cutadapt.nf'
-include { SUPPLIED_PRIMERS             } from '../modules/local/supplied_primers/main.nf'
-include { PREP_CUTADAPT_PRIMERS        } from '../modules/local/prep_cutadapt_primers/main.nf'
-include { EXTRACT_CUTADAPT_PRIMERS     } from '../modules/local/extract_cutadapt_primers/main.nf'
-include { PROFILE_HMMSEARCH_PFAM       } from '../subworkflows/local/profile_hmmsearch_pfam/main'
-include { DADA2_SWF                    } from '../subworkflows/local/dada2_swf.nf'
-include { VSEARCH_ASV_LCA as VSEARCH_ASV_LCA_BOLD } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
-include { VSEARCH_ASV_LCA as VSEARCH_ASV_LCA_MIDORI2 } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
-include { MAKE_ASV_COUNT_TABLES } from '../modules/local/make_asv_count_tables/main'
-include { LCA_KRONA_REPORTS as LCA_KRONA_REPORTS_BOLD } from '../subworkflows/local/vsearch_asv_krona_swf/main'
-include { LCA_KRONA_REPORTS as LCA_KRONA_REPORTS_MIDORI2 } from '../subworkflows/local/vsearch_asv_krona_swf/main'
-include { MULTIQC                      } from '../modules/nf-core/multiqc/main'
+include { CONCAT_PRIMER_CUTADAPT                           } from '../subworkflows/local/concat_primer_cutadapt.nf'
+include { SUPPLIED_PRIMERS                                 } from '../modules/local/supplied_primers/main.nf'
+include { PREP_CUTADAPT_PRIMERS                            } from '../modules/local/prep_cutadapt_primers/main.nf'
+include { EXTRACT_CUTADAPT_PRIMERS                         } from '../modules/local/extract_cutadapt_primers/main.nf'
+include { PROFILE_HMMSEARCH_PFAM                           } from '../subworkflows/local/profile_hmmsearch_pfam/main'
+include { DADA2_SWF                                        } from '../subworkflows/local/dada2_swf.nf'
+include { VSEARCH_ASV_LCA as VSEARCH_ASV_LCA_BOLD          } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
+include { VSEARCH_ASV_LCA as VSEARCH_ASV_LCA_MIDORI2       } from '../subworkflows/local/vsearch_asv_krona_swf/main.nf'
+include { MAKE_ASV_COUNT_TABLES                            } from '../modules/local/make_asv_count_tables/main'
+include { LCA_KRONA_REPORTS as LCA_KRONA_REPORTS_BOLD      } from '../subworkflows/local/vsearch_asv_krona_swf/main'
+include { LCA_KRONA_REPORTS as LCA_KRONA_REPORTS_MIDORI2   } from '../subworkflows/local/vsearch_asv_krona_swf/main'
+include { MULTIQC                                          } from '../modules/nf-core/multiqc/main'
 
 // Import samplesheetToList from nf-schema //
 include { samplesheetToList            } from 'plugin/nf-schema'
@@ -63,7 +63,7 @@ workflow ENVIDENT {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-    // Initialiase standard primer library for PIMENTO if user-given//
+    // Initialise standard primer library for PIMENTO if user-given//
     // If there are no primers provided, it will fallback to use the default PIMENTO standard primer library
     std_primer_library = []
 
@@ -289,53 +289,37 @@ workflow ENVIDENT {
                                 return [key, stats_fail]
                             }
 
+    // Generate one taxonomy-independent count table directly from DADA2 maps.
+    map_count_input = DADA2_SWF.out.dada2_out
+        .map { meta, maps, _asv_seqs, filt_reads -> [meta, maps, filt_reads] }
+    MAKE_ASV_COUNT_TABLES(map_count_input)
+    ch_versions = ch_versions.mix(MAKE_ASV_COUNT_TABLES.out.versions)
+
     // ASV taxonomic assignments + generate Krona plots for each run+amp_region //
 
-    if (params.COI_bold_ref_db) {
-        ref_db = file(params.COI_bold_ref_db, type: 'file', checkIfExists: true)
-        VSEARCH_ASV_LCA_BOLD(
-            DADA2_SWF.out.dada2_out,
-            ref_db
+    vsearch_input = DADA2_SWF.out.dada2_out
+        .map { meta, maps, asv_seqs, filt_reads ->
+            [ meta, asv_seqs ]    
+        }
+
+    if (params.run_coi_bold) {
+        ref_db = file(params.coi_bold_ref_db, type: 'file', checkIfExists: true)
+        VSEARCH_ASV_KRONA_BOLD(
+            vsearch_input,
+            ref_db,
+            MAKE_ASV_COUNT_TABLES.out.asv_read_counts
         )
-        ch_versions = ch_versions.mix(VSEARCH_ASV_LCA_BOLD.out.versions)
+        ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_BOLD.out.versions)
     }
 
-    if (params.COI_midori2_ref_db) {
-        ref_db = file(params.COI_midori2_ref_db, type: 'file', checkIfExists: true)
-        VSEARCH_ASV_LCA_MIDORI2(
-            DADA2_SWF.out.dada2_out,
-            ref_db
+    if (params.run_coi_midori2) {
+        ref_db = file(params.coi_midori2_ref_db, type: 'file', checkIfExists: true)
+        VSEARCH_ASV_KRONA_MIDORI2(
+            vsearch_input,
+            ref_db,
+            MAKE_ASV_COUNT_TABLES.out.asv_read_counts
         )
-        ch_versions = ch_versions.mix(VSEARCH_ASV_LCA_MIDORI2.out.versions)
-    }
-
-    if (params.COI_bold_ref_db || params.COI_midori2_ref_db) {
-        // Either complete LCA table supplies the ASV IDs, including no-hit ASVs.
-        count_taxonomy = params.COI_bold_ref_db
-            ? VSEARCH_ASV_LCA_BOLD.out.lca_all
-            : VSEARCH_ASV_LCA_MIDORI2.out.lca_all
-        map_count_input = DADA2_SWF.out.dada2_out
-            .map { meta, maps, asv_seqs, filt_reads -> [meta, maps] }
-            .join(count_taxonomy, failOnDuplicate: true, failOnMismatch: true)
-        MAKE_ASV_COUNT_TABLES(map_count_input)
-        ch_versions = ch_versions.mix(MAKE_ASV_COUNT_TABLES.out.versions)
-
-        if (params.COI_bold_ref_db) {
-            LCA_KRONA_REPORTS_BOLD(
-                MAKE_ASV_COUNT_TABLES.out.asv_read_counts_out,
-                VSEARCH_ASV_LCA_BOLD.out.lca_all,
-                VSEARCH_ASV_LCA_BOLD.out.lca_top
-            )
-            ch_versions = ch_versions.mix(LCA_KRONA_REPORTS_BOLD.out.versions)
-        }
-        if (params.COI_midori2_ref_db) {
-            LCA_KRONA_REPORTS_MIDORI2(
-                MAKE_ASV_COUNT_TABLES.out.asv_read_counts_out,
-                VSEARCH_ASV_LCA_MIDORI2.out.lca_all,
-                VSEARCH_ASV_LCA_MIDORI2.out.lca_top
-            )
-            ch_versions = ch_versions.mix(LCA_KRONA_REPORTS_MIDORI2.out.versions)
-        }
+        ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_MIDORI2.out.versions)
     }
 
     //
