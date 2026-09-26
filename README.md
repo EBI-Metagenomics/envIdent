@@ -226,15 +226,15 @@ from the shared ASV read counts table.
 ### Configuration Profiles
 
 `--dada2_merge_mode` supports `standard` and `gap`. Separate-strand mode is
-currently disabled because ASV counting does not support its `seq_f_N` and
-`seq_r_N` identifiers.
+currently disabled.
 
 The pipeline includes pre-configured profiles:
 
 * docker: Use Docker containers
 * singularity: Use Singularity containers
 * conda: Use Conda environments
-* example_slurm: Optimized for SLURM clusters
+* example_slurm: Optimised for SLURM clusters
+* example_macbook: Optimised for MacBooks
 * test: Small test dataset for validation
 
 ## Citations
