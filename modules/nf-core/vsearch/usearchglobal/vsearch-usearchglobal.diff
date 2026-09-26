@@ -45,7 +45,7 @@ Changes in 'vsearch/usearchglobal/main.nf':
  
      when:
      task.ext.when == null || task.ext.when
-@@ -73,6 +73,11 @@
+@@ -73,20 +73,30 @@
          $args \\
          ${columns} \\
          ${outfmt} ${prefix}.${out_ext}
@@ -57,8 +57,26 @@ Changes in 'vsearch/usearchglobal/main.nf':
      """
      stub:
      def prefix = task.ext.prefix ?: "${meta.id}"
-@@ -88,5 +93,10 @@
-                     'aln'
+-    out_ext = outoption == "alnout" ? 'aln' :
+-                    outoption == "biomout" ? 'biom' :
+-                    outoption == "blast6out" ? 'txt' :
+-                    outoption == "mothur_shared_out" ? 'mothur' :
+-                    outoption == "otutabout" ? 'otu' :
+-                    outoption == "samout" ? 'sam' :
+-                    outoption == "uc" ? 'uc' :
+-                    outoption == "userout" ? 'tsv' :
+-                    outoption == "lcaout" ? 'lca' :
+-                    'aln'
++    out_ext = outoption == "alnout"              ? 'aln'    :
++              outoption == "biomout"             ? 'biom'   :
++              outoption == "blast6out"           ? 'txt'    :
++              outoption == "mothur_shared_out"   ? 'mothur' :
++              outoption == "otutabout"           ? 'otu'    :
++              outoption == "samout"              ? 'sam'    :
++              outoption == "uc"                  ? 'uc'     :
++              outoption == "userout"             ? 'tsv'    :
++              outoption == "lcaout"              ? 'lca'    :
++              'aln'
      """
      touch ${prefix}.${out_ext}
 +    
