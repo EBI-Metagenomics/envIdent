@@ -28,7 +28,7 @@ index 0000000..b485955
 +    | awk 'OFS="\t" { print $2, $3, $4, $1 }' \
 +    | sort -nr -k4,4 >> "${output}"
 diff --git a/modules/ebi-metagenomics/cutadapt/main.nf b/modules/ebi-metagenomics/cutadapt/main.nf
-index e68ae8e..6379f32 100644
+index e68ae8e..a05e390 100644
 --- a/modules/ebi-metagenomics/cutadapt/main.nf
 +++ b/modules/ebi-metagenomics/cutadapt/main.nf
 @@ -14,72 +14,106 @@ process CUTADAPT {
@@ -144,7 +144,7 @@ index e68ae8e..6379f32 100644
 +        touch ${prefix}.${p.stage}.cutadapt.log
 +        touch ${p.out_files.join(' ')}
 +        echo '{"message": "No primers were inputted so trimming not performed"}' > ${prefix}.${p.stage}.cutadapt.json
-+        ${p.summ_files.collect { f -> "printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${f}" }.join('\n')}
++        ${p.summ_files.collect { f -> "        printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${f}" }.join('\n')}
 +        """ }.join('\n')}
  
 -        }
@@ -179,7 +179,7 @@ index e68ae8e..6379f32 100644
 +        }.join('\n')}
 +
 +        ${passes.collect { p ->
-+            p.tsv_files.withIndex().collect { tsv, i -> "primer_trim_stats.sh ${tsv} ${p.summ_files[i]}" }.join('\n')
++            p.tsv_files.withIndex().collect { tsv, i -> "        primer_trim_stats.sh ${tsv} ${p.summ_files[i]}" }.join('\n')
 +        }.join('\n')}
 +
          cat <<-END_VERSIONS > versions.yml

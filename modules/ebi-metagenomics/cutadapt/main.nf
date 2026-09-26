@@ -84,7 +84,7 @@ process CUTADAPT {
         touch ${prefix}.${p.stage}.cutadapt.log
         touch ${p.out_files.join(' ')}
         echo '{"message": "No primers were inputted so trimming not performed"}' > ${prefix}.${p.stage}.cutadapt.json
-        ${p.summ_files.collect { f -> "printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${f}" }.join('\n')}
+        ${p.summ_files.collect { f -> "        printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${f}" }.join('\n')}
         """ }.join('\n')}
 
         cat <<-END_VERSIONS > versions.yml
@@ -111,7 +111,7 @@ process CUTADAPT {
         }.join('\n')}
 
         ${passes.collect { p ->
-            p.tsv_files.withIndex().collect { tsv, i -> "primer_trim_stats.sh ${tsv} ${p.summ_files[i]}" }.join('\n')
+            p.tsv_files.withIndex().collect { tsv, i -> "        primer_trim_stats.sh ${tsv} ${p.summ_files[i]}" }.join('\n')
         }.join('\n')}
 
         cat <<-END_VERSIONS > versions.yml
