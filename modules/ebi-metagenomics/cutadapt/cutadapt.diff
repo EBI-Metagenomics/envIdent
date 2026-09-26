@@ -1,8 +1,232 @@
-diff --git a/modules/ebi-metagenomics/cutadapt/main.nf b/modules/ebi-metagenomics/cutadapt/main.nf
-index e68ae8e..a05e390 100644
---- a/modules/ebi-metagenomics/cutadapt/main.nf
-+++ b/modules/ebi-metagenomics/cutadapt/main.nf
-@@ -14,72 +14,106 @@ process CUTADAPT {
+diff --git a/modules/ebi-metagenomics/cutadapt/cutadapt.diff b/modules/ebi-metagenomics/cutadapt/cutadapt.diff
+index c526873f..a844291a 100644
+ diff --git a/modules/ebi-metagenomics/cutadapt/main.nf b/modules/ebi-metagenomics/cutadapt/main.nf
+-index df50ac3..aa085b2 100644
++index e68ae8e..a05e390 100644
+ --- a/modules/ebi-metagenomics/cutadapt/main.nf
+ +++ b/modules/ebi-metagenomics/cutadapt/main.nf
+-@@ -24,26 +24,22 @@ process CUTADAPT {
+-     def args = task.ext.args ?: ''
++@@ -14,72 +14,106 @@ process CUTADAPT {
++     tuple val(meta), path('*.trim.fastq.gz'), emit: reads
++     tuple val(meta), path('*.log')          , emit: log
++     tuple val(meta), path('*.json')         , emit: json
+++    tuple val(meta), path('*_summ.tsv')     , optional: true, emit: tsv
++     path "versions.yml"                     , emit: versions
++ 
++     when:
++     task.ext.when == null || task.ext.when
++ 
++     script:
++-    def args = task.ext.args ?: ''
+++    def args   = task.ext.args ?: ''
+      def prefix = task.ext.prefix ?: "${meta.id}"
+  
+ -    def trimmed = "-o ${prefix}.trim.fastq.gz"
+ -    if (!meta.single_end){
+ -        trimmed = "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
+-+    def first_trimmed = meta.single_end
+-+        ? "-o ${prefix}.first_pass.fastq.gz"
+-+        : "-o ${prefix}_1.first_pass.fastq.gz -p ${prefix}_2.first_pass.fastq.gz"
+-+    def final_trimmed = meta.single_end
+-+        ? "-o ${prefix}.trim.fastq.gz"
+-+        : "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
+-+    def first_primer_args = primers[0].size() > 0 ? "-g file:${primers[0]}" : ""
+-+    if (!meta.single_end && primers[1].size() > 0) {
+-+        first_primer_args += " -G file:${primers[1]}"
+-     }
+--
++-    }
+++    // primers[] convention: [forward, reverse, forward_RC, reverse_RC]
+++    def (fwd_primer, rev_primer, fwd_primer_rc, rev_primer_rc) = primers
++ 
+ -    def fwd_primer = ""
+ -    if (primers[0].size() > 0){
+ -        fwd_primer = "-g file:${primers[0]}"
+--    }
+++    def first_primer_args  = fwd_primer.size() > 0 ? "-g file:${fwd_primer}" : ''
+++    if (!meta.single_end && rev_primer.size() > 0) {
+++        first_primer_args += " -G file:${rev_primer}"
++     }
+ -
+ -    def rev_primer = ""
+ -    if (primers[1].size() > 0  && meta.single_end){
+ -        rev_primer = "-a file:${primers[1]}"
+ -    } else if (primers[1].size() > 0  && !meta.single_end){
+ -        rev_primer = "-G file:${primers[1]}"
+-+    def second_primer_args = primers[2].size() > 0 ? "-a file:${primers[2]}" : ""
+-+    if (!meta.single_end && primers[3].size() > 0) {
+-+        second_primer_args += " -A file:${primers[3]}"
+++    def second_primer_args = rev_primer_rc.size() > 0 ? "-a file:${rev_primer_rc}" : ''
+++    if (!meta.single_end && fwd_primer_rc.size() > 0) {
+++        second_primer_args += " -A file:${fwd_primer_rc}"
+      }
+  
+ -    def primer_arg = "$fwd_primer $rev_primer"
+--
+++    // Two sequential passes: primers are trimmed and independently logged/
+++    // stat'd for the 5' pass and the 3' pass. cutadapt is happy to receive
+++    // an empty primer arg for a pass that has nothing to trim, so we only
+++    // skip cutadapt entirely when NEITHER pass has any primers at all.
+++    // Each pass carries everything needed to build its own cutadapt call,
+++    // stats step, and "no primers" placeholder outputs, so nothing below
+++    // has to be retyped per pass.
+++    def passes = [
+++        [
+++            stage      : 'first_pass',
+++            primer_args: first_primer_args,
+++            input      : "${reads}",
+++            out_files  : meta.single_end
+++                ? ["${prefix}.first_pass.fastq.gz"]
+++                : ["${prefix}_1.first_pass.fastq.gz", "${prefix}_2.first_pass.fastq.gz"],
+++            tsv_files  : meta.single_end
+++                ? ["${prefix}.first_pass.tsv"]
+++                : ["${prefix}_1.first_pass.tsv", "${prefix}_2.first_pass.tsv"],
+++            summ_files : meta.single_end
+++                ? ["${prefix}_first_pass_se_summ.tsv"]
+++                : ["${prefix}_first_pass_1_summ.tsv", "${prefix}_first_pass_2_summ.tsv"],
+++        ],
+++        [
+++            stage      : 'second_pass',
+++            primer_args: second_primer_args,
+++            input      : meta.single_end
+++                ? "${prefix}.first_pass.fastq.gz"
+++                : "${prefix}_1.first_pass.fastq.gz ${prefix}_2.first_pass.fastq.gz",
+++            out_files  : meta.single_end
+++                ? ["${prefix}.trim.fastq.gz"]
+++                : ["${prefix}_1.trim.fastq.gz", "${prefix}_2.trim.fastq.gz"],
+++            tsv_files  : meta.single_end
+++                ? ["${prefix}.second_pass.tsv"]
+++                : ["${prefix}_1.second_pass.tsv", "${prefix}_2.second_pass.tsv"],
+++            summ_files : meta.single_end
+++                ? ["${prefix}_second_pass_se_summ.tsv"]
+++                : ["${prefix}_second_pass_1_summ.tsv", "${prefix}_second_pass_2_summ.tsv"],
+++        ],
+++    ]
++ 
+ -    if(fwd_primer == "" && rev_primer == ""){
+-+    if(first_primer_args == ""){
+-         if (!meta.single_end){
+-             """
+-             touch ${prefix}.cutadapt.log
+-@@ -76,9 +72,18 @@ process CUTADAPT {
++-        if (!meta.single_end){
++-            """
++-            touch ${prefix}.cutadapt.log
++-            touch ${prefix}_1.trim.fastq.gz
++-            touch ${prefix}_2.trim.fastq.gz
++-            touch ${prefix}.cutadapt.json
+++    def no_primers_at_all = (first_primer_args == '' && second_primer_args == '')
++ 
++-            cat <<-END_VERSIONS > versions.yml
++-            "${task.process}":
++-                cutadapt: \$(cutadapt --version)
++-            END_VERSIONS
++-            """
++-        }
++-        else{
++-            """
++-            touch ${prefix}.cutadapt.log
++-            touch ${prefix}.trim.fastq.gz
++-            touch ${prefix}.cutadapt.json
++-
++-            cat <<-END_VERSIONS > versions.yml
++-            "${task.process}":
++-                cutadapt: \$(cutadapt --version)
++-            END_VERSIONS
++-            """
+++    if (no_primers_at_all) {
+++        """
+++        ${passes.collect { p -> """
+++        touch ${prefix}.${p.stage}.cutadapt.log
+++        touch ${p.out_files.join(' ')}
+++        echo '{"message": "No primers were inputted so trimming not performed"}' > ${prefix}.${p.stage}.cutadapt.json
+++        ${p.summ_files.collect { f -> "        printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > ${f}" }.join('\n')}
+++        """ }.join('\n')}
++ 
++-        }
++-    }
++-    else{
+++        cat <<-END_VERSIONS > versions.yml
+++        "${task.process}":
+++            cutadapt: \$(cutadapt --version)
+++        END_VERSIONS
+++        """
+++    } else {
++         """
+++        ${passes.collect { p ->
+++            def io = meta.single_end
+++                ? "-o ${p.out_files[0]} --info-file ${p.tsv_files[0]}"
+++                : "-o ${p.out_files[0]} -p ${p.out_files[1]} --info-file ${p.tsv_files[0]} --info-file-paired ${p.tsv_files[1]}"
+++            """
+          cutadapt \\
+              --cores $task.cpus \\
+              $args \\
+ -            $trimmed \\
+ -            $primer_arg \\
+ -            $reads \\
+-+            ${first_trimmed} \\
+-+            ${first_primer_args} \\
+-+            ${reads} \\
+-+            --json ${prefix}.first_pass.cutadapt.json \\
+-+            > ${prefix}.first_pass.cutadapt.log
++-            --json ${prefix}.cutadapt.json \\
++-            > ${prefix}.cutadapt.log
+++            ${io} \\
+++            ${p.primer_args} \\
+++            ${p.input} \\
+++            --json ${prefix}.${p.stage}.cutadapt.json \\
+++            > ${prefix}.${p.stage}.cutadapt.log
+++        """
+++        }.join('\n')}
+++
+++        ${passes.collect { p ->
+++            p.tsv_files.withIndex().collect { tsv, i -> "        primer_trim_stats.sh ${tsv} ${p.summ_files[i]}" }.join('\n')
+++        }.join('\n')}
+ +
+-+        cutadapt \\
+-+            --cores $task.cpus \\
+-+            $args \\
+-+            ${final_trimmed} \\
+-+            ${second_primer_args} \\
+-+            ${meta.single_end ? "${prefix}.first_pass.fastq.gz" : "${prefix}_1.first_pass.fastq.gz ${prefix}_2.first_pass.fastq.gz"} \\
+-             --json ${prefix}.cutadapt.json \\
+-             > ${prefix}.cutadapt.log
+          cat <<-END_VERSIONS > versions.yml
++         "${task.process}":
++             cutadapt: \$(cutadapt --version)
++@@ -89,11 +123,21 @@ process CUTADAPT {
++ 
++     stub:
++     def prefix  = task.ext.prefix ?: "${meta.id}"
++-    def trimmed = meta.single_end ? "${prefix}.trim.fastq.gz" : "${prefix}_1.trim.fastq.gz ${prefix}_2.trim.fastq.gz"
+++    def trimmed = meta.single_end
+++        ? "${prefix}.trim.fastq.gz"
+++        : "${prefix}_1.trim.fastq.gz ${prefix}_2.trim.fastq.gz"
+++    def summaries = meta.single_end
+++        ? "${prefix}_first_pass_se_summ.tsv ${prefix}_second_pass_se_summ.tsv"
+++        : "${prefix}_first_pass_1_summ.tsv ${prefix}_first_pass_2_summ.tsv ${prefix}_second_pass_1_summ.tsv ${prefix}_second_pass_2_summ.tsv"
++     """
++-    touch ${prefix}.cutadapt.log
++-    touch ${prefix}.cutadapt.json
+++    touch ${prefix}.first_pass.cutadapt.log
+++    touch ${prefix}.second_pass.cutadapt.log
+++    touch ${prefix}.first_pass.cutadapt.json
+++    touch ${prefix}.second_pass.cutadapt.json
++     touch ${trimmed}
+++    for summary in ${summaries}; do
+++        printf 'Pre-primer length\\tPrimer length\\tPost-primer length\\tRead count\\n' > \$summary
+++    done
++ 
++     cat <<-END_VERSIONS > versions.yml
++     "${task.process}":
+
+@@ -1,4 +1,3 @@
+-
+ process CUTADAPT {
+     tag "$meta.id"
+     label 'very_light'
+@@ -15,77 +14,106 @@ process CUTADAPT {
      tuple val(meta), path('*.trim.fastq.gz'), emit: reads
      tuple val(meta), path('*.log')          , emit: log
      tuple val(meta), path('*.json')         , emit: json
@@ -17,32 +241,37 @@ index e68ae8e..a05e390 100644
 +    def args   = task.ext.args ?: ''
      def prefix = task.ext.prefix ?: "${meta.id}"
  
--    def trimmed = "-o ${prefix}.trim.fastq.gz"
--    if (!meta.single_end){
--        trimmed = "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
--    }
+-    def first_trimmed = meta.single_end
+-        ? "-o ${prefix}.first_pass.fastq.gz"
+-        : "-o ${prefix}_1.first_pass.fastq.gz -p ${prefix}_2.first_pass.fastq.gz"
+-    def final_trimmed = meta.single_end
+-        ? "-o ${prefix}.trim.fastq.gz"
+-        : "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
+-    def first_primer_args = primers[0].size() > 0 ? "-g file:${primers[0]}" : ""
+-    if (!meta.single_end && primers[1].size() > 0) {
+-        first_primer_args += " -G file:${primers[1]}"
 +    // primers[] convention: [forward, reverse, forward_RC, reverse_RC]
 +    def (fwd_primer, rev_primer, fwd_primer_rc, rev_primer_rc) = primers
- 
--    def fwd_primer = ""
--    if (primers[0].size() > 0){
--        fwd_primer = "-g file:${primers[0]}"
++
 +    def first_primer_args  = fwd_primer.size() > 0 ? "-g file:${fwd_primer}" : ''
 +    if (!meta.single_end && rev_primer.size() > 0) {
 +        first_primer_args += " -G file:${rev_primer}"
      }
--
--    def rev_primer = ""
--    if (primers[1].size() > 0  && meta.single_end){
--        rev_primer = "-a file:${primers[1]}"
--    } else if (primers[1].size() > 0  && !meta.single_end){
--        rev_primer = "-G file:${primers[1]}"
+-    def second_primer_args = primers[3].size() > 0 ? "-a file:${primers[3]}" : ""
+-    if (!meta.single_end && primers[2].size() > 0) {
+-        second_primer_args += " -A file:${primers[2]}"
 +    def second_primer_args = rev_primer_rc.size() > 0 ? "-a file:${rev_primer_rc}" : ''
 +    if (!meta.single_end && fwd_primer_rc.size() > 0) {
 +        second_primer_args += " -A file:${fwd_primer_rc}"
      }
  
--    def primer_arg = "$fwd_primer $rev_primer"
+-    if(first_primer_args == ""){
+-        if (!meta.single_end){
+-            """
+-            touch ${prefix}.cutadapt.log
+-            touch ${prefix}_1.trim.fastq.gz
+-            touch ${prefix}_2.trim.fastq.gz
+-            touch ${prefix}.cutadapt.json
 +    // Two sequential passes: primers are trimmed and independently logged/
 +    // stats made for the 5' pass and the 3' pass. cutadapt is happy to receive
 +    // an empty primer arg for a pass that has nothing to trim, so we only
@@ -83,15 +312,6 @@ index e68ae8e..a05e390 100644
 +        ],
 +    ]
  
--    if(fwd_primer == "" && rev_primer == ""){
--        if (!meta.single_end){
--            """
--            touch ${prefix}.cutadapt.log
--            touch ${prefix}_1.trim.fastq.gz
--            touch ${prefix}_2.trim.fastq.gz
--            touch ${prefix}.cutadapt.json
-+    def no_primers_at_all = (first_primer_args == '' && second_primer_args == '')
- 
 -            cat <<-END_VERSIONS > versions.yml
 -            "${task.process}":
 -                cutadapt: \$(cutadapt --version)
@@ -103,7 +323,8 @@ index e68ae8e..a05e390 100644
 -            touch ${prefix}.cutadapt.log
 -            touch ${prefix}.trim.fastq.gz
 -            touch ${prefix}.cutadapt.json
--
++    def no_primers_at_all = (first_primer_args == '' && second_primer_args == '')
+ 
 -            cat <<-END_VERSIONS > versions.yml
 -            "${task.process}":
 -                cutadapt: \$(cutadapt --version)
@@ -136,11 +357,11 @@ index e68ae8e..a05e390 100644
          cutadapt \\
              --cores $task.cpus \\
              $args \\
--            $trimmed \\
--            $primer_arg \\
--            $reads \\
--            --json ${prefix}.cutadapt.json \\
--            > ${prefix}.cutadapt.log
+-            ${first_trimmed} \\
+-            ${first_primer_args} \\
+-            ${reads} \\
+-            --json ${prefix}.first_pass.cutadapt.json \\
+-            > ${prefix}.first_pass.cutadapt.log
 +            ${io} \\
 +            ${p.primer_args} \\
 +            ${p.input} \\
@@ -152,11 +373,19 @@ index e68ae8e..a05e390 100644
 +        ${passes.collect { p ->
 +            p.tsv_files.withIndex().collect { tsv, i -> "        primer_trim_stats.sh ${tsv} ${p.summ_files[i]}" }.join('\n')
 +        }.join('\n')}
-+
+ 
+-        cutadapt \\
+-            --cores $task.cpus \\
+-            $args \\
+-            ${final_trimmed} \\
+-            ${second_primer_args} \\
+-            ${meta.single_end ? "${prefix}.first_pass.fastq.gz" : "${prefix}_1.first_pass.fastq.gz ${prefix}_2.first_pass.fastq.gz"} \\
+-            --json ${prefix}.cutadapt.json \\
+-            > ${prefix}.cutadapt.log
          cat <<-END_VERSIONS > versions.yml
          "${task.process}":
              cutadapt: \$(cutadapt --version)
-@@ -89,11 +123,21 @@ process CUTADAPT {
+@@ -95,15 +123,25 @@ process CUTADAPT {
  
      stub:
      def prefix  = task.ext.prefix ?: "${meta.id}"
@@ -181,3 +410,496 @@ index e68ae8e..a05e390 100644
  
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
+         cutadapt: \$(cutadapt --version)
+     END_VERSIONS
+     """
+-}
++}
+\ No newline at end of file
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/empty.fasta b/modules/ebi-metagenomics/cutadapt/tests/data/empty.fasta
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/empty_2.fasta b/modules/ebi-metagenomics/cutadapt/tests/data/empty_2.fasta
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta b/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta b/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta b/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta
+new file mode 100644
+index 00000000..0c084d89
+--- /dev/null
++++ b/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta
+@@ -0,0 +1,2 @@
++>primer
++ACGTACGA
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta b/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta
+new file mode 100644
+index 00000000..ebfdf1e5
+--- /dev/null
++++ b/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta
+@@ -0,0 +1,2 @@
++>primer_forward_rc
++TCGTACGT
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta b/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta
+new file mode 100644
+index 00000000..e47079ab
+--- /dev/null
++++ b/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta
+@@ -0,0 +1,2 @@
++>primer_reverse
++TGCATGCC
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta b/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta
+new file mode 100644
+index 00000000..e5fcb6f8
+--- /dev/null
++++ b/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta
+@@ -0,0 +1,2 @@
++>primer_reverse_rc
++GGCATGCA
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq b/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq
+new file mode 100644
+index 00000000..78d6078e
+--- /dev/null
++++ b/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq
+@@ -0,0 +1,8 @@
++@matched/1
++ACGTACGACCCCCCCCCCCCGGCATGCA
+++
++IIIIIIIIJJJJJJJJJJJJHHHHHHHH
++@unmatched/1
++GGGGGGGGGGGGGGGGGGGGGGGG
+++
++KKKKKKKKKKKKKKKKKKKKKKKK
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq b/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq
+new file mode 100644
+index 00000000..d486b174
+--- /dev/null
++++ b/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq
+@@ -0,0 +1,8 @@
++@matched/2
++TGCATGCCAAAAAAAAAAAATCGTACGT
+++
++IIIIIIIIJJJJJJJJJJJJHHHHHHHH
++@unmatched/2
++GGGGGGGGGGGGGGGGGGGGGGGG
+++
++KKKKKKKKKKKKKKKKKKKKKKKK
+diff --git a/modules/ebi-metagenomics/cutadapt/tests/main.nf.test b/modules/ebi-metagenomics/cutadapt/tests/main.nf.test
+new file mode 100644
+index 00000000..82a4f131
+--- /dev/null
++++ b/modules/ebi-metagenomics/cutadapt/tests/main.nf.test
+@@ -0,0 +1,409 @@
++nextflow_process {
++    name "Cutadapt trimming and reports"
++    script "../main.nf"
++    process "CUTADAPT"
++
++    test("Single reads: two_pass") {
++        when {
++            params { outdir = "$outputDir" }
++            process {
++                """
++                input[0] = [[id: 'test', single_end: true], file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'),
++                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta')]]
++                """
++            }
++        }
++        then {
++            assert process.success
++            def asFiles = { value -> value instanceof List ? value : [value] }
++            ['reads', 'log', 'json'].each { channel ->
++                assert process.out[channel].size() == 1
++                assert process.out[channel][0][0] == [id: 'test', single_end: true]
++            }
++            assert process.out.versions.size() == 1
++            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
++            def reads = asFiles(process.out.reads[0][1]).sort()
++            assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
++            reads.eachWithIndex { file, i ->
++                def body = i == 0 ? 'CCCCCCCCCCCC' : 'AAAAAAAAAAAA'
++                def tail = ''
++                assert path(file).linesGzip == [
++                    "@matched/${i + 1}".toString(), body + tail, '+', 'J' * 12 + 'H' * tail.size(),
++                    "@unmatched/${i + 1}".toString(), 'G' * 24, '+', 'K' * 24
++                ]
++            }
++            def reports = asFiles(process.out.json[0][1])
++            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.json', 'test.first_pass.cutadapt.json'].sort()
++            reports.each { file ->
++                def report = new groovy.json.JsonSlurper().parseText(path(file).text)
++                assert report.read_counts.input == 2
++                assert report.read_counts.output == 2
++                assert report.input.paired == false
++                def firstPass = path(file).getFileName().toString().contains('first_pass')
++                def expectedMatches = firstPass || true ? 1 : 0
++                assert report.adapters_read1.collect { it.total_matches }.sum(0) == expectedMatches
++                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
++            }
++            def logs = asFiles(process.out.log[0][1])
++            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.log', 'test.first_pass.cutadapt.log'].sort()
++            logs.each { assert path(it).text.contains('=== Summary ===') }
++            assert process.out.tsv[0][0] == [id: 'test', single_end: true]
++            def summaries = asFiles(process.out.tsv[0][1])
++            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_se_summ.tsv', 'test_first_pass_se_summ.tsv'].sort()
++            summaries.each { file ->
++                def name = path(file).getFileName().toString()
++                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
++                def expected = name.contains('first_pass')
++                    ? ['0\t0\t0\t1', '0\t8\t20\t1']
++                    : ['0\t0\t0\t1', '12\t8\t0\t1']
++                assert path(file).readLines().first() == 'Pre-primer length\tPrimer length\tPost-primer length\tRead count'
++                assert path(file).readLines().drop(1).sort() == expected.sort()
++            }
++        }
++    }
++
++    test("Single reads: first_only") {
++        when {
++            params { outdir = "$outputDir" }
++            process {
++                """
++                input[0] = [[id: 'test', single_end: true], file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'),
++                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta')]]
++                """
++            }
++        }
++        then {
++            assert process.success
++            def asFiles = { value -> value instanceof List ? value : [value] }
++            ['reads', 'log', 'json'].each { channel ->
++                assert process.out[channel].size() == 1
++                assert process.out[channel][0][0] == [id: 'test', single_end: true]
++            }
++            assert process.out.versions.size() == 1
++            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
++            def reads = asFiles(process.out.reads[0][1]).sort()
++            assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
++            reads.eachWithIndex { file, i ->
++                def body = i == 0 ? 'CCCCCCCCCCCC' : 'AAAAAAAAAAAA'
++                def tail = (i == 0 ? 'GGCATGCA' : 'TCGTACGT')
++                assert path(file).linesGzip == [
++                    "@matched/${i + 1}".toString(), body + tail, '+', 'J' * 12 + 'H' * tail.size(),
++                    "@unmatched/${i + 1}".toString(), 'G' * 24, '+', 'K' * 24
++                ]
++            }
++            def reports = asFiles(process.out.json[0][1])
++            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.json', 'test.first_pass.cutadapt.json'].sort()
++            reports.each { file ->
++                def report = new groovy.json.JsonSlurper().parseText(path(file).text)
++                assert report.read_counts.input == 2
++                assert report.read_counts.output == 2
++                assert report.input.paired == false
++                def firstPass = path(file).getFileName().toString().contains('first_pass')
++                def expectedMatches = firstPass || false ? 1 : 0
++                assert report.adapters_read1.collect { it.total_matches }.sum(0) == expectedMatches
++                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
++            }
++            def logs = asFiles(process.out.log[0][1])
++            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.log', 'test.first_pass.cutadapt.log'].sort()
++            logs.each { assert path(it).text.contains('=== Summary ===') }
++            assert process.out.tsv[0][0] == [id: 'test', single_end: true]
++            def summaries = asFiles(process.out.tsv[0][1])
++            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_se_summ.tsv', 'test_first_pass_se_summ.tsv'].sort()
++            summaries.each { file ->
++                def name = path(file).getFileName().toString()
++                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
++                def expected = name.contains('first_pass')
++                    ? ['0\t0\t0\t1', '0\t8\t20\t1']
++                    : ['0\t0\t0\t2']
++                assert path(file).readLines().first() == 'Pre-primer length\tPrimer length\tPost-primer length\tRead count'
++                assert path(file).readLines().drop(1).sort() == expected.sort()
++            }
++        }
++    }
++
++    test("Single reads: stub") {
++        options "-stub"
++        when {
++            params { outdir = "$outputDir" }
++            process {
++                """
++                input[0] = [[id: 'test', single_end: true], file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'),
++                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta')]]
++                """
++            }
++        }
++        then {
++            assert process.success
++            def asFiles = { value -> value instanceof List ? value : [value] }
++            ['reads', 'log', 'json'].each { channel ->
++                assert process.out[channel].size() == 1
++                assert process.out[channel][0][0] == [id: 'test', single_end: true]
++            }
++            assert process.out.versions.size() == 1
++            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
++            def reads = asFiles(process.out.reads[0][1]).sort()
++            assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
++            reads.each { assert path(it).size() == 0 }
++            ['log', 'json'].each { channel ->
++                assert asFiles(process.out[channel][0][1]).collect { path(it).getFileName().toString() }.sort() == ["test.first_pass.cutadapt.${channel}", "test.second_pass.cutadapt.${channel}"].collect { it.toString() }
++                asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
++            }
++            assert process.out.tsv[0][0] == [id: 'test', single_end: true]
++            def summaries = asFiles(process.out.tsv[0][1])
++            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_se_summ.tsv', 'test_first_pass_se_summ.tsv'].sort()
++            summaries.each { file ->
++                def name = path(file).getFileName().toString()
++                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
++                assert path(file).readLines() == ['Pre-primer length\tPrimer length\tPost-primer length\tRead count']
++            }
++        }
++    }
++
++    test("Single reads: no_primers") {
++        when {
++            params { outdir = "$outputDir" }
++            process {
++                """
++                input[0] = [[id: 'test', single_end: true], file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'),
++                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_2.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta')]]
++                """
++            }
++        }
++        then {
++            assert process.success
++            def asFiles = { value -> value instanceof List ? value : [value] }
++            ['reads', 'log', 'json'].each { channel ->
++                assert process.out[channel].size() == 1
++                assert process.out[channel][0][0] == [id: 'test', single_end: true]
++            }
++            assert process.out.versions.size() == 1
++            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
++            def reads = asFiles(process.out.reads[0][1]).sort()
++            assert reads.collect { path(it).getFileName().toString() } == ['test.trim.fastq.gz']
++            reads.each { assert path(it).size() == 0 }
++            ['log', 'json'].each { channel ->
++                assert asFiles(process.out[channel][0][1]).collect { path(it).getFileName().toString() }.sort() == ["test.first_pass.cutadapt.${channel}", "test.second_pass.cutadapt.${channel}"].collect { it.toString() }
++                asFiles(process.out[channel][0][1]).each { file ->
++                    if (channel == 'json') {
++                        assert new groovy.json.JsonSlurper().parseText(path(file).text) ==
++                            [message: 'No primers were inputted so trimming not performed']
++                        assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
++                    } else {
++                        assert path(file).size() == 0
++                    }
++                }
++            }
++            assert process.out.tsv.size() == 1
++            assert process.out.tsv[0][0] == [id: 'test', single_end: true]
++            def summaries = asFiles(process.out.tsv[0][1])
++            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_first_pass_se_summ.tsv', 'test_second_pass_se_summ.tsv']
++            summaries.each { file ->
++                assert path(file).readLines() == ['Pre-primer length\tPrimer length\tPost-primer length\tRead count']
++                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").exists()
++            }
++        }
++    }
++
++    test("Paired reads: two_pass") {
++        when {
++            params { outdir = "$outputDir" }
++            process {
++                """
++                input[0] = [[id: 'test', single_end: false], [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq')],
++                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta')]]
++                """
++            }
++        }
++        then {
++            assert process.success
++            def asFiles = { value -> value instanceof List ? value : [value] }
++            ['reads', 'log', 'json'].each { channel ->
++                assert process.out[channel].size() == 1
++                assert process.out[channel][0][0] == [id: 'test', single_end: false]
++            }
++            assert process.out.versions.size() == 1
++            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
++            def reads = asFiles(process.out.reads[0][1]).sort()
++            assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
++            reads.eachWithIndex { file, i ->
++                def body = i == 0 ? 'CCCCCCCCCCCC' : 'AAAAAAAAAAAA'
++                def tail = ''
++                assert path(file).linesGzip == [
++                    "@matched/${i + 1}".toString(), body + tail, '+', 'J' * 12 + 'H' * tail.size(),
++                    "@unmatched/${i + 1}".toString(), 'G' * 24, '+', 'K' * 24
++                ]
++            }
++            def reports = asFiles(process.out.json[0][1])
++            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.json', 'test.first_pass.cutadapt.json'].sort()
++            reports.each { file ->
++                def report = new groovy.json.JsonSlurper().parseText(path(file).text)
++                assert report.read_counts.input == 2
++                assert report.read_counts.output == 2
++                assert report.input.paired == true
++                def firstPass = path(file).getFileName().toString().contains('first_pass')
++                def expectedMatches = firstPass || true ? 1 : 0
++                assert report.adapters_read1.collect { it.total_matches }.sum(0) == expectedMatches
++                assert report.adapters_read2.collect { it.total_matches }.sum(0) == expectedMatches
++                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
++            }
++            def logs = asFiles(process.out.log[0][1])
++            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.log', 'test.first_pass.cutadapt.log'].sort()
++            logs.each { assert path(it).text.contains('=== Summary ===') }
++            assert process.out.tsv[0][0] == [id: 'test', single_end: false]
++            def summaries = asFiles(process.out.tsv[0][1])
++            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_1_summ.tsv', 'test_second_pass_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv'].sort()
++            summaries.each { file ->
++                def name = path(file).getFileName().toString()
++                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
++                def expected = name.contains('first_pass')
++                    ? ['0\t0\t0\t1', '0\t8\t20\t1']
++                    : ['0\t0\t0\t1', '12\t8\t0\t1']
++                assert path(file).readLines().first() == 'Pre-primer length\tPrimer length\tPost-primer length\tRead count'
++                assert path(file).readLines().drop(1).sort() == expected.sort()
++            }
++        }
++    }
++
++    test("Paired reads: first_only") {
++        when {
++            params { outdir = "$outputDir" }
++            process {
++                """
++                input[0] = [[id: 'test', single_end: false], [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq')],
++                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta')]]
++                """
++            }
++        }
++        then {
++            assert process.success
++            def asFiles = { value -> value instanceof List ? value : [value] }
++            ['reads', 'log', 'json'].each { channel ->
++                assert process.out[channel].size() == 1
++                assert process.out[channel][0][0] == [id: 'test', single_end: false]
++            }
++            assert process.out.versions.size() == 1
++            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
++            def reads = asFiles(process.out.reads[0][1]).sort()
++            assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
++            reads.eachWithIndex { file, i ->
++                def body = i == 0 ? 'CCCCCCCCCCCC' : 'AAAAAAAAAAAA'
++                def tail = (i == 0 ? 'GGCATGCA' : 'TCGTACGT')
++                assert path(file).linesGzip == [
++                    "@matched/${i + 1}".toString(), body + tail, '+', 'J' * 12 + 'H' * tail.size(),
++                    "@unmatched/${i + 1}".toString(), 'G' * 24, '+', 'K' * 24
++                ]
++            }
++            def reports = asFiles(process.out.json[0][1])
++            assert reports.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.json', 'test.first_pass.cutadapt.json'].sort()
++            reports.each { file ->
++                def report = new groovy.json.JsonSlurper().parseText(path(file).text)
++                assert report.read_counts.input == 2
++                assert report.read_counts.output == 2
++                assert report.input.paired == true
++                def firstPass = path(file).getFileName().toString().contains('first_pass')
++                def expectedMatches = firstPass || false ? 1 : 0
++                assert report.adapters_read1.collect { it.total_matches }.sum(0) == expectedMatches
++                assert report.adapters_read2.collect { it.total_matches }.sum(0) == expectedMatches
++                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
++            }
++            def logs = asFiles(process.out.log[0][1])
++            assert logs.collect { path(it).getFileName().toString() }.sort() == ['test.second_pass.cutadapt.log', 'test.first_pass.cutadapt.log'].sort()
++            logs.each { assert path(it).text.contains('=== Summary ===') }
++            assert process.out.tsv[0][0] == [id: 'test', single_end: false]
++            def summaries = asFiles(process.out.tsv[0][1])
++            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_1_summ.tsv', 'test_second_pass_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv'].sort()
++            summaries.each { file ->
++                def name = path(file).getFileName().toString()
++                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
++                def expected = name.contains('first_pass')
++                    ? ['0\t0\t0\t1', '0\t8\t20\t1']
++                    : ['0\t0\t0\t2']
++                assert path(file).readLines().first() == 'Pre-primer length\tPrimer length\tPost-primer length\tRead count'
++                assert path(file).readLines().drop(1).sort() == expected.sort()
++            }
++        }
++    }
++
++    test("Paired reads: stub") {
++        options "-stub"
++        when {
++            params { outdir = "$outputDir" }
++            process {
++                """
++                input[0] = [[id: 'test', single_end: false], [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq')],
++                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_forward_rc.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/primer_reverse_rc.fasta')]]
++                """
++            }
++        }
++        then {
++            assert process.success
++            def asFiles = { value -> value instanceof List ? value : [value] }
++            ['reads', 'log', 'json'].each { channel ->
++                assert process.out[channel].size() == 1
++                assert process.out[channel][0][0] == [id: 'test', single_end: false]
++            }
++            assert process.out.versions.size() == 1
++            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
++            def reads = asFiles(process.out.reads[0][1]).sort()
++            assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
++            reads.each { assert path(it).size() == 0 }
++            ['log', 'json'].each { channel ->
++                assert asFiles(process.out[channel][0][1]).collect { path(it).getFileName().toString() }.sort() == ["test.first_pass.cutadapt.${channel}", "test.second_pass.cutadapt.${channel}"].collect { it.toString() }
++                asFiles(process.out[channel][0][1]).each { assert path(it).size() == 0 }
++            }
++            assert process.out.tsv[0][0] == [id: 'test', single_end: false]
++            def summaries = asFiles(process.out.tsv[0][1])
++            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_second_pass_1_summ.tsv', 'test_second_pass_2_summ.tsv', 'test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv'].sort()
++            summaries.each { file ->
++                def name = path(file).getFileName().toString()
++                assert path("${params.outdir}/test/primer-identification/${name}").text == path(file).text
++                assert path(file).readLines() == ['Pre-primer length\tPrimer length\tPost-primer length\tRead count']
++            }
++        }
++    }
++
++    test("Paired reads: no_primers") {
++        when {
++            params { outdir = "$outputDir" }
++            process {
++                """
++                input[0] = [[id: 'test', single_end: false], [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_1.fastq'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/reads_2.fastq')],
++                    [file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_2.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_3.fasta'), file('${projectDir}/modules/ebi-metagenomics/cutadapt/tests/data/empty_4.fasta')]]
++                """
++            }
++        }
++        then {
++            assert process.success
++            def asFiles = { value -> value instanceof List ? value : [value] }
++            ['reads', 'log', 'json'].each { channel ->
++                assert process.out[channel].size() == 1
++                assert process.out[channel][0][0] == [id: 'test', single_end: false]
++            }
++            assert process.out.versions.size() == 1
++            assert path(process.out.versions[0]).text.contains('cutadapt: 5.2')
++            def reads = asFiles(process.out.reads[0][1]).sort()
++            assert reads.collect { path(it).getFileName().toString() } == ['test_1.trim.fastq.gz', 'test_2.trim.fastq.gz']
++            reads.each { assert path(it).size() == 0 }
++            ['log', 'json'].each { channel ->
++                assert asFiles(process.out[channel][0][1]).collect { path(it).getFileName().toString() }.sort() == ["test.first_pass.cutadapt.${channel}", "test.second_pass.cutadapt.${channel}"].collect { it.toString() }
++                asFiles(process.out[channel][0][1]).each { file ->
++                    if (channel == 'json') {
++                        assert new groovy.json.JsonSlurper().parseText(path(file).text) ==
++                            [message: 'No primers were inputted so trimming not performed']
++                        assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").text == path(file).text
++                    } else {
++                        assert path(file).size() == 0
++                    }
++                }
++            }
++            assert process.out.tsv.size() == 1
++            assert process.out.tsv[0][0] == [id: 'test', single_end: false]
++            def summaries = asFiles(process.out.tsv[0][1])
++            assert summaries.collect { path(it).getFileName().toString() }.sort() == ['test_first_pass_1_summ.tsv', 'test_first_pass_2_summ.tsv', 'test_second_pass_1_summ.tsv', 'test_second_pass_2_summ.tsv']
++            summaries.each { file ->
++                assert path(file).readLines() == ['Pre-primer length\tPrimer length\tPost-primer length\tRead count']
++                assert path("${params.outdir}/test/primer-identification/${path(file).getFileName()}").exists()
++            }
++        }
++    }
++}
