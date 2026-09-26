@@ -40,7 +40,7 @@ ranks: list[str] = list(RANK_MAP)  # d, k, p, c, o, f, g, s
 
 
 def clean_id(val: str) -> str:
-    """Strip surrounding whitespace and a trailing numeric tax ID.
+    """Strip surrounding whitespace and a trailing numeric tax ID like _64606.
 
     e.g. ``"Channa_gachua_64606"`` -> ``"Channa_gachua"``.
     """
