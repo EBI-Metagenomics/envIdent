@@ -20,6 +20,7 @@ include { FASTQC as FASTQC_CLEAN                           } from '../modules/nf
 include { paramsSummaryMap                                 } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc                             } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML                           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { marker_profile_passes                            } from '../subworkflows/local/utils_nfcore_envident_pipeline'
 include { methodsDescriptionText                           } from '../subworkflows/local/utils_nfcore_envident_pipeline'
 include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_F } from '../subworkflows/local/primer_identification_swf'
 include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_R } from '../subworkflows/local/primer_identification_swf'
@@ -38,7 +39,7 @@ include { MULTIQC                                          } from '../modules/nf
 // Import samplesheetToList from nf-schema //
 include { samplesheetToList            } from 'plugin/nf-schema'
 
-// Import reads_merged_input_prep function (it's very big and deserved to be in its own file) //
+// Match trimmed reads to QC samples.
 include { reads_merged_input_prep      } from '../bin/reads_merged_input_prep.nf'
 
 /*
@@ -55,21 +56,25 @@ workflow ENVIDENT {
     
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
-    ch_tables = channel.empty()
+    ch_tables_to_compress = channel.empty()
 
-    // Keep plain tables on internal channels; compress only the published copies.
-    def tableOutput = { meta, table, directory, name ->
+    // Add publishing metadata when copying, preserving metadata used by downstream joins.
+    // table is a Path; directory is relative to the sample folder; name includes the plain extension.
+    // BGZIP adds .gz/.gzi while downstream analysis continues to use the plain table.
+    def tableOutput = { Map meta, table, String directory, String name ->
         tuple(meta + [table_directory: directory, table_name: name], table)
     }
-    def taxonomyTables = { outputs, label ->
-        outputs.vsearch_out.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_vsearch_raw_hits.tsv") }
+    // outputs is VSEARCH_ASV_KRONA.out; each table channel emits [meta, Path].
+    def taxonomyTables = { outputs, String label ->
+        def directory = "taxonomy-summary/${label}"
+        outputs.vsearch_out.map { meta, table -> tableOutput.call(meta, table, directory, "${meta.id}_${label}_vsearch_raw_hits.tsv") }
             .mix(
-                outputs.lca_input.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_vsearch_hits_for_lca.tsv") },
-                outputs.clean_hits.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_vsearch_hits_with_accessions.tsv") },
-                outputs.lca_all.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_taxonomy_lca_all_hits.tsv") },
-                outputs.lca_top.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_taxonomy_lca_top_hits.tsv") },
-                outputs.krona_all_counts.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_krona_lca_all_hits_counts.tsv") },
-                outputs.krona_top_counts.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_krona_lca_top_hits_counts.tsv") }
+                outputs.lca_input.map { meta, table -> tableOutput.call(meta, table, directory, "${meta.id}_${label}_vsearch_hits_for_lca.tsv") },
+                outputs.clean_hits.map { meta, table -> tableOutput.call(meta, table, directory, "${meta.id}_${label}_vsearch_hits_with_accessions.tsv") },
+                outputs.lca_all.map { meta, table -> tableOutput.call(meta, table, directory, "${meta.id}_${label}_taxonomy_lca_all_hits.tsv") },
+                outputs.lca_top.map { meta, table -> tableOutput.call(meta, table, directory, "${meta.id}_${label}_taxonomy_lca_top_hits.tsv") },
+                outputs.krona_all_counts.map { meta, table -> tableOutput.call(meta, table, directory, "${meta.id}_${label}_krona_lca_all_hits_counts.tsv") },
+                outputs.krona_top_counts.map { meta, table -> tableOutput.call(meta, table, directory, "${meta.id}_${label}_krona_lca_top_hits_counts.tsv") }
             )
     }
 
@@ -272,22 +277,7 @@ workflow ENVIDENT {
     // Filter samples based on reads_percentage threshold and get filtered domtbl
     ch_passed_samples = PROFILE_HMMSEARCH_PFAM.out.profile
         .filter { meta, tsv_file ->
-            def threshold = params.reads_percentage_threshold ?: 0.10
-            
-            try {
-                def lines = tsv_file.readLines()
-                def dataLine = lines[1] // Skip header, get the single data row
-                def columns = dataLine.split('\t')
-                def readsPercentageStr = columns[4]
-                
-                def readsPercentage = readsPercentageStr as Double
-                def passes = readsPercentage >= threshold
-                
-                return passes
-                
-            } catch (Exception e) {
-                return false
-            }
+            marker_profile_passes(tsv_file, params.reads_percentage_threshold)
         }
         .map { meta, tsv_file -> meta }
 
@@ -301,9 +291,8 @@ workflow ENVIDENT {
     ch_versions = ch_versions.mix(DADA2_SWF.out.versions)
  
     def dada2_stats_fail = DADA2_SWF.out.dada2_stats_fail.map { meta, stats_fail ->
-                                def key = meta.subMap('id', 'single_end')
-                                return [key, stats_fail]
-                            }
+        [meta.subMap('id', 'single_end'), stats_fail]
+    }
 
     // Generate one taxonomy-independent count table directly from DADA2 maps.
     map_count_input = DADA2_SWF.out.dada2_out
@@ -311,12 +300,10 @@ workflow ENVIDENT {
     MAKE_ASV_COUNT_TABLES(map_count_input)
     ch_versions = ch_versions.mix(MAKE_ASV_COUNT_TABLES.out.versions)
 
-    // ASV taxonomic assignments + generate Krona plots for each run+amp_region //
+    // Assign ASV taxonomy and generate Krona reports for each enabled database.
 
     vsearch_input = DADA2_SWF.out.dada2_out
-        .map { meta, maps, asv_seqs, filt_reads ->
-            [ meta, asv_seqs ]    
-        }
+        .map { meta, _maps, asv_seqs, _filt_reads -> [meta, asv_seqs] }
 
     if (params.run_coi_bold) {
         ref_db = file(params.coi_bold_ref_db, type: 'file', checkIfExists: true)
@@ -326,7 +313,7 @@ workflow ENVIDENT {
             MAKE_ASV_COUNT_TABLES.out.asv_read_counts
         )
         ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_BOLD.out.versions)
-        ch_tables = ch_tables.mix(taxonomyTables.call(VSEARCH_ASV_KRONA_BOLD.out, params.bold_label))
+        ch_tables_to_compress = ch_tables_to_compress.mix(taxonomyTables.call(VSEARCH_ASV_KRONA_BOLD.out, params.bold_label))
     }
 
     if (params.run_coi_midori2) {
@@ -337,13 +324,13 @@ workflow ENVIDENT {
             MAKE_ASV_COUNT_TABLES.out.asv_read_counts
         )
         ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_MIDORI2.out.versions)
-        ch_tables = ch_tables.mix(taxonomyTables.call(VSEARCH_ASV_KRONA_MIDORI2.out, params.midori2_label))
+        ch_tables_to_compress = ch_tables_to_compress.mix(taxonomyTables.call(VSEARCH_ASV_KRONA_MIDORI2.out, params.midori2_label))
     }
 
-    ch_tables = ch_tables.mix(MAKE_ASV_COUNT_TABLES.out.asv_read_counts.map { meta, table ->
+    ch_tables_to_compress = ch_tables_to_compress.mix(MAKE_ASV_COUNT_TABLES.out.asv_read_counts.map { meta, table ->
         tableOutput.call(meta, table, 'asv', "${meta.id}_asv_read_counts.tsv")
     })
-    TABIX_BGZIP(ch_tables)
+    TABIX_BGZIP(ch_tables_to_compress)
     ch_versions = ch_versions.mix(TABIX_BGZIP.out.versions.first())
 
     //
@@ -352,7 +339,6 @@ workflow ENVIDENT {
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC_RAW.out.zip.collect{it[1]})
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC_CLEAN.out.zip.collect{it[1]})
     ch_multiqc_files = ch_multiqc_files.mix(READS_QC.out.fastp_summary_json.map { it[1] })
-    ch_versions = ch_versions.mix(FASTQC_CLEAN.out.versions.first())
 
     //
     // Collate and save software versions
@@ -360,7 +346,7 @@ workflow ENVIDENT {
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name: 'envident_software_'  + 'mqc_'  + 'versions.yml',
+            name: 'envident_software_mqc_versions.yml',
             sort: true,
             newLine: true
         ).set { ch_collated_versions }

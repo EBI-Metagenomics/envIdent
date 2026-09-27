@@ -3,9 +3,9 @@ include { LCA_KRONA_REPORTS } from '../lca_krona_reports/main'
 
 workflow VSEARCH_ASV_KRONA {
     take:
-        dada2_output
-        ref_db
-        asv_counts // Shared count table generated once after DADA2
+        dada2_output // channel: [Map meta, Path asv_fasta]
+        ref_db       // value: Path to reference FASTA or VSEARCH UDB
+        asv_counts   // channel: [Map meta, Path counts_tsv], generated once after DADA2
 
     main:
         VSEARCH_ASV_LCA(dada2_output, ref_db)

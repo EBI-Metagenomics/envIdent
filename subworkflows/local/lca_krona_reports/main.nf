@@ -4,9 +4,9 @@ include { KRONA_KTIMPORTTEXT as KRONA_TOP } from '../../../modules/ebi-metagenom
 
 workflow LCA_KRONA_REPORTS {
     take:
-        asv_counts
-        lca_all
-        lca_top
+        asv_counts // channel: [Map meta, Path counts_tsv]; header: asv<TAB>count
+        lca_all    // channel: [Map meta, Path assignments_tsv]; headerless ASV/taxonomy
+        lca_top    // same shape as lca_all; all three inputs must have matching metadata
 
     main:
         ch_versions = channel.empty()

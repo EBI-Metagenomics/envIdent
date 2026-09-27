@@ -233,3 +233,22 @@ def methodsDescriptionText(mqc_methods_yaml) {
 
     return description_html.toString()
 }
+
+/** Read the first marker-profile fraction; a header-only report means no hits. */
+def marker_profile_passes(report, threshold) {
+    def cutoff = threshold == null ? 0.10 : threshold
+    def lines = report.readLines()
+    if (!lines || lines[0] != '#function\tread_count\tcoverage_depth\tcoverage_breadth\treads_percentage') {
+        error "Invalid marker profile header: ${report}"
+    }
+    if (lines.size() == 1) return 0.0 >= cutoff
+    def columns = lines[1].split('\t', -1)
+    if (columns.size() != 5 || !columns[4].isDouble()) {
+        error "Invalid marker profile data: ${report} (line 2)"
+    }
+    def fraction = columns[4].toDouble()
+    if (Double.isNaN(fraction) || Double.isInfinite(fraction) || fraction < 0 || fraction > 1) {
+        error "Invalid reads_percentage '${columns[4]}' in ${report} (expected 0 to 1)"
+    }
+    return fraction >= cutoff
+}

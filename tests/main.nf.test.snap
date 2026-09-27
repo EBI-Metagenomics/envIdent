@@ -36,6 +36,8 @@
                 "TEST/primer-identification/TEST_second_pass_2_summ.tsv",
                 "TEST/qc",
                 "TEST/qc/TEST.fastp.json",
+                "TEST/qc/TEST_beforehmm_seqfu.tsv",
+                "TEST/qc/TEST_beforehmm_suffix_header_err.json",
                 "TEST/qc/TEST_seqfu.tsv",
                 "TEST/qc/TEST_suffix_header_err.json",
                 "TEST/taxonomy-summary",
@@ -95,6 +97,8 @@
                 "TEST2/primer-identification/TEST2_second_pass_2_summ.tsv",
                 "TEST2/qc",
                 "TEST2/qc/TEST2.fastp.json",
+                "TEST2/qc/TEST2_beforehmm_seqfu.tsv",
+                "TEST2/qc/TEST2_beforehmm_suffix_header_err.json",
                 "TEST2/qc/TEST2_seqfu.tsv",
                 "TEST2/qc/TEST2_suffix_header_err.json",
                 "TEST2/taxonomy-summary",
@@ -138,7 +142,7 @@
                 "qc_passed_runs.csv"
             ]
         ],
-        "timestamp": "2026-09-27T09:24:14.572836",
+        "timestamp": "2026-09-27T16:16:57.469727",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -179,6 +183,8 @@
                 "TEST2_R_RC.fasta - 2 lines",
                 "TEST2_asv_read_counts.tsv.gz - 6 lines",
                 "TEST2_asvs.fasta - 10 lines",
+                "TEST2_beforehmm_seqfu.tsv - 1 lines",
+                "TEST2_beforehmm_suffix_header_err.json - 0 lines",
                 "TEST2_dada2_stats.tsv - 14 lines",
                 "TEST2_first_pass_1_summ.tsv - 2 lines",
                 "TEST2_first_pass_2_summ.tsv - 2 lines",
@@ -206,6 +212,8 @@
                 "TEST_R_RC.fasta - 2 lines",
                 "TEST_asv_read_counts.tsv.gz - 6 lines",
                 "TEST_asvs.fasta - 10 lines",
+                "TEST_beforehmm_seqfu.tsv - 1 lines",
+                "TEST_beforehmm_suffix_header_err.json - 0 lines",
                 "TEST_dada2_stats.tsv - 14 lines",
                 "TEST_first_pass_1_summ.tsv - 2 lines",
                 "TEST_first_pass_2_summ.tsv - 2 lines",
@@ -215,7 +223,7 @@
                 "TEST_suffix_header_err.json - 0 lines"
             ]
         ],
-        "timestamp": "2026-09-27T09:24:14.680963",
+        "timestamp": "2026-09-27T16:16:57.714298",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -269,12 +277,14 @@
                 "TEST2_asv_read_counts.tsv.gz - 55 uncompressed bytes",
                 "TEST2_asv_read_counts.tsv.gz.gzi - 8 bytes",
                 "TEST2_asvs.fasta - 1605 bytes",
+                "TEST2_beforehmm_seqfu.tsv - 41 bytes",
+                "TEST2_beforehmm_suffix_header_err.json - 0 bytes",
                 "TEST2_dada2_stats.tsv - 437 bytes",
                 "TEST2_first_pass_1_summ.tsv - 74 bytes",
                 "TEST2_first_pass_2_summ.tsv - 74 bytes",
                 "TEST2_second_pass_1_summ.tsv - 71 bytes",
                 "TEST2_second_pass_2_summ.tsv - 71 bytes",
-                "TEST2_seqfu.tsv - 41 bytes",
+                "TEST2_seqfu.tsv - 36 bytes",
                 "TEST2_suffix_header_err.json - 0 bytes",
                 "TEST_BOLD_krona_lca_all_hits.html - 228522 bytes",
                 "TEST_BOLD_krona_lca_all_hits_counts.tsv.gz.gzi - 8 bytes",
@@ -312,18 +322,20 @@
                 "TEST_asv_read_counts.tsv.gz - 55 uncompressed bytes",
                 "TEST_asv_read_counts.tsv.gz.gzi - 8 bytes",
                 "TEST_asvs.fasta - 1605 bytes",
+                "TEST_beforehmm_seqfu.tsv - 40 bytes",
+                "TEST_beforehmm_suffix_header_err.json - 0 bytes",
                 "TEST_dada2_stats.tsv - 437 bytes",
                 "TEST_first_pass_1_summ.tsv - 74 bytes",
                 "TEST_first_pass_2_summ.tsv - 74 bytes",
                 "TEST_second_pass_1_summ.tsv - 71 bytes",
                 "TEST_second_pass_2_summ.tsv - 71 bytes",
-                "TEST_seqfu.tsv - 40 bytes",
+                "TEST_seqfu.tsv - 36 bytes",
                 "TEST_suffix_header_err.json - 0 bytes",
                 "qc_failed_runs.csv - 70 bytes",
                 "qc_passed_runs.csv - 35 bytes"
             ]
         ],
-        "timestamp": "2026-09-27T09:24:14.618018",
+        "timestamp": "2026-09-27T16:16:57.579868",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
