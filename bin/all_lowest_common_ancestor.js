@@ -17,13 +17,13 @@ const readline = require("readline");
 // default PID / qcov thresholds. Override via CLI args.
 const RANKS = [
   { name: "species",      depth: 8, pidThreshold: 96, qcovThreshold: 0 },
-  { name: "genus",        depth: 7, pidThreshold: 88, qcovThreshold: 0 },
-  { name: "family",       depth: 6, pidThreshold: 84, qcovThreshold: 0 },
+  { name: "genus",        depth: 7, pidThreshold: 89, qcovThreshold: 0 },
+  { name: "family",       depth: 6, pidThreshold: 85, qcovThreshold: 0 },
   { name: "order",        depth: 5, pidThreshold: 81, qcovThreshold: 0 },
   { name: "class",        depth: 4, pidThreshold: 78, qcovThreshold: 0 },
-  { name: "phylum",       depth: 3, pidThreshold: 77, qcovThreshold: 0 },
-  { name: "kingdom",      depth: 2, pidThreshold: 77, qcovThreshold: 0 },
-  { name: "domain",       depth: 1, pidThreshold: 77, qcovThreshold: 0 },
+  { name: "phylum",       depth: 3, pidThreshold: 78, qcovThreshold: 0 },
+  { name: "kingdom",      depth: 2, pidThreshold: 78, qcovThreshold: 0 },
+  { name: "domain",       depth: 1, pidThreshold: 78, qcovThreshold: 0 },
 ];
 
 // Rank prefixes in order from depth 1 (domain) to depth 8 (species).
