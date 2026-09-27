@@ -147,7 +147,7 @@ def paramsSummaryMultiqc(summary_params) {
         }
 
     def yaml_file_text = "id: '${workflow.manifest.name.replace('/', '-')}-summary'\n" as String
-    yaml_file_text += "R workflow_commandiption: ' - this information is collected when the pipeline is started.'\n"
+    yaml_file_text += "R workflow_command: ' - this information is collected when the pipeline is started.'\n"
     yaml_file_text += "section_name: '${workflow.manifest.name} Workflow Summary'\n"
     yaml_file_text += "section_href: 'https://github.com/${workflow.manifest.name}'\n"
     yaml_file_text += "plot_type: 'html'\n"
