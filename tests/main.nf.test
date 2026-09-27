@@ -19,6 +19,24 @@ nextflow_pipeline {
 
             assert workflow.success
 
+            // Taxonomies of the records in the BOLD and MIDORI2 test databases.
+            def referenceTaxonomy = [
+                BOLD: [
+                    'CRBTI53041-25.COI-5P': 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__;g__;s__;',
+                    'GBAAY78380-24.COI-5P': 'd__;k__Plantae;p__Tracheophyta;c__Magnoliopsida;o__Lamiales;f__Plantaginaceae;g__Plantago;s__rugelii;',
+                    'GBMNA12753-19.COI-5P': 'd__;k__Animalia;p__Entoprocta;c__Entoprocta_class_incertae_sedis;o__Loxosomatida;f__Loxosomatidae;g__Loxocorone;s__allax;',
+                    'GBMNA12754-19.COI-5P': 'd__;k__Animalia;p__Entoprocta;c__Entoprocta_class_incertae_sedis;o__Loxosomatida;f__Loxosomatidae;g__Loxosomella;s__aloxiata;',
+                    'WALPB135-13.COI-5P': 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Cosmopterigidae;g__Macrobathra;s__;'
+                ],
+                MIDORI2: [
+                    'AB264799.1.1.1530_root_1': 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;',
+                    'AB264800.1.<1.1530_root_1': 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxosomella;s__aloxiata;',
+                    'AJ389606.1.<1.>1341_root_1': 'd__Eukaryota;k__Viridiplantae;p__Streptophyta;c__Magnoliopsida;o__Lamiales;f__Plantaginaceae;g__Plantago;s__rugelii;',
+                    'GU652716.1.<1.>658_root_1': 'd__Eukaryota;k__Metazoa;p__Arthropoda;c__Insecta;o__Lepidoptera;f__;g__;s__Lepidoptera_sp._BOLD_AAI0654;',
+                    'OR777490.1.<1.>627_root_1': 'd__Eukaryota;k__;p__;c__Phaeophyceae;o__Dictyotales;f__Dictyotaceae;g__Dictyota;s__ceylanica;'
+                ],
+            ]
+
             with(workflow) {
 
                 assertAll(
@@ -137,9 +155,14 @@ nextflow_pipeline {
                                         assert fields[2..3] == ['NA', 'NA']
                                         assert cleanFields == [fields[0], '', fields[1], 'NA']
                                     } else {
-                                        assert fields[1] == 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;'
+                                        def accession = rawFields[1].split(';')[0]
+                                        def cleanTaxonomy = referenceTaxonomy[db][accession]
+                                        assert cleanTaxonomy != null : "Unexpected ${db} accession: ${accession}"
+                                        // LCA formatting keeps only the first species token.
+                                        def lcaTaxonomy = cleanTaxonomy.replaceAll(/s__([^;_]+)_[^;]*;/, 's__$1;')
+                                        assert fields[1] == lcaTaxonomy
                                         assert fields[2..3] == rawFields[2..3]
-                                        assert cleanFields == [fields[0], 'AB264799.1.1.1530_root_1', fields[1], fields[2]]
+                                        assert cleanFields == [fields[0], accession, cleanTaxonomy, fields[2]]
                                     }
                                 }
                             }
@@ -149,15 +172,44 @@ nextflow_pipeline {
                     // Check both LCA methods and count-weighted Krona reports for each database.
                     {
                         def unclassified = 'd__;k__;p__;c__;o__;f__;g__;s__;'
-                        def species = 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;'
-                        def phylum = 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__;g__;s__;'
+                        // Expected rank resolution for each database and sample.
+                        def expectedAssignments = [
+                            TEST: [
+                                BOLD: [
+                                    seq_1: 'd__;k__Animalia;p__Entoprocta;c__Entoprocta_class_incertae_sedis;o__Loxosomatida;f__Loxosomatidae;g__Loxocorone;s__allax;',
+                                    seq_2: 'd__;k__Animalia;p__Entoprocta;c__Entoprocta_class_incertae_sedis;o__Loxosomatida;f__Loxosomatidae;g__Loxosomella;s__aloxiata;',
+                                    seq_3: 'd__;k__Plantae;p__Tracheophyta;c__Magnoliopsida;o__Lamiales;f__Plantaginaceae;g__Plantago;s__rugelii;',
+                                    seq_4: 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Cosmopterigidae;g__Macrobathra;s__;',
+                                    seq_5: 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__;g__;s__;'
+                                ],
+                                MIDORI2: [
+                                    seq_1: 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxocorone;s__allax;',
+                                    seq_2: 'd__Eukaryota;k__Metazoa;p__Entoprocta;c__;o__;f__Loxosomatidae;g__Loxosomella;s__aloxiata;',
+                                    seq_3: 'd__Eukaryota;k__Viridiplantae;p__Streptophyta;c__Magnoliopsida;o__Lamiales;f__Plantaginaceae;g__Plantago;s__rugelii;',
+                                    seq_4: 'd__Eukaryota;k__Metazoa;p__Arthropoda;c__Insecta;o__Lepidoptera;f__;g__;s__;',
+                                    seq_5: 'd__Eukaryota;k__;p__;c__Phaeophyceae;o__;f__;g__;s__;'
+                                ],
+                            ],
+                            TEST2: [
+                                BOLD: [
+                                    seq_1: unclassified,
+                                    seq_2: unclassified,
+                                    seq_3: unclassified,
+                                    seq_4: 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Cosmopterigidae;g__;s__;',
+                                    seq_5: unclassified
+                                ],
+                                MIDORI2: [
+                                    seq_1: unclassified,
+                                    seq_2: unclassified,
+                                    seq_3: unclassified,
+                                    seq_4: 'd__Eukaryota;k__Metazoa;p__Arthropoda;c__Insecta;o__Lepidoptera;f__;g__;s__;',
+                                    seq_5: 'd__Eukaryota;k__;p__;c__Phaeophyceae;o__;f__;g__;s__;'
+                                ],
+                            ],
+                        ]
                         ['TEST', 'TEST2'].each { sample ->
-                            def expected = (1..5).collectEntries { [("seq_${it}".toString()): unclassified] }
-                            if (sample == 'TEST') {
-                                expected.seq_1 = species
-                                expected.seq_2 = phylum
-                            }
                             ['BOLD', 'MIDORI2'].each { db ->
+                                def expected = expectedAssignments[sample][db]
                                 def folder = "${params.outdir}/${sample}/taxonomy-summary/${db}"
                                 ['all', 'top'].each { method ->
                                     def rows = path("${folder}/${sample}_${db}_taxonomy_lca_${method}_hits.tsv").readLines()
@@ -171,18 +223,18 @@ nextflow_pipeline {
                                     assert assignments == expected
 
                                     def counts = path("${folder}/${sample}_${db}_krona_lca_${method}_hits_counts.tsv").readLines()
-                                    def expectedCounts = sample == 'TEST' ? [
-                                        '10\td__Eukaryota\tk__Metazoa\tp__Entoprocta\tc__\to__\tf__Loxosomatidae\tg__Loxocorone\ts__allax',
-                                        '10\td__Eukaryota\tk__Metazoa\tp__Entoprocta',
-                                        '30\tUnclassified'
-                                    ] : ['50\tUnclassified']
+                                    def expectedCounts = expected.values().countBy { it }.collect { taxonomy, number ->
+                                        def lineage = taxonomy == unclassified ? 'Unclassified' :
+                                            taxonomy.replaceAll(/(?:[a-z]__;)+$/, '').split(';').join('\t')
+                                        "${number * 10}\t${lineage}".toString()
+                                    }
                                     assert counts.sort() == expectedCounts.sort()
                                     assert counts.collect { it.split('\t')[0].toInteger() }.sum() == 50
 
                                     def html = path("${folder}/${sample}_${db}_krona_lca_${method}_hits.html")
                                     assert html.exists()
                                     assert html.text.contains('<html>')
-                                    assert html.text.contains('Unclassified')
+                                    if (unclassified in expected.values()) assert html.text.contains('Unclassified')
                                     if (sample == 'TEST') assert html.text.contains('s__allax')
                                     assert !path("${folder}/${sample}_lca_${method}_null.html").exists()
                                 }
