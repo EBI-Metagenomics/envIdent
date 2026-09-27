@@ -6,8 +6,8 @@ include { LCA                                    } from '../../../modules/local/
 workflow VSEARCH_ASV_LCA {
     
     take:
-        vsearch_input // [meta, asv_seqs]
-        ref_db        // Reference FASTA with taxonomy in sequence headers
+        vsearch_input // channel: [Map meta, Path asv_fasta]
+        ref_db        // value: reference FASTA or UDB; sequence labels contain taxonomy
 
     main:
 
