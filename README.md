@@ -130,6 +130,12 @@ The MultiQC quality report includes separate sections for initial and pre-HMM fa
 both Cutadapt passes, raw and clean FastQC, and a DADA2 read/ASV retention table.
 DADA2 fractions use a 0–1 scale; software versions and run parameters are also included.
 
+All taxonomy TSVs and the ASV read-count table are BGZIP-compressed (`.tsv.gz`),
+each with a matching `.tsv.gz.gzi` index. QC tables, DADA2 statistics and
+primer-summary tables remain plain TSVs. The indexes describe compressed
+blocks, rather than genomic coordinates. The directory tree below omits the
+`.gzi` files for readability.
+
 ### Output directory structure
 
 Example output structure for a sample (sample1). The qc_passed and qc_failed csvs are only present if you have samples that passed or failed:
