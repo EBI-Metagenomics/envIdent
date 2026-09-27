@@ -20,6 +20,7 @@ include { FASTQC as FASTQC_CLEAN                           } from '../modules/nf
 include { paramsSummaryMap                                 } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc                             } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML                           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { marker_profile_passes                            } from '../subworkflows/local/utils_nfcore_envident_pipeline'
 include { methodsDescriptionText                           } from '../subworkflows/local/utils_nfcore_envident_pipeline'
 include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_F } from '../subworkflows/local/primer_identification_swf'
 include { PRIMER_IDENTIFICATION as PRIMER_IDENTIFICATION_R } from '../subworkflows/local/primer_identification_swf'
@@ -38,7 +39,7 @@ include { MULTIQC                                          } from '../modules/nf
 // Import samplesheetToList from nf-schema //
 include { samplesheetToList            } from 'plugin/nf-schema'
 
-// Import reads_merged_input_prep function (it's very big and deserved to be in its own file) //
+// Match trimmed reads to QC samples.
 include { reads_merged_input_prep      } from '../bin/reads_merged_input_prep.nf'
 
 /*
@@ -276,22 +277,7 @@ workflow ENVIDENT {
     // Filter samples based on reads_percentage threshold and get filtered domtbl
     ch_passed_samples = PROFILE_HMMSEARCH_PFAM.out.profile
         .filter { meta, tsv_file ->
-            def threshold = params.reads_percentage_threshold ?: 0.10
-            
-            try {
-                def lines = tsv_file.readLines()
-                def dataLine = lines[1] // Skip header, get the single data row
-                def columns = dataLine.split('\t')
-                def readsPercentageStr = columns[4]
-                
-                def readsPercentage = readsPercentageStr as Double
-                def passes = readsPercentage >= threshold
-                
-                return passes
-                
-            } catch (Exception e) {
-                return false
-            }
+            marker_profile_passes(tsv_file, params.reads_percentage_threshold)
         }
         .map { meta, tsv_file -> meta }
 
