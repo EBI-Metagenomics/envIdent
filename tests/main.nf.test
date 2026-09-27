@@ -94,8 +94,8 @@ nextflow_pipeline {
                         def content = path("${params.outdir}/qc_passed_runs.csv").text
                         def lines = content.trim().split('\n')
                         assert lines.size() == 2 : "Expected 2 passed runs"
-                        assert content.contains("TEST,all_results")
-                        assert content.contains("TEST2,all_results")
+                        assert content.contains("TEST")
+                        assert content.contains("TEST2")
                     },
 
                     // Verify qc_failed_runs.csv has all expected failures

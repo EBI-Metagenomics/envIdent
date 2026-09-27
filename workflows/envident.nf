@@ -496,7 +496,7 @@ workflow ENVIDENT {
     all_failed_runs.collectFile(name: "qc_failed_runs.csv", storeDir: "${params.outdir}", newLine: true, cache: false)
 
     dada2_qc_results.passed
-        .map { meta, _results -> "${meta.id},all_results" }
+        .map { meta, _results -> "${meta.id}" }
         .set { final_passed_runs }
 
     // Save all passed runs to file //
