@@ -126,6 +126,10 @@ nextflow run EBI-Metagenomics/envident \
 
 ## Outputs
 
+The MultiQC quality report includes separate sections for initial and pre-HMM fastp QC,
+both Cutadapt passes, raw and clean FastQC, and a DADA2 read/ASV retention table.
+DADA2 fractions use a 0–1 scale; software versions and run parameters are also included.
+
 ### Output directory structure
 
 Example output structure for a sample (sample1). The qc_passed and qc_failed csvs are only present if you have samples that passed or failed:
