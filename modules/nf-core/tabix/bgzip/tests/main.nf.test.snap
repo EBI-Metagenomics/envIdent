@@ -1,0 +1,218 @@
+{
+    "gzi_compress_test": {
+        "content": [
+            "gzi_compress_test.vcf.gz.gzi"
+        ],
+        "timestamp": "2026-09-27T11:23:47.157914",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "homo_genome_bedgz_compress": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "bedgz_test"
+                        },
+                        "bedgz_test.bed:md5,87a15eb9c2ff20ccd5cd8735a28708f7"
+                    ]
+                ],
+                "1": [
+                    
+                ],
+                "2": [
+                    "versions.yml:md5,753c29916d45debdde52f4ac7c745f61"
+                ],
+                "gzi": [
+                    
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "bedgz_test"
+                        },
+                        "bedgz_test.bed:md5,87a15eb9c2ff20ccd5cd8735a28708f7"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,753c29916d45debdde52f4ac7c745f61"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-27T11:23:37.74346",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "test_stub": {
+        "content": [
+            "test_stub.vcf.gz"
+        ],
+        "timestamp": "2026-09-27T11:23:42.391347",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "sarscov2_vcf_bgzip_compress": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "bgzip_test"
+                        },
+                        "bgzip_test.vcf.gz:md5,8e722884ffb75155212a3fc053918766"
+                    ]
+                ],
+                "1": [
+                    
+                ],
+                "2": [
+                    "versions.yml:md5,753c29916d45debdde52f4ac7c745f61"
+                ],
+                "gzi": [
+                    
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "bgzip_test"
+                        },
+                        "bgzip_test.vcf.gz:md5,8e722884ffb75155212a3fc053918766"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,753c29916d45debdde52f4ac7c745f61"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-27T11:23:32.37038",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "sarscov2_vcf_bgzip_compress_gzi": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "gzi_compress_test"
+                        },
+                        "gzi_compress_test.vcf.gz:md5,8e722884ffb75155212a3fc053918766"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "gzi_compress_test"
+                        },
+                        "gzi_compress_test.vcf.gz.gzi:md5,26fd00d4e26141cd11561f6e7d4a2ad0"
+                    ]
+                ],
+                "2": [
+                    "versions.yml:md5,753c29916d45debdde52f4ac7c745f61"
+                ],
+                "gzi": [
+                    [
+                        {
+                            "id": "gzi_compress_test"
+                        },
+                        "gzi_compress_test.vcf.gz.gzi:md5,26fd00d4e26141cd11561f6e7d4a2ad0"
+                    ]
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "gzi_compress_test"
+                        },
+                        "gzi_compress_test.vcf.gz:md5,8e722884ffb75155212a3fc053918766"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,753c29916d45debdde52f4ac7c745f61"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-27T11:23:47.147228",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "bgzip_test": {
+        "content": [
+            "bgzip_test.vcf.gz"
+        ],
+        "timestamp": "2026-09-27T11:23:32.389031",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "bedgz_test": {
+        "content": [
+            "bedgz_test.bed"
+        ],
+        "timestamp": "2026-09-27T11:23:37.754501",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "sarscov2_vcf_bgzip_compress_stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test_stub"
+                        },
+                        "test_stub.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test_stub"
+                        },
+                        "test_stub.vcf.gz.gzi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    "versions.yml:md5,753c29916d45debdde52f4ac7c745f61"
+                ],
+                "gzi": [
+                    [
+                        {
+                            "id": "test_stub"
+                        },
+                        "test_stub.vcf.gz.gzi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "output": [
+                    [
+                        {
+                            "id": "test_stub"
+                        },
+                        "test_stub.vcf.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,753c29916d45debdde52f4ac7c745f61"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-27T11:23:42.378098",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

@@ -32,6 +32,7 @@ include { DADA2_SWF                                        } from '../subworkflo
 include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_BOLD      } from '../subworkflows/local/vsearch_asv_krona/main'
 include { VSEARCH_ASV_KRONA as VSEARCH_ASV_KRONA_MIDORI2   } from '../subworkflows/local/vsearch_asv_krona/main'
 include { MAKE_ASV_COUNT_TABLES                            } from '../modules/local/make_asv_count_tables/main'
+include { TABIX_BGZIP                                      } from '../modules/nf-core/tabix/bgzip/main'
 include { MULTIQC                                          } from '../modules/nf-core/multiqc/main'
 
 // Import samplesheetToList from nf-schema //
@@ -54,6 +55,23 @@ workflow ENVIDENT {
     
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
+    ch_tables = channel.empty()
+
+    // Keep plain tables on internal channels; compress only the published copies.
+    def tableOutput = { meta, table, directory, name ->
+        tuple(meta + [table_directory: directory, table_name: name], table)
+    }
+    def taxonomyTables = { outputs, label ->
+        outputs.vsearch_out.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_vsearch_raw_hits.tsv") }
+            .mix(
+                outputs.lca_input.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_vsearch_hits_for_lca.tsv") },
+                outputs.clean_hits.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_vsearch_hits_with_accessions.tsv") },
+                outputs.lca_all.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_taxonomy_lca_all_hits.tsv") },
+                outputs.lca_top.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_taxonomy_lca_top_hits.tsv") },
+                outputs.krona_all_counts.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_krona_lca_all_hits_counts.tsv") },
+                outputs.krona_top_counts.map { meta, table -> tableOutput.call(meta, table, "taxonomy-summary/${label}", "${meta.id}_${label}_krona_lca_top_hits_counts.tsv") }
+            )
+    }
 
      /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -308,6 +326,7 @@ workflow ENVIDENT {
             MAKE_ASV_COUNT_TABLES.out.asv_read_counts
         )
         ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_BOLD.out.versions)
+        ch_tables = ch_tables.mix(taxonomyTables.call(VSEARCH_ASV_KRONA_BOLD.out, params.bold_label))
     }
 
     if (params.run_coi_midori2) {
@@ -318,7 +337,14 @@ workflow ENVIDENT {
             MAKE_ASV_COUNT_TABLES.out.asv_read_counts
         )
         ch_versions = ch_versions.mix(VSEARCH_ASV_KRONA_MIDORI2.out.versions)
+        ch_tables = ch_tables.mix(taxonomyTables.call(VSEARCH_ASV_KRONA_MIDORI2.out, params.midori2_label))
     }
+
+    ch_tables = ch_tables.mix(MAKE_ASV_COUNT_TABLES.out.asv_read_counts.map { meta, table ->
+        tableOutput.call(meta, table, 'asv', "${meta.id}_asv_read_counts.tsv")
+    })
+    TABIX_BGZIP(ch_tables)
+    ch_versions = ch_versions.mix(TABIX_BGZIP.out.versions.first())
 
     //
     // MODULE: MultiQC
