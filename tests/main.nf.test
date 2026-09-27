@@ -42,6 +42,21 @@ nextflow_pipeline {
                 assertAll(
                     { assert success },
 
+                    // Keep both QC stages and both trimming passes visible in the quality report.
+                    {
+                        def report = path("${params.outdir}/multiqc_report.html").text
+                        def sections = ['fastqc_raw', 'fastp_initial', 'cutadapt_first_pass',
+                            'cutadapt_second_pass', 'fastqc_clean', 'fastp_beforehmm', 'dada2_qc']
+                        def positions = sections.collect { report.indexOf("id=\"${it}\"") }
+                        assert positions.every { it >= 0 }
+                        assert positions == positions.sort(false)
+                        assert !report.contains('Core Nextflow options')
+                        assert !report.contains('id="cutadapt_first_pass_cutadapt_trimmed_sequences')
+                        assert !report.contains('id="cutadapt_second_pass_cutadapt_trimmed_sequences')
+                        assert !report.contains('TEST2_1.first_pass_TEST2_2.first_pass')
+                        assert report.contains('cutadapt_second_pass-percent_trimmed')
+                    },
+
                     // Snapshot of names and file structure of output directory
                     {
                         def stable_name = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/**'])
@@ -306,7 +321,7 @@ nextflow_pipeline {
                     // Verify TEST QC outputs
                     {
                         ['TEST', 'TEST2'].each { test_name ->
-                            def fastp_json = path("${params.outdir}/${test_name}/qc/${test_name}.fastp.json").text
+                            def fastp_json = path("${params.outdir}/${test_name}/qc/${test_name}_initial.fastp.json").text
                             def fastp = new groovy.json.JsonSlurper().parseText(fastp_json)
                             assert fastp instanceof Map
                             assert fastp.summary

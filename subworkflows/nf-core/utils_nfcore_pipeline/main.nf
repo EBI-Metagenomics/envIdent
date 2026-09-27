@@ -106,31 +106,53 @@ def softwareVersionsToYAML(ch_versions) {
 //
 def paramsSummaryMultiqc(summary_params) {
     def summary_section = ''
+
     summary_params
         .keySet()
         .each { group ->
             def group_params = summary_params.get(group)
-            // This gets the parameters of that particular group
+
             if (group_params) {
                 summary_section += "    <p style=\"font-size:110%\"><b>${group}</b></p>\n"
                 summary_section += "    <dl class=\"dl-horizontal\">\n"
+
                 group_params
                     .keySet()
                     .sort()
                     .each { param ->
-                        summary_section += "        <dt>${param}</dt><dd><samp>${group_params.get(param) ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>\n"
+                        def value = group_params.get(param)
+
+                        // Strip directory paths from Nextflow Path/File values
+                        // and from strings containing absolute Unix paths.
+                        if (value instanceof java.nio.file.Path) {
+                            value = value.fileName.toString()
+                        } else if (value instanceof java.io.File) {
+                            value = value.getName()
+                        } else if (value instanceof CharSequence) {
+                            def string_value = value.toString()
+
+                            // Only strip Unix-style absolute paths.
+                            if (string_value.startsWith('/')) {
+                                value = new File(string_value).getName()
+                            }
+                        }
+
+                        def display_value = value ?: '<span style="color:#999999;">N/A</span>'
+
+                        summary_section += "        <dt>${param}</dt><dd><samp>${display_value}</samp></dd>\n"
                     }
+
                 summary_section += "    </dl>\n"
             }
         }
 
     def yaml_file_text = "id: '${workflow.manifest.name.replace('/', '-')}-summary'\n" as String
-    yaml_file_text     += "description: ' - this information is collected when the pipeline is started.'\n"
-    yaml_file_text     += "section_name: '${workflow.manifest.name} Workflow Summary'\n"
-    yaml_file_text     += "section_href: 'https://github.com/${workflow.manifest.name}'\n"
-    yaml_file_text     += "plot_type: 'html'\n"
-    yaml_file_text     += "data: |\n"
-    yaml_file_text     += "${summary_section}"
+    yaml_file_text += "R workflow_commandiption: ' - this information is collected when the pipeline is started.'\n"
+    yaml_file_text += "section_name: '${workflow.manifest.name} Workflow Summary'\n"
+    yaml_file_text += "section_href: 'https://github.com/${workflow.manifest.name}'\n"
+    yaml_file_text += "plot_type: 'html'\n"
+    yaml_file_text += "data: |\n"
+    yaml_file_text += "${summary_section}"
 
     return yaml_file_text
 }

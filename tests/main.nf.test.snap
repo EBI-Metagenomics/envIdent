@@ -4,7 +4,7 @@
             [
                 "ERRMINREADS",
                 "ERRMINREADS/qc",
-                "ERRMINREADS/qc/ERRMINREADS.fastp.json",
+                "ERRMINREADS/qc/ERRMINREADS_initial.fastp.json",
                 "ERRMINREADS/qc/ERRMINREADS_seqfu.tsv",
                 "ERRMINREADS/qc/ERRMINREADS_suffix_header_err.json",
                 "ERRSEQFUFAIL",
@@ -34,7 +34,7 @@
                 "TEST/primer-identification/TEST_second_pass_1_summ.tsv",
                 "TEST/primer-identification/TEST_second_pass_2_summ.tsv",
                 "TEST/qc",
-                "TEST/qc/TEST.fastp.json",
+                "TEST/qc/TEST_initial.fastp.json",
                 "TEST/qc/TEST_seqfu.tsv",
                 "TEST/qc/TEST_suffix_header_err.json",
                 "TEST/taxonomy-summary",
@@ -78,7 +78,7 @@
                 "TEST2/primer-identification/TEST2_second_pass_1_summ.tsv",
                 "TEST2/primer-identification/TEST2_second_pass_2_summ.tsv",
                 "TEST2/qc",
-                "TEST2/qc/TEST2.fastp.json",
+                "TEST2/qc/TEST2_initial.fastp.json",
                 "TEST2/qc/TEST2_seqfu.tsv",
                 "TEST2/qc/TEST2_suffix_header_err.json",
                 "TEST2/taxonomy-summary",
@@ -117,16 +117,14 @@
     "line_counts": {
         "content": [
             [
-                "ERRMINREADS.fastp.json - 417 lines",
+                "ERRMINREADS_initial.fastp.json - 417 lines",
                 "ERRMINREADS_seqfu.tsv - 1 lines",
                 "ERRMINREADS_suffix_header_err.json - 0 lines",
                 "ERRSEQFUFAIL_seqfu.tsv - 1 lines",
                 "ERRSFXHDFAIL_seqfu.tsv - 1 lines",
                 "ERRSFXHDFAIL_suffix_header_err.json - 1 lines",
-                "TEST.fastp.json - 417 lines",
                 "TEST.first_pass.cutadapt.json - 108 lines",
                 "TEST.second_pass.cutadapt.json - 104 lines",
-                "TEST2.fastp.json - 417 lines",
                 "TEST2.first_pass.cutadapt.json - 108 lines",
                 "TEST2.second_pass.cutadapt.json - 104 lines",
                 "TEST2_BOLD_krona_lca_all_hits_counts.tsv - 2 lines",
@@ -152,6 +150,7 @@
                 "TEST2_dada2_stats.tsv - 14 lines",
                 "TEST2_first_pass_1_summ.tsv - 2 lines",
                 "TEST2_first_pass_2_summ.tsv - 2 lines",
+                "TEST2_initial.fastp.json - 417 lines",
                 "TEST2_second_pass_1_summ.tsv - 2 lines",
                 "TEST2_second_pass_2_summ.tsv - 2 lines",
                 "TEST2_seqfu.tsv - 1 lines",
@@ -179,13 +178,14 @@
                 "TEST_dada2_stats.tsv - 14 lines",
                 "TEST_first_pass_1_summ.tsv - 2 lines",
                 "TEST_first_pass_2_summ.tsv - 2 lines",
+                "TEST_initial.fastp.json - 417 lines",
                 "TEST_second_pass_1_summ.tsv - 2 lines",
                 "TEST_second_pass_2_summ.tsv - 2 lines",
                 "TEST_seqfu.tsv - 1 lines",
                 "TEST_suffix_header_err.json - 0 lines"
             ]
         ],
-        "timestamp": "2026-09-27T00:06:05.342852",
+        "timestamp": "2026-09-27T23:10:07.796243",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -199,9 +199,9 @@
                 "ERRSEQFUFAIL_seqfu.tsv - 158 bytes",
                 "ERRSFXHDFAIL_seqfu.tsv - 41 bytes",
                 "ERRSFXHDFAIL_suffix_header_err.json - 358 bytes",
-                "TEST.first_pass.cutadapt.json - 2697 bytes",
+                "TEST.first_pass.cutadapt.json - 2729 bytes",
                 "TEST.second_pass.cutadapt.json - 2586 bytes",
-                "TEST2.first_pass.cutadapt.json - 2708 bytes",
+                "TEST2.first_pass.cutadapt.json - 2740 bytes",
                 "TEST2.second_pass.cutadapt.json - 2597 bytes",
                 "TEST2_BOLD_krona_lca_all_hits.html - 227036 bytes",
                 "TEST2_BOLD_krona_lca_top_hits.html - 227036 bytes",
@@ -263,7 +263,7 @@
                 "qc_passed_runs.csv - 35 bytes"
             ]
         ],
-        "timestamp": "2026-09-27T00:06:05.277397",
+        "timestamp": "2026-09-27T23:10:07.697871",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
