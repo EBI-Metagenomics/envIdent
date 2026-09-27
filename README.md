@@ -130,8 +130,6 @@ QC reports from the second, pre-HMM stage use `_beforehmm_seqfu.tsv` and
 `_beforehmm_suffix_header_err.json`, so they do not overwrite the initial QC reports.
 `--reads_percentage_threshold 0` is supported. A header-only marker profile is
 interpreted as zero hits; malformed profile reports stop the run with an error.
-Samples with no FASTQ records in either mate after Cutadapt are recorded as
-`empty_after_trimming` in `qc_failed_runs.csv` and do not proceed downstream.
 
 All taxonomy TSVs and the ASV read-count table are BGZIP-compressed (`.tsv.gz`),
 each with a matching `.tsv.gz.gzi` index. QC tables, DADA2 statistics and
