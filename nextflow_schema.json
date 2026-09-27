@@ -62,8 +62,7 @@
              "std_primer_library": {
              "type": "string",
              "format": "directory-path",
-             "description": "Path to standard primer library containing forward (*F.fasta) and reverse (*R.fasta) primers",
-             "default": "./data/standard_primers"
+             "description": "Path to standard primer library containing forward (*F.fasta) and reverse (*R.fasta) primers"
              },
              "cutadapt_primers": {
              "type": "string",
@@ -75,8 +74,7 @@
                 "format": "file-path",
                 "description": "Path to Pfam HMM file for COI profiling",
                 "pattern": "\\.hmm(\\.gz)?$",
-                "help_text": "Provide the HMM profile database file (.hmm) for Pfam domain searches on translated COI reads.",
-                "default": "./databases/pfam/pfam_coi.hmm"
+                "help_text": "Provide the HMM profile database file (.hmm) for Pfam domain searches on translated COI reads."
              }
          }
         },
@@ -210,7 +208,7 @@
                 "min_read_count": {
                     "type": "integer",
                     "description": "Minimum read count threshold for filtering",
-                    "default": 5000,
+                    "default": 1,
                     "minimum": 1,
                     "help_text": "Minimum number of reads required for a sample to be processed in the analysis."
                 },
