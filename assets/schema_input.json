@@ -33,7 +33,7 @@
         },
         "single_end": {
           "type": "boolean",
-          "errorMessage": "Strandedness must be provided and be one of 'single_end' or 'paired_end'",
+          "errorMessage": "single_end must be true for single-end reads or false for paired-end/interleaved reads",
           "meta": ["single_end"]
         },
         "forward_primer": {

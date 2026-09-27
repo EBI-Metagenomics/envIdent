@@ -117,11 +117,11 @@ nextflow run EBI-Metagenomics/envident \
 
 | **Parameter** | **Default** | **Description** |
 |----------------|-------------|-----------------|
-| `--min_read_count` | `5000` | Minimum number of reads required per sample |
-| `--reads_percentage_threshold` | `0.10` | Minimum percentage of reads matching COI profile |
-| `--std_primer_library` | `./data/standard_primers` | Directory containing forward (`*F.fasta`) and reverse (`*R.fasta`) PIMENTO primer libraries |
-| `--cutadapt_primers` | `Default path` | Directory containing forward (`*F.fasta`), reverse (`*R.fasta`), reverse complemented forward (`F_RC.fasta`) and reverse complemented reverse (`R_RC.fasta`) cutadapt prepared primer libraries |
-| `--pfam_coi_db` | `Default path` | Path to Pfam COI HMM database |
+| `--min_read_count` | `1` | Minimum number of reads required per sample |
+| `--reads_percentage_threshold` | `0.10` | Minimum fraction of reads matching COI profile (0–1) |
+| `--std_primer_library` | None | Directory containing forward (`*F.fasta`) and reverse (`*R.fasta`) PIMENTO primer libraries |
+| `--cutadapt_primers` | None | Directory containing forward (`*F.fasta`), reverse (`*R.fasta`), reverse complemented forward (`F_RC.fasta`) and reverse complemented reverse (`R_RC.fasta`) cutadapt prepared primer libraries |
+| `--pfam_coi_db` | None | Path to Pfam COI HMM database |
 
 
 ## Outputs
@@ -143,7 +143,7 @@ Example output structure for a sample (sample1). The qc_passed and qc_failed csv
 results/
 ├── sample1/
 │   ├── asv/
-│   │   ├── sample1_asv_read_counts.tsv
+│   │   ├── sample1_asv_read_counts.tsv.gz
 │   │   ├── sample1_dada2_stats.tsv
 │   │   └── sample1_asvs.fasta
 │   ├── hmmsearch-COI/
@@ -159,23 +159,23 @@ results/
 │   │   └── sample1_suffix_header_err.json
 │   ├── taxonomy-summary/
 │   │   ├── BOLD/
-│   │   │   ├── sample1_BOLD_vsearch_raw_hits.tsv
-│   │   │   ├── sample1_BOLD_vsearch_hits_with_accessions.tsv
-│   │   │   ├── sample1_BOLD_vsearch_hits_for_lca.tsv
-│   │   │   ├── sample1_BOLD_taxonomy_lca_all_hits.tsv
-│   │   │   ├── sample1_BOLD_taxonomy_lca_top_hits.tsv
-│   │   │   ├── sample1_BOLD_krona_lca_all_hits_counts.tsv
-│   │   │   ├── sample1_BOLD_krona_lca_top_hits_counts.tsv
+│   │   │   ├── sample1_BOLD_vsearch_raw_hits.tsv.gz
+│   │   │   ├── sample1_BOLD_vsearch_hits_with_accessions.tsv.gz
+│   │   │   ├── sample1_BOLD_vsearch_hits_for_lca.tsv.gz
+│   │   │   ├── sample1_BOLD_taxonomy_lca_all_hits.tsv.gz
+│   │   │   ├── sample1_BOLD_taxonomy_lca_top_hits.tsv.gz
+│   │   │   ├── sample1_BOLD_krona_lca_all_hits_counts.tsv.gz
+│   │   │   ├── sample1_BOLD_krona_lca_top_hits_counts.tsv.gz
 │   │   │   ├── sample1_BOLD_krona_lca_all_hits.html
 │   │   │   └── sample1_BOLD_krona_lca_top_hits.html
 │   │   ├── MIDORI2/
-│   │   │   ├── sample1_MIDORI2_vsearch_raw_hits.tsv
-│   │   │   ├── sample1_MIDORI2_vsearch_hits_with_accessions.tsv
-│   │   │   ├── sample1_MIDORI2_vsearch_hits_for_lca.tsv
-│   │   │   ├── sample1_MIDORI2_taxonomy_lca_all_hits.tsv
-│   │   │   ├── sample1_MIDORI2_taxonomy_lca_top_hits.tsv
-│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits_counts.tsv
-│   │   │   ├── sample1_MIDORI2_krona_lca_top_hits_counts.tsv
+│   │   │   ├── sample1_MIDORI2_vsearch_raw_hits.tsv.gz
+│   │   │   ├── sample1_MIDORI2_vsearch_hits_with_accessions.tsv.gz
+│   │   │   ├── sample1_MIDORI2_vsearch_hits_for_lca.tsv.gz
+│   │   │   ├── sample1_MIDORI2_taxonomy_lca_all_hits.tsv.gz
+│   │   │   ├── sample1_MIDORI2_taxonomy_lca_top_hits.tsv.gz
+│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits_counts.tsv.gz
+│   │   │   ├── sample1_MIDORI2_krona_lca_top_hits_counts.tsv.gz
 │   │   │   ├── sample1_MIDORI2_krona_lca_all_hits.html
 │   │   │   └── sample1_MIDORI2_krona_lca_top_hits.html
 ├── pipeline_info/
@@ -196,12 +196,12 @@ come from `--bold_label` (default `BOLD`) and `--midori2_label`
 
 | Description | Contents |
 | --- | --- |
-| `vsearch_raw_hits.tsv` | Original VSEARCH output, without a header |
-| `vsearch_hits_with_accessions.tsv` | Readable hits with the standard taxonomy ranks, retaining reference database accessions |
-| `vsearch_hits_for_lca.tsv` | Individual hits with taxonomy, identity and query coverage for LCA script input |
-| `taxonomy_lca_all_hits.tsv` | ASV assignments calculated from all hits above the percentage identity threshold at the selected rank |
-| `taxonomy_lca_top_hits.tsv` | ASV assignments from highest-identity qualifying hits, above the percentage identity threshold at the selected rank |
-| `krona_lca_all_hits_counts.tsv`, `krona_lca_top_hits_counts.tsv` | Headerless, read-weighted counts grouped by taxonomy; includes unclassified reads |
+| `vsearch_raw_hits.tsv.gz` | Original VSEARCH output, without a header |
+| `vsearch_hits_with_accessions.tsv.gz` | Readable hits with the standard taxonomy ranks, retaining reference database accessions |
+| `vsearch_hits_for_lca.tsv.gz` | Individual hits with taxonomy, identity and query coverage for LCA script input |
+| `taxonomy_lca_all_hits.tsv.gz` | ASV assignments calculated from all hits above the percentage identity threshold at the selected rank |
+| `taxonomy_lca_top_hits.tsv.gz` | ASV assignments from highest-identity qualifying hits, above the percentage identity threshold at the selected rank |
+| `krona_lca_all_hits_counts.tsv.gz`, `krona_lca_top_hits_counts.tsv.gz` | Headerless, read-weighted counts grouped by taxonomy; includes unclassified reads |
 | `krona_lca_all_hits.html`, `krona_lca_top_hits.html` | Interactive reports for the respective assignment method |
 
 For LCA input, the matching genus prefix is removed from the species label first.
@@ -217,11 +217,11 @@ retain the ASV ID with `d__;k__;p__;c__;o__;f__;g__;s__;`. Formatted no-hit rows
 have an empty accession and `NA` identity/coverage where those columns are present.
 Their reads remain included under `Unclassified` in the Krona counts and reports.
 
-`asv/<sample>_asv_read_counts.tsv` is generated once per sample, counting nonzero forward-map
+`asv/<sample>_asv_read_counts.tsv.gz` is generated once per sample, counting nonzero forward-map
 entries for the filtered reads from DADA2. Counts are independent of taxonomy and
 are generated even when both database branches are disabled.
 
-Both final `taxonomy_lca_all_hits.tsv` and `taxonomy_lca_top_hits.tsv` files are
+Both final `taxonomy_lca_all_hits.tsv.gz` and `taxonomy_lca_top_hits.tsv.gz` files are
 headerless, with columns `ASV ID`, `taxonomy`, and `count`. The third column comes
 from the shared ASV read counts table.
 

@@ -19,6 +19,11 @@ nextflow_pipeline {
 
             assert workflow.success
 
+            def readText = { file ->
+                file.toString().endsWith('.gz') ?
+                    new java.util.zip.GZIPInputStream(file.newInputStream()).withCloseable { it.getText('UTF-8') } : file.text
+            }
+
             // Taxonomies of the records in the BOLD and MIDORI2 test databases.
             def referenceTaxonomy = [
                 BOLD: [
@@ -63,20 +68,22 @@ nextflow_pipeline {
                         assert snapshot(stable_name).match("directory_structure")
                     },
 
-                    // Snapshot all output file sizes for regression detection
+                    // Snapshot decompressed table sizes: VSEARCH row order can change compressed sizes.
                     {
-                        def allFiles = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/**', '**/*.domtbl', '**/*.fastp.json', '**/*_multiqc_report.html', 'multiqc_report.html', '**/*krona_counts.txt', '**/*_hits_counts.tsv'])
+                        def allFiles = getAllFilesFromDir(params.outdir, ignore: ['pipeline_info/**', '**/*.domtbl', '**/*.fastp.json', '**/*_multiqc_report.html', 'multiqc_report.html', '**/*krona_counts.txt', '**/*_hits_counts.tsv.gz'])
                         def fileSizes = allFiles.collect { file ->
-                            "${file.name} - ${file.size()} bytes"
+                            file.name.endsWith('.tsv.gz') ?
+                                "${file.name} - ${readText(file).getBytes('UTF-8').length} uncompressed bytes" :
+                                "${file.name} - ${file.size()} bytes"
                         }.sort()
                         assert snapshot(fileSizes).match("file_sizes")
                     },
 
                     // Snapshot line counts for JSON, TSV, and FASTA files
                     {
-                        def dataFiles = getAllFilesFromDir(params.outdir, include: ['*.{json,tsv,fasta,fa}', '**/*.{json,tsv,fasta,fa}'], ignore: ['pipeline_info/**'])
+                        def dataFiles = getAllFilesFromDir(params.outdir, include: ['*.{json,tsv,tsv.gz,fasta,fa}', '**/*.{json,tsv,tsv.gz,fasta,fa}'], ignore: ['pipeline_info/**'])
                         def lineCounts = dataFiles.collect { file ->
-                            def lineCount = file.text.isEmpty() ? 0 : file.readLines().size()
+                            def lineCount = readText(file).readLines().size()
                             "${file.name} - ${lineCount} lines"
                         }.sort()
                         assert snapshot(lineCounts).match("line_counts")
@@ -144,17 +151,29 @@ nextflow_pipeline {
                             ['BOLD', 'MIDORI2'].each { db ->
                                 def folder = "${params.outdir}/${sample}/taxonomy-summary/${db}"
                                 def filenames = getAllFilesFromDir(folder).collect { it.name }
-                                assert filenames.size() == 9
+                                assert filenames.size() == 16
+                                ['vsearch_raw_hits', 'vsearch_hits_for_lca', 'vsearch_hits_with_accessions',
+                                 'taxonomy_lca_all_hits', 'taxonomy_lca_top_hits',
+                                 'krona_lca_all_hits_counts', 'krona_lca_top_hits_counts'].each { kind ->
+                                    def name = "${sample}_${db}_${kind}.tsv"
+                                    assert !path("${folder}/${name}").exists()
+                                    def index = path("${folder}/${name}.gz.gzi")
+                                    assert index.exists()
+                                    def bytes = index.bytes
+                                    assert bytes.length >= 8
+                                    def entries = java.nio.ByteBuffer.wrap(bytes).order(java.nio.ByteOrder.LITTLE_ENDIAN).getLong()
+                                    assert bytes.length == 8 + 16 * entries
+                                }
                                 assert filenames.every { it.startsWith("${sample}_${db}_") }
-                                def raw = path("${folder}/${sample}_${db}_vsearch_raw_hits.tsv").readLines()
+                                def raw = readText(path("${folder}/${sample}_${db}_vsearch_raw_hits.tsv.gz")).readLines()
                                 assert !raw.isEmpty()
                                 assert raw.collect { it.split('\t')[0] }.toSet() == asvIds.toSet()
                                 assert raw.every { row ->
                                     def fields = row.split('\t')
                                     fields.size() == 5 && fields[0] in asvIds
                                 }
-                                def lca = path("${folder}/${sample}_${db}_vsearch_hits_for_lca.tsv").readLines()
-                                def clean = path("${folder}/${sample}_${db}_vsearch_hits_with_accessions.tsv").readLines()
+                                def lca = readText(path("${folder}/${sample}_${db}_vsearch_hits_for_lca.tsv.gz")).readLines()
+                                def clean = readText(path("${folder}/${sample}_${db}_vsearch_hits_with_accessions.tsv.gz")).readLines()
                                 assert lca[0] == 'query\ttaxonomy\tpid\tqcov'
                                 assert clean[0] == 'query\taccession\ttaxonomy\tpid'
                                 assert lca.size() == raw.size() + 1
@@ -227,7 +246,7 @@ nextflow_pipeline {
                                 def expected = expectedAssignments[sample][db]
                                 def folder = "${params.outdir}/${sample}/taxonomy-summary/${db}"
                                 ['all', 'top'].each { method ->
-                                    def rows = path("${folder}/${sample}_${db}_taxonomy_lca_${method}_hits.tsv").readLines()
+                                    def rows = readText(path("${folder}/${sample}_${db}_taxonomy_lca_${method}_hits.tsv.gz")).readLines()
                                     assert rows.size() == expected.size()
                                     def assignments = rows.collectEntries { row ->
                                         def fields = row.split('\t')
@@ -237,7 +256,7 @@ nextflow_pipeline {
                                     }
                                     assert assignments == expected
 
-                                    def counts = path("${folder}/${sample}_${db}_krona_lca_${method}_hits_counts.tsv").readLines()
+                                    def counts = readText(path("${folder}/${sample}_${db}_krona_lca_${method}_hits_counts.tsv.gz")).readLines()
                                     def expectedCounts = expected.values().countBy { it }.collect { taxonomy, number ->
                                         def lineage = taxonomy == unclassified ? 'Unclassified' :
                                             taxonomy.replaceAll(/(?:[a-z]__;)+$/, '').split(';').join('\t')
@@ -277,7 +296,9 @@ nextflow_pipeline {
                     // Counts are generated once per sample from forward maps, independently of taxonomy.
                     {
                         ['TEST', 'TEST2'].each { sample ->
-                            def rows = path("${params.outdir}/${sample}/asv/${sample}_asv_read_counts.tsv").readLines()
+                            assert path("${params.outdir}/${sample}/asv/${sample}_asv_read_counts.tsv.gz.gzi").exists()
+                            assert !path("${params.outdir}/${sample}/asv/${sample}_asv_read_counts.tsv").exists()
+                            def rows = readText(path("${params.outdir}/${sample}/asv/${sample}_asv_read_counts.tsv.gz")).readLines()
                             assert rows[0] == 'asv\tcount'
                             def counts = rows.drop(1).collectEntries { row ->
                                 def fields = row.split('\t')
@@ -345,6 +366,7 @@ nextflow_pipeline {
 
                         // Expected top-level process/software sections
                         def expected_sections = [
+                            "TABIX_BGZIP:",
                             "CUTADAPT:",
                             "DADA2:",
                             "EXTRACT_CUTADAPT_PRIMERS:",

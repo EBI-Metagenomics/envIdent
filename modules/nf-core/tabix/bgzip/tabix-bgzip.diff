@@ -1,0 +1,147 @@
+Changes in component 'nf-core/tabix/bgzip'
+'modules/nf-core/tabix/bgzip/environment.yml' is unchanged
+Changes in 'tabix/bgzip/meta.yml':
+--- modules/nf-core/tabix/bgzip/meta.yml
++++ modules/nf-core/tabix/bgzip/meta.yml
+@@ -40,7 +40,7 @@
+           description: |
+             Groovy Map containing sample information
+             e.g. [ id:'test', single_end:false ]
+-      - '*.gzi':
++      - "*.gzi":
+           type: file
+           description: Optional gzip index file for compressed inputs
+           pattern: "*.gzi"
+
+'modules/nf-core/tabix/bgzip/main.nf' is unchanged
+Changes in 'tabix/bgzip/tests/main.nf.test.snap':
+--- modules/nf-core/tabix/bgzip/tests/main.nf.test.snap
++++ modules/nf-core/tabix/bgzip/tests/main.nf.test.snap
+@@ -3,11 +3,11 @@
+         "content": [
+             "gzi_compress_test.vcf.gz.gzi"
+         ],
++        "timestamp": "2026-09-27T11:23:47.157914",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.2"
+-        },
+-        "timestamp": "2024-02-19T14:52:29.328146"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     },
+     "homo_genome_bedgz_compress": {
+         "content": [
+@@ -42,21 +42,21 @@
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-27T11:23:37.74346",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.2"
+-        },
+-        "timestamp": "2024-07-19T11:28:34.159992362"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     },
+     "test_stub": {
+         "content": [
+             "test_stub.vcf.gz"
+         ],
++        "timestamp": "2026-09-27T11:23:42.391347",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.2"
+-        },
+-        "timestamp": "2024-02-19T14:52:20.811489"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     },
+     "sarscov2_vcf_bgzip_compress": {
+         "content": [
+@@ -91,11 +91,11 @@
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-27T11:23:32.37038",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.2"
+-        },
+-        "timestamp": "2024-07-19T11:28:22.087769106"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     },
+     "sarscov2_vcf_bgzip_compress_gzi": {
+         "content": [
+@@ -140,31 +140,31 @@
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-27T11:23:47.147228",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.2"
+-        },
+-        "timestamp": "2024-07-19T11:28:57.15091665"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     },
+     "bgzip_test": {
+         "content": [
+             "bgzip_test.vcf.gz"
+         ],
++        "timestamp": "2026-09-27T11:23:32.389031",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.2"
+-        },
+-        "timestamp": "2024-02-19T14:52:03.768295"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     },
+     "bedgz_test": {
+         "content": [
+             "bedgz_test.bed"
+         ],
++        "timestamp": "2026-09-27T11:23:37.754501",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.2"
+-        },
+-        "timestamp": "2024-02-19T14:52:12.453855"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     },
+     "sarscov2_vcf_bgzip_compress_stub": {
+         "content": [
+@@ -209,10 +209,10 @@
+                 ]
+             }
+         ],
++        "timestamp": "2026-09-27T11:23:42.378098",
+         "meta": {
+-            "nf-test": "0.8.4",
+-            "nextflow": "24.04.2"
+-        },
+-        "timestamp": "2024-07-19T11:28:45.219404786"
++            "nf-test": "0.9.5",
++            "nextflow": "26.04.6"
++        }
+     }
+ }
+\ No newline at end of file
+
+'modules/nf-core/tabix/bgzip/tests/tags.yml' is unchanged
+'modules/nf-core/tabix/bgzip/tests/bgzip_compress.config' is unchanged
+'modules/nf-core/tabix/bgzip/tests/main.nf.test' is unchanged
+'modules/nf-core/tabix/bgzip/tests/vcf_none.config' is unchanged
+************************************************************

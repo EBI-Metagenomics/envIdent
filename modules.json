@@ -26,32 +26,22 @@
             "installed_by": ["modules"],
             "patch": "modules/nf-core/hmmer/hmmsearch/hmmer-hmmsearch.diff"
           },
-          "librarystrategycheck": {
-            "branch": "main",
-            "git_sha": "9cc5d3c2396859f0f1376bbfe3ca5d721a0b5b3c",
-            "installed_by": ["reads_qc"]
-          },
           "multiqc": {
             "branch": "master",
             "git_sha": "f0719ae309075ae4a291533883847c3f7c441dad",
             "installed_by": ["modules"]
-          },
-          "pimento/generatebcv": {
-            "branch": "main",
-            "git_sha": "31202bc23f1c8c597d9879e0005e092ff3f32205",
-            "installed_by": ["reads_qc"],
-            "patch": "modules/ebi-metagenomics/pimento/generatebcv/pimento-generatebcv.diff"
-          },
-          "seqfu/check": {
-            "branch": "main",
-            "git_sha": "d1f512bffa29ba7a89468ce29e0153e11b57cc94",
-            "installed_by": ["reads_qc"]
           },
           "seqkit/translate": {
             "branch": "master",
             "git_sha": "bf70cbf44b42ff4a81afcb673fcef604f5ef3a85",
             "installed_by": ["modules"],
             "patch": "modules/nf-core/seqkit/translate/seqkit-translate.diff"
+          },
+          "tabix/bgzip": {
+            "branch": "master",
+            "git_sha": "69fdb99a8affa55adfda16966aa4568e103dc1b6",
+            "installed_by": ["modules"],
+            "patch": "modules/nf-core/tabix/bgzip/tabix-bgzip.diff"
           },
           "vsearch/usearchglobal": {
             "branch": "master",
@@ -88,15 +78,31 @@
     "git@github.com:EBI-Metagenomics/nf-modules.git": {
       "modules": {
         "ebi-metagenomics": {
+          "bbmap/reformat_standardise": {
+            "branch": "main",
+            "git_sha": "945bc3f876117a9034cd3a66bc37b19e42035ede",
+            "installed_by": ["modules"]
+          },
           "downloadfromfire": {
             "branch": "main",
             "git_sha": "afc056e9aa0376982a10d458402e200c05d87609",
             "installed_by": ["modules"]
           },
-          "bbmap/reformat_standardise": {
+          "librarystrategycheck": {
             "branch": "main",
-            "git_sha": "945bc3f876117a9034cd3a66bc37b19e42035ede",
-            "installed_by": ["modules"]
+            "git_sha": "9cc5d3c2396859f0f1376bbfe3ca5d721a0b5b3c",
+            "installed_by": ["reads_qc"]
+          },
+          "pimento/generatebcv": {
+            "branch": "main",
+            "git_sha": "31202bc23f1c8c597d9879e0005e092ff3f32205",
+            "installed_by": ["reads_qc"],
+            "patch": "modules/ebi-metagenomics/pimento/generatebcv/pimento-generatebcv.diff"
+          },
+          "seqfu/check": {
+            "branch": "main",
+            "git_sha": "d1f512bffa29ba7a89468ce29e0153e11b57cc94",
+            "installed_by": ["reads_qc"]
           }
         }
       }
