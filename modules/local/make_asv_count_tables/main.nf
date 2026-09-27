@@ -6,6 +6,8 @@ process MAKE_ASV_COUNT_TABLES {
         "biocontainers/mgnify-pipelines-toolkit:${params.mpt_version}" }"
 
     input:
+    // maps/reads are a single Path for single-end data, or forward/reverse lists.
+    // Count forward-map entries only, so paired reads are not counted twice.
     tuple val(meta), path(maps), path(reads)
 
     output:
