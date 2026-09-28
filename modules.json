@@ -8,12 +8,14 @@
           "custom/dumpsoftwareversions": {
             "branch": "master",
             "git_sha": "76cc4938c1f6ea5c7d83fed1eeffc146787f9543",
-            "installed_by": ["modules"]
+            "installed_by": ["modules"],
+            "patch": "modules/nf-core/custom/dumpsoftwareversions/dumpsoftwareversions.diff"
           },
           "fastp": {
             "branch": "master",
             "git_sha": "d9ec4ef289ad39b8a662a7a12be50409b11df84b",
-            "installed_by": ["modules", "reads_qc"]
+            "installed_by": ["modules", "reads_qc"],
+            "patch": "modules/nf-core/fastp/fastp.diff"
           },
           "fastqc": {
             "branch": "master",
@@ -29,7 +31,8 @@
           "multiqc": {
             "branch": "master",
             "git_sha": "f0719ae309075ae4a291533883847c3f7c441dad",
-            "installed_by": ["modules"]
+            "installed_by": ["modules"],
+            "patch":"modules/nf-core/multiqc/multiqc.diff"
           },
           "seqkit/translate": {
             "branch": "master",
@@ -46,7 +49,8 @@
           "vsearch/usearchglobal": {
             "branch": "master",
             "git_sha": "3a0ac08f5e8a748df4bc8b3998623121adec36fe",
-            "installed_by": ["modules"]
+            "installed_by": ["modules"],
+            "patch": "modules/nf-core/vsearch/usearchglobal/vsearch-usearchglobal.diff"
           }
         }
       },
@@ -65,7 +69,8 @@
           "utils_nfcore_pipeline": {
             "branch": "master",
             "git_sha": "51ae5406a030d4da1e49e4dab49756844fdd6c7a",
-            "installed_by": ["subworkflows"]
+            "installed_by": ["subworkflows"],
+            "patch": "subworkflows/nf-core/utils_nfcore_pipeline/utils_nfcore_pipeline.diff"
           },
           "utils_nfschema_plugin": {
             "branch": "master",

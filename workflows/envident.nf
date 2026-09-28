@@ -339,6 +339,36 @@ workflow ENVIDENT {
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC_RAW.out.zip.collect{it[1]})
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC_CLEAN.out.zip.collect{it[1]})
     ch_multiqc_files = ch_multiqc_files.mix(READS_QC.out.fastp_summary_json.map { it[1] })
+    ch_multiqc_files = ch_multiqc_files.mix(READS_QC_BEFOREHMM.out.fastp_summary_json.map { it[1] })
+    ch_multiqc_files = ch_multiqc_files.mix(CONCAT_PRIMER_CUTADAPT.out.cutadapt_json.map { it[1] })
+
+    // Adapt existing DADA2 statistics for MultiQC without changing the analysis outputs.
+    ch_dada2_multiqc = DADA2_SWF.out.dada2_report
+        .map { meta, stats_file ->
+            def stats = stats_file.readLines().collectEntries { line ->
+                def fields = line.split('\t')
+                [(fields[0]): fields[1].isBigDecimal() ? new BigDecimal(fields[1]) : fields[1]]
+            }
+            def columns = [
+                initial_read_count: 'Initial reads',
+                filtered_trimmed_read_count: 'Filtered reads',
+                final_nonchimeric_sequence_variant_count: 'Non-chimeric ASVs',
+                final_nonchimeric_read_count: 'Non-chimeric reads',
+                reads_with_asv_read_count: 'Reads assigned to ASVs',
+                proportion_reads_matched: 'Fraction matched',
+                proportion_reads_chimeric: 'Fraction chimeric'
+            ]
+            def data = columns.findAll { key, title -> stats.containsKey(key) }
+                .collectEntries { key, title -> [(title): stats[key]] }
+            def report = [id: 'dada2_qc', section_name: 'DADA2', plot_type: 'table',
+                description: 'Read and ASV retention from DADA2. Fractions are reported on a 0–1 scale.',
+                pconfig: [id: 'dada2_qc_table', title: 'DADA2: Read and ASV retention'],
+                data: [(meta.id): data]]
+            ["${meta.id}_dada2_mqc.json", groovy.json.JsonOutput.toJson(report)]
+        }
+        .collectFile()
+    ch_multiqc_files = ch_multiqc_files.mix(ch_dada2_multiqc)
+    ch_versions = ch_versions.mix(FASTQC_CLEAN.out.versions.first())
 
     //
     // Collate and save software versions
@@ -363,7 +393,8 @@ workflow ENVIDENT {
 
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
+    ch_workflow_summary = channel.value(paramsSummaryMultiqc(
+        summary_params.findAll { group, values -> group != 'Core Nextflow options' }))
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
@@ -465,7 +496,7 @@ workflow ENVIDENT {
     all_failed_runs.collectFile(name: "qc_failed_runs.csv", storeDir: "${params.outdir}", newLine: true, cache: false)
 
     dada2_qc_results.passed
-        .map { meta, _results -> "${meta.id},all_results" }
+        .map { meta, _results -> "${meta.id}" }
         .set { final_passed_runs }
 
     // Save all passed runs to file //

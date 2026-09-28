@@ -104,33 +104,70 @@ def softwareVersionsToYAML(ch_versions) {
 //
 // Get workflow summary for MultiQC
 //
+/** Remove directory components from report values, including nested collections. */
+def summaryDisplayValue(value) {
+    if (value instanceof Map) {
+        return value.collectEntries { key, item -> [(key): summaryDisplayValue(item)] }
+    }
+    if (value instanceof Collection) {
+        return value.collect { item -> summaryDisplayValue(item) }
+    }
+    if (value instanceof java.nio.file.Path || value instanceof java.io.File || value instanceof java.net.URI) {
+        return summaryDisplayValue(value.toString())
+    }
+    if (value instanceof CharSequence) {
+        def text = value.toString()
+        if (text ==~ '(?s)^[A-Za-z][A-Za-z0-9+.-]*://.*$') {
+            // Drop remote directory paths, query strings and credentials as well.
+            text = text.replaceFirst('^[A-Za-z][A-Za-z0-9+.-]*://[^/]*', '')
+                .split(/[?#]/, 2)[0]
+            def parts = text.tokenize('/')
+            return parts ? parts.last() : '[location]'
+        }
+        def normalised = text.replace('\\', '/')
+        if (normalised.startsWith('/') || normalised ==~ /^[A-Za-z]:.*/) {
+            def parts = normalised.tokenize('/')
+            return parts ? parts.last() : '[location]'
+        }
+    }
+    return value
+}
+
 def paramsSummaryMultiqc(summary_params) {
     def summary_section = ''
+
     summary_params
         .keySet()
         .each { group ->
             def group_params = summary_params.get(group)
-            // This gets the parameters of that particular group
+
             if (group_params) {
                 summary_section += "    <p style=\"font-size:110%\"><b>${group}</b></p>\n"
                 summary_section += "    <dl class=\"dl-horizontal\">\n"
+
                 group_params
                     .keySet()
                     .sort()
                     .each { param ->
-                        summary_section += "        <dt>${param}</dt><dd><samp>${group_params.get(param) ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>\n"
+                        def value = summaryDisplayValue(group_params.get(param))
+                        def display_value = value == null || value == ''
+                            ? '<span style="color:#999999;">N/A</span>'
+                            : value.toString().replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+                        summary_section += "        <dt>${param}</dt><dd><samp>${display_value}</samp></dd>\n"
                     }
+
                 summary_section += "    </dl>\n"
             }
         }
 
     def yaml_file_text = "id: '${workflow.manifest.name.replace('/', '-')}-summary'\n" as String
-    yaml_file_text     += "description: ' - this information is collected when the pipeline is started.'\n"
-    yaml_file_text     += "section_name: '${workflow.manifest.name} Workflow Summary'\n"
-    yaml_file_text     += "section_href: 'https://github.com/${workflow.manifest.name}'\n"
-    yaml_file_text     += "plot_type: 'html'\n"
-    yaml_file_text     += "data: |\n"
-    yaml_file_text     += "${summary_section}"
+    yaml_file_text += "description: ' - this information is collected when the pipeline is started.'\n"
+    yaml_file_text += "section_name: '${workflow.manifest.name} Workflow Summary'\n"
+    yaml_file_text += "section_href: 'https://github.com/${workflow.manifest.name}'\n"
+    yaml_file_text += "plot_type: 'html'\n"
+    yaml_file_text += "data: |\n"
+    yaml_file_text += "${summary_section}"
 
     return yaml_file_text
 }

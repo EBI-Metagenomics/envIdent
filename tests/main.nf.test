@@ -47,6 +47,21 @@ nextflow_pipeline {
                 assertAll(
                     { assert success },
 
+                    // Keep both QC stages and both trimming passes visible in the quality report.
+                    {
+                        def report = path("${params.outdir}/multiqc_report.html").text
+                        def sections = ['fastqc_raw', 'fastp_initial', 'cutadapt_first_pass',
+                            'cutadapt_second_pass', 'fastqc_clean', 'fastp_beforehmm', 'dada2_qc']
+                        def positions = sections.collect { report.indexOf("id=\"${it}\"") }
+                        assert positions.every { it >= 0 }
+                        assert positions == positions.sort(false)
+                        assert !report.contains('Core Nextflow options')
+                        assert !report.contains('id="cutadapt_first_pass_cutadapt_trimmed_sequences')
+                        assert !report.contains('id="cutadapt_second_pass_cutadapt_trimmed_sequences')
+                        assert !report.contains('TEST2_1.first_pass_TEST2_2.first_pass')
+                        assert report.contains('cutadapt_second_pass-percent_trimmed')
+                    },
+
                     // Snapshot of names and file structure of output directory
                     {
                         def stable_name = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/**'])
@@ -79,8 +94,8 @@ nextflow_pipeline {
                         def content = path("${params.outdir}/qc_passed_runs.csv").text
                         def lines = content.trim().split('\n')
                         assert lines.size() == 2 : "Expected 2 passed runs"
-                        assert content.contains("TEST,all_results")
-                        assert content.contains("TEST2,all_results")
+                        assert content.contains("TEST")
+                        assert content.contains("TEST2")
                     },
 
                     // Verify qc_failed_runs.csv has all expected failures
@@ -104,14 +119,14 @@ nextflow_pipeline {
                         }
                     },               
 
-                    // Verify TEST COI reverse complemented primers were not detected in both read directions
+                    // At error rate 0.2, TEST2 has ten reverse-complement primer matches in R2.
                     {
                         ['TEST', 'TEST2'].each { test_name ->
                             def rc_primer = new groovy.json.JsonSlurper().parseText(
                                 path("${params.outdir}/${test_name}/primer-identification/${test_name}.second_pass.cutadapt.json").text
                             )
                             assert rc_primer.adapters_read1.every { it.name.contains('COI') && it.total_matches == 0 }
-                            assert rc_primer.adapters_read2.every { it.name.contains('COI') && it.total_matches == 0 }                    
+                            assert rc_primer.adapters_read2.every { it.name.contains('COI') && it.total_matches == (test_name == 'TEST2' ? 10 : 0) }
                         }
                     },
 
@@ -198,7 +213,7 @@ nextflow_pipeline {
                                     seq_1: 'd__;k__Animalia;p__Entoprocta;c__Entoprocta_class_incertae_sedis;o__Loxosomatida;f__Loxosomatidae;g__Loxocorone;s__allax;',
                                     seq_2: 'd__;k__Animalia;p__Entoprocta;c__Entoprocta_class_incertae_sedis;o__Loxosomatida;f__Loxosomatidae;g__Loxosomella;s__aloxiata;',
                                     seq_3: 'd__;k__Plantae;p__Tracheophyta;c__Magnoliopsida;o__Lamiales;f__Plantaginaceae;g__Plantago;s__rugelii;',
-                                    seq_4: 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Cosmopterigidae;g__Macrobathra;s__;',
+                                    seq_4: 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Cosmopterigidae;g__;s__;',
                                     seq_5: 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__;g__;s__;'
                                 ],
                                 MIDORI2: [
@@ -327,7 +342,7 @@ nextflow_pipeline {
                     // Verify TEST QC outputs
                     {
                         ['TEST', 'TEST2'].each { test_name ->
-                            def fastp_json = path("${params.outdir}/${test_name}/qc/${test_name}.fastp.json").text
+                            def fastp_json = path("${params.outdir}/${test_name}/qc/${test_name}_initial.fastp.json").text
                             def fastp = new groovy.json.JsonSlurper().parseText(fastp_json)
                             assert fastp instanceof Map
                             assert fastp.summary

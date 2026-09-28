@@ -126,10 +126,9 @@ nextflow run EBI-Metagenomics/envident \
 
 ## Outputs
 
-QC reports from the second, pre-HMM stage use `_beforehmm_seqfu.tsv` and
-`_beforehmm_suffix_header_err.json`, so they do not overwrite the initial QC reports.
-`--reads_percentage_threshold 0` is supported. A header-only marker profile is
-interpreted as zero hits; malformed profile reports stop the run with an error.
+The MultiQC quality report includes separate sections for initial and pre-HMM fastp QC,
+both Cutadapt passes, raw and clean FastQC, and a DADA2 read/ASV retention table.
+DADA2 fractions use a 0–1 scale; software versions and run parameters are also included.
 
 All taxonomy TSVs and the ASV read-count table are BGZIP-compressed (`.tsv.gz`),
 each with a matching `.tsv.gz.gzi` index. QC tables, DADA2 statistics and

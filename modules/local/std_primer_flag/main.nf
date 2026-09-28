@@ -16,6 +16,7 @@ process STD_PRIMER_FLAG {
     path "versions.yml"                        , emit: versions
 
     script:
+    def args = task.ext.args ?: ''
     def primer_direction = meta.direction.toLowerCase()
     if (!['f', 'r'].contains(primer_direction)) {
         error "Unsupported primer direction '${meta.direction}'; expected 'f' or 'r'"
@@ -24,7 +25,7 @@ process STD_PRIMER_FLAG {
     def std_primer_library_arg = "${std_primer_library}" ? "-p ${std_primer_library}/${primer_pattern}" : ""
     
     """
-    pimento std -i ${reads} ${std_primer_library_arg} --threads $task.cpus -o ${meta.id}_${meta.var_region}_${meta.direction}
+    pimento std -i ${reads} ${std_primer_library_arg} ${args} --threads $task.cpus -o ${meta.id}_${meta.var_region}_${meta.direction}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
