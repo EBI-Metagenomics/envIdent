@@ -355,13 +355,13 @@ workflow ENVIDENT {
                 final_nonchimeric_sequence_variant_count: 'Non-chimeric ASVs',
                 final_nonchimeric_read_count: 'Non-chimeric reads',
                 reads_with_asv_read_count: 'Reads assigned to ASVs',
-                proportion_reads_matched: 'Fraction matched',
-                proportion_reads_chimeric: 'Fraction chimeric'
+                proportion_reads_matched: 'Proportion matched',
+                proportion_reads_chimeric: 'Proportion chimeric'
             ]
             def data = columns.findAll { key, title -> stats.containsKey(key) }
                 .collectEntries { key, title -> [(title): stats[key]] }
             def report = [id: 'dada2_qc', section_name: 'DADA2', plot_type: 'table',
-                description: 'Read and ASV retention from DADA2. Fractions are reported on a 0–1 scale.',
+                description: 'Read and ASV retention from DADA2. Proportions are reported on a 0–1 scale.',
                 pconfig: [id: 'dada2_qc_table', title: 'DADA2: Read and ASV retention'],
                 data: [(meta.id): data]]
             ["${meta.id}_dada2_mqc.json", groovy.json.JsonOutput.toJson(report)]
