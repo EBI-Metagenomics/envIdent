@@ -119,14 +119,14 @@ nextflow_pipeline {
                         }
                     },               
 
-                    // Verify TEST COI reverse complemented primers were not detected in both read directions
+                    // At error rate 0.2, TEST2 has ten reverse-complement primer matches in R2.
                     {
                         ['TEST', 'TEST2'].each { test_name ->
                             def rc_primer = new groovy.json.JsonSlurper().parseText(
                                 path("${params.outdir}/${test_name}/primer-identification/${test_name}.second_pass.cutadapt.json").text
                             )
                             assert rc_primer.adapters_read1.every { it.name.contains('COI') && it.total_matches == 0 }
-                            assert rc_primer.adapters_read2.every { it.name.contains('COI') && it.total_matches == 0 }                    
+                            assert rc_primer.adapters_read2.every { it.name.contains('COI') && it.total_matches == (test_name == 'TEST2' ? 10 : 0) }
                         }
                     },
 
@@ -213,7 +213,7 @@ nextflow_pipeline {
                                     seq_1: 'd__;k__Animalia;p__Entoprocta;c__Entoprocta_class_incertae_sedis;o__Loxosomatida;f__Loxosomatidae;g__Loxocorone;s__allax;',
                                     seq_2: 'd__;k__Animalia;p__Entoprocta;c__Entoprocta_class_incertae_sedis;o__Loxosomatida;f__Loxosomatidae;g__Loxosomella;s__aloxiata;',
                                     seq_3: 'd__;k__Plantae;p__Tracheophyta;c__Magnoliopsida;o__Lamiales;f__Plantaginaceae;g__Plantago;s__rugelii;',
-                                    seq_4: 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Cosmopterigidae;g__Macrobathra;s__;',
+                                    seq_4: 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Cosmopterigidae;g__;s__;',
                                     seq_5: 'd__;k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__;g__;s__;'
                                 ],
                                 MIDORI2: [

@@ -104,6 +104,35 @@ def softwareVersionsToYAML(ch_versions) {
 //
 // Get workflow summary for MultiQC
 //
+/** Remove directory components from report values, including nested collections. */
+def summaryDisplayValue(value) {
+    if (value instanceof Map) {
+        return value.collectEntries { key, item -> [(key): summaryDisplayValue(item)] }
+    }
+    if (value instanceof Collection) {
+        return value.collect { item -> summaryDisplayValue(item) }
+    }
+    if (value instanceof java.nio.file.Path || value instanceof java.io.File || value instanceof java.net.URI) {
+        return summaryDisplayValue(value.toString())
+    }
+    if (value instanceof CharSequence) {
+        def text = value.toString()
+        if (text ==~ '(?s)^[A-Za-z][A-Za-z0-9+.-]*://.*$') {
+            // Drop remote directory paths, query strings and credentials as well.
+            text = text.replaceFirst('^[A-Za-z][A-Za-z0-9+.-]*://[^/]*', '')
+                .split(/[?#]/, 2)[0]
+            def parts = text.tokenize('/')
+            return parts ? parts.last() : '[location]'
+        }
+        def normalised = text.replace('\\', '/')
+        if (normalised.startsWith('/') || normalised ==~ /^[A-Za-z]:.*/) {
+            def parts = normalised.tokenize('/')
+            return parts ? parts.last() : '[location]'
+        }
+    }
+    return value
+}
+
 def paramsSummaryMultiqc(summary_params) {
     def summary_section = ''
 
@@ -120,24 +149,10 @@ def paramsSummaryMultiqc(summary_params) {
                     .keySet()
                     .sort()
                     .each { param ->
-                        def value = group_params.get(param)
-
-                        // Strip directory paths from Nextflow Path/File values
-                        // and from strings containing absolute Unix paths.
-                        if (value instanceof java.nio.file.Path) {
-                            value = value.fileName.toString()
-                        } else if (value instanceof java.io.File) {
-                            value = value.getName()
-                        } else if (value instanceof CharSequence) {
-                            def string_value = value.toString()
-
-                            // Only strip Unix-style absolute paths.
-                            if (string_value.startsWith('/')) {
-                                value = new File(string_value).getName()
-                            }
-                        }
-
-                        def display_value = value ?: '<span style="color:#999999;">N/A</span>'
+                        def value = summaryDisplayValue(group_params.get(param))
+                        def display_value = value == null || value == ''
+                            ? '<span style="color:#999999;">N/A</span>'
+                            : value.toString().replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
                         summary_section += "        <dt>${param}</dt><dd><samp>${display_value}</samp></dd>\n"
                     }
@@ -147,7 +162,7 @@ def paramsSummaryMultiqc(summary_params) {
         }
 
     def yaml_file_text = "id: '${workflow.manifest.name.replace('/', '-')}-summary'\n" as String
-    yaml_file_text += "R workflow_command: ' - this information is collected when the pipeline is started.'\n"
+    yaml_file_text += "description: ' - this information is collected when the pipeline is started.'\n"
     yaml_file_text += "section_name: '${workflow.manifest.name} Workflow Summary'\n"
     yaml_file_text += "section_href: 'https://github.com/${workflow.manifest.name}'\n"
     yaml_file_text += "plot_type: 'html'\n"
