@@ -336,11 +336,12 @@ workflow ENVIDENT {
     //
     // MODULE: MultiQC
     //
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC_RAW.out.zip.collect{it[1]})
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC_CLEAN.out.zip.collect{it[1]})
-    ch_multiqc_files = ch_multiqc_files.mix(READS_QC.out.fastp_summary_json.map { it[1] })
-    ch_multiqc_files = ch_multiqc_files.mix(READS_QC_BEFOREHMM.out.fastp_summary_json.map { it[1] })
-    ch_multiqc_files = ch_multiqc_files.mix(CONCAT_PRIMER_CUTADAPT.out.cutadapt_json.map { it[1] })
+    // Retain the original sample ID while collecting reports from each QC stage.
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC_RAW.out.zip.map { meta, reports -> [meta.id.replaceFirst(/_raw$/, ''), reports] })
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC_CLEAN.out.zip.map { meta, reports -> [meta.id.replaceFirst(/_clean$/, ''), reports] })
+    ch_multiqc_files = ch_multiqc_files.mix(READS_QC.out.fastp_summary_json.map { meta, reports -> [meta.id, reports] })
+    ch_multiqc_files = ch_multiqc_files.mix(READS_QC_BEFOREHMM.out.fastp_summary_json.map { meta, reports -> [meta.id, reports] })
+    ch_multiqc_files = ch_multiqc_files.mix(CONCAT_PRIMER_CUTADAPT.out.cutadapt_json.map { meta, reports -> [meta.id, reports] })
 
     // Adapt existing DADA2 statistics for MultiQC without changing the analysis outputs.
     ch_dada2_multiqc = DADA2_SWF.out.dada2_report
@@ -367,7 +368,7 @@ workflow ENVIDENT {
             ["${meta.id}_dada2_mqc.json", groovy.json.JsonOutput.toJson(report)]
         }
         .collectFile()
-    ch_multiqc_files = ch_multiqc_files.mix(ch_dada2_multiqc)
+    ch_multiqc_files = ch_multiqc_files.mix(ch_dada2_multiqc.map { report -> [report.name.replaceFirst(/_dada2_mqc\.json$/, ''), report] })
     ch_versions = ch_versions.mix(FASTQC_CLEAN.out.versions.first())
 
     //
@@ -395,24 +396,29 @@ workflow ENVIDENT {
         workflow, parameters_schema: "nextflow_schema.json")
     ch_workflow_summary = channel.value(paramsSummaryMultiqc(
         summary_params.findAll { group, values -> group != 'Core Nextflow options' }))
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+    ch_multiqc_shared = ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml')
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
         file(params.multiqc_methods_description, checkIfExists: true) :
         file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
     ch_methods_description                = channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
-    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
-    ch_multiqc_files = ch_multiqc_files.mix(
+    ch_multiqc_shared = ch_multiqc_shared.mix(ch_collated_versions)
+    ch_multiqc_shared = ch_multiqc_shared.mix(
         ch_methods_description.collectFile(
             name: 'methods_description_mqc.yaml',
             sort: true
         )
     )
 
+    // Keep shared files nested so combine emits one [id, reports, shared] tuple per sample.
+    ch_multiqc_per_sample = ch_multiqc_files
+        .groupTuple()
+        .combine(ch_multiqc_shared.toList().map { shared -> [shared] })
+        .map { id, reports, shared -> [[id: id], (reports + shared).flatten()] }
+
     MULTIQC (
-        ch_multiqc_files.collect(),
+        ch_multiqc_per_sample,
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList(),
@@ -505,7 +511,7 @@ workflow ENVIDENT {
 
 
     emit:
-    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    multiqc_report = MULTIQC.out.report.toList() // channel: list of per-sample MultiQC report paths
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
 
 }

@@ -12,10 +12,11 @@ Changes in 'multiqc/environment.yml':
 Changes in 'multiqc/main.nf':
 --- modules/nf-core/multiqc/main.nf
 +++ modules/nf-core/multiqc/main.nf
-@@ -1,10 +1,10 @@
+@@ -1,13 +1,14 @@
  process MULTIQC {
 -    label 'process_single'
 +    label 'process_medium'
++    tag "$meta.id"
  
      conda "${moduleDir}/environment.yml"
      container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -25,10 +26,72 @@ Changes in 'multiqc/main.nf':
 +        'biocontainers/multiqc:1.35--pyhdfd78af_1' }"
  
      input:
-     path  multiqc_files, stageAs: "?/*"
+-    path  multiqc_files, stageAs: "?/*"
++    tuple val(meta), path(multiqc_files, stageAs: "?/*")
+     path(multiqc_config)
+     path(extra_multiqc_config)
+     path(multiqc_logo)
+@@ -50,10 +51,11 @@
+     """
+ 
+     stub:
++    def prefix = task.ext.prefix ?: "multiqc_report"
+     """
+     mkdir multiqc_data
+     mkdir multiqc_plots
+-    touch multiqc_report.html
++    touch ${prefix}.html
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
 
-'modules/nf-core/multiqc/meta.yml' is unchanged
-'modules/nf-core/multiqc/tests/main.nf.test' is unchanged
+Changes in 'multiqc/meta.yml':
+--- modules/nf-core/multiqc/meta.yml
++++ modules/nf-core/multiqc/meta.yml
+@@ -15,7 +15,10 @@
+       licence: ["GPL-3.0-or-later"]
+       identifier: biotools:multiqc
+ input:
+-  - - multiqc_files:
++  - - meta:
++        type: map
++        description: Sample metadata containing the sample ID.
++    - multiqc_files:
+         type: file
+         description: |
+           List of reports / files recognised by MultiQC, for example the html and zip output of FastQC
+
+Changes in 'multiqc/tests/main.nf.test':
+--- modules/nf-core/multiqc/tests/main.nf.test
++++ modules/nf-core/multiqc/tests/main.nf.test
+@@ -15,7 +15,7 @@
+         when {
+             process {
+                 """
+-                input[0] = Channel.of(file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastqc/test_fastqc.zip', checkIfExists: true))
++                input[0] = Channel.of([[id: 'test'], file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastqc/test_fastqc.zip', checkIfExists: true)])
+                 input[1] = []
+                 input[2] = []
+                 input[3] = []
+@@ -41,7 +41,7 @@
+         when {
+             process {
+                 """
+-                input[0] = Channel.of(file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastqc/test_fastqc.zip', checkIfExists: true))
++                input[0] = Channel.of([[id: 'test'], file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastqc/test_fastqc.zip', checkIfExists: true)])
+                 input[1] = Channel.of(file("https://github.com/nf-core/tools/raw/dev/nf_core/pipeline-template/assets/multiqc_config.yml", checkIfExists: true))
+                 input[2] = []
+                 input[3] = []
+@@ -68,7 +68,7 @@
+         when {
+             process {
+                 """
+-                input[0] = Channel.of(file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastqc/test_fastqc.zip', checkIfExists: true))
++                input[0] = Channel.of([[id: 'test'], file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastqc/test_fastqc.zip', checkIfExists: true)])
+                 input[1] = []
+                 input[2] = []
+                 input[3] = []
+
 Changes in 'multiqc/tests/main.nf.test.snap':
 --- modules/nf-core/multiqc/tests/main.nf.test.snap
 +++ modules/nf-core/multiqc/tests/main.nf.test.snap
@@ -88,6 +151,8 @@ Changes in 'multiqc/tests/main.nf.test.snap':
 +        }
      }
  }
+\ No newline at end of file
+
 'modules/nf-core/multiqc/tests/nextflow.config' is unchanged
 'modules/nf-core/multiqc/tests/tags.yml' is unchanged
 ************************************************************

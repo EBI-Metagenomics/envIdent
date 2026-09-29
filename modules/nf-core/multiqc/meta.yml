@@ -15,7 +15,10 @@ tools:
       licence: ["GPL-3.0-or-later"]
       identifier: biotools:multiqc
 input:
-  - - multiqc_files:
+  - - meta:
+        type: map
+        description: Sample metadata containing the sample ID.
+    - multiqc_files:
         type: file
         description: |
           List of reports / files recognised by MultiQC, for example the html and zip output of FastQC

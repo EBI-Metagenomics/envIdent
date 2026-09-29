@@ -49,17 +49,28 @@ nextflow_pipeline {
 
                     // Keep both QC stages and both trimming passes visible in the quality report.
                     {
-                        def report = path("${params.outdir}/multiqc_report.html").text
-                        def sections = ['fastqc_raw', 'fastp_initial', 'cutadapt_first_pass',
-                            'cutadapt_second_pass', 'fastqc_clean', 'fastp_beforehmm', 'dada2_qc']
-                        def positions = sections.collect { report.indexOf("id=\"${it}\"") }
-                        assert positions.every { it >= 0 }
-                        assert positions == positions.sort(false)
-                        assert !report.contains('Core Nextflow options')
-                        assert !report.contains('id="cutadapt_first_pass_cutadapt_trimmed_sequences')
-                        assert !report.contains('id="cutadapt_second_pass_cutadapt_trimmed_sequences')
-                        assert !report.contains('TEST2_1.first_pass_TEST2_2.first_pass')
-                        assert report.contains('cutadapt_second_pass-percent_trimmed')
+                        assert !path("${params.outdir}/multiqc_report.html").exists()
+                        ['TEST', 'TEST2', 'ERRMINREADS', 'ERRSEQFUFAIL', 'ERRSFXHDFAIL'].each { sample ->
+                            assert path("${params.outdir}/${sample}/${sample}_multiqc_report.html").exists()
+                        }
+                        ['TEST', 'TEST2'].each { sample ->
+                            def report = path("${params.outdir}/${sample}/${sample}_multiqc_report.html").text
+                            def sections = ['fastqc_raw', 'fastp_initial', 'cutadapt_first_pass',
+                                'cutadapt_second_pass', 'fastqc_clean', 'fastp_beforehmm', 'dada2_qc']
+                            def positions = sections.collect { report.indexOf("id=\"${it}\"") }
+                            assert positions.every { it >= 0 }
+                            assert positions == positions.sort(false)
+                            assert !report.contains('Core Nextflow options')
+                            assert !report.contains('id="cutadapt_first_pass_cutadapt_trimmed_sequences')
+                            assert !report.contains('id="cutadapt_second_pass_cutadapt_trimmed_sequences')
+                            assert !report.contains('TEST2_1.first_pass_TEST2_2.first_pass')
+                            assert report.contains('cutadapt_second_pass-percent_trimmed')
+                            // Display labels keep the General Statistics rows in pipeline order.
+                            ['1. Raw reads', '2. Initial fastp', '3. Cutadapt first pass',
+                                '4. Cutadapt second pass', '5. Clean reads', '6. Pre-HMM fastp'].each { stage ->
+                                assert report.contains("${stage} - ${sample}")
+                            }
+                        }
                     },
 
                     // Snapshot of names and file structure of output directory

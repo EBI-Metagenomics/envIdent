@@ -3,18 +3,22 @@
         "content": [
             [
                 "ERRMINREADS",
+                "ERRMINREADS/ERRMINREADS_multiqc_report.html",
                 "ERRMINREADS/qc",
                 "ERRMINREADS/qc/ERRMINREADS_initial.fastp.json",
                 "ERRMINREADS/qc/ERRMINREADS_seqfu.tsv",
                 "ERRMINREADS/qc/ERRMINREADS_suffix_header_err.json",
                 "ERRSEQFUFAIL",
+                "ERRSEQFUFAIL/ERRSEQFUFAIL_multiqc_report.html",
                 "ERRSEQFUFAIL/qc",
                 "ERRSEQFUFAIL/qc/ERRSEQFUFAIL_seqfu.tsv",
                 "ERRSFXHDFAIL",
+                "ERRSFXHDFAIL/ERRSFXHDFAIL_multiqc_report.html",
                 "ERRSFXHDFAIL/qc",
                 "ERRSFXHDFAIL/qc/ERRSFXHDFAIL_seqfu.tsv",
                 "ERRSFXHDFAIL/qc/ERRSFXHDFAIL_suffix_header_err.json",
                 "TEST",
+                "TEST/TEST_multiqc_report.html",
                 "TEST/asv",
                 "TEST/asv/TEST_asv_read_counts.tsv.gz",
                 "TEST/asv/TEST_asv_read_counts.tsv.gz.gzi",
@@ -76,6 +80,7 @@
                 "TEST/taxonomy-summary/MIDORI2/TEST_MIDORI2_vsearch_raw_hits.tsv.gz",
                 "TEST/taxonomy-summary/MIDORI2/TEST_MIDORI2_vsearch_raw_hits.tsv.gz.gzi",
                 "TEST2",
+                "TEST2/TEST2_multiqc_report.html",
                 "TEST2/asv",
                 "TEST2/asv/TEST2_asv_read_counts.tsv.gz",
                 "TEST2/asv/TEST2_asv_read_counts.tsv.gz.gzi",
@@ -136,13 +141,12 @@
                 "TEST2/taxonomy-summary/MIDORI2/TEST2_MIDORI2_vsearch_hits_with_accessions.tsv.gz.gzi",
                 "TEST2/taxonomy-summary/MIDORI2/TEST2_MIDORI2_vsearch_raw_hits.tsv.gz",
                 "TEST2/taxonomy-summary/MIDORI2/TEST2_MIDORI2_vsearch_raw_hits.tsv.gz.gzi",
-                "multiqc_report.html",
                 "pipeline_info",
                 "qc_failed_runs.csv",
                 "qc_passed_runs.csv"
             ]
         ],
-        "timestamp": "2026-09-27T16:16:57.469727",
+        "timestamp": "2026-09-29T08:10:28.675608",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

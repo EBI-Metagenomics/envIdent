@@ -58,9 +58,22 @@ module_order:
       path_filters:
         - "*beforehmm*"
 
-# Use report filenames for Cutadapt rather than concatenating the two input mates.
+# Number display labels so General Statistics sorts in pipeline order.
+# Retain sample IDs and mate suffixes to keep every row distinct.
+sample_names_replace_regex: true
+sample_names_replace:
+  '^(.+)_raw(_[12])?$': '1. Raw reads - \1\2'
+  '^(.+)_initial(?:\.fastp)?(?:\.json)?$': '2. Initial fastp - \1'
+  '^(.+)\.first_pass$': '3. Cutadapt first pass - \1'
+  '^(.+)\.second_pass$': '4. Cutadapt second pass - \1'
+  '^(.+)_clean(_[12])?$': '5. Clean reads - \1\2'
+  '^(.+)_beforehmm(?:\.fastp)?(?:\.json)?$': '6. Pre-HMM fastp - \1'
+
+# Use filenames for consistent stage labels; avoid concatenating Cutadapt mates.
 use_filename_as_sample_name:
   - cutadapt
+  - fastp_initial
+  - fastp_beforehmm
 extra_fn_clean_exts:
   - type: regex
     pattern: '\.cutadapt\.json$'

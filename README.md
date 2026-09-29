@@ -142,6 +142,7 @@ Example output structure for a sample (sample1). The qc_passed and qc_failed csv
 ```bash
 results/
 ├── sample1/
+│   ├── sample1_multiqc_report.html
 │   ├── asv/
 │   │   ├── sample1_asv_read_counts.tsv.gz
 │   │   ├── sample1_dada2_stats.tsv
@@ -185,10 +186,12 @@ results/
 │   ├── params_YYYY-MM-DD_HH-mm-ss.json
 │   ├── pipeline_dag_YYYY-MM-DD_HH-mm-ss.html
 │   └── envident_software_mqc_versions.yml
-├── multiqc_report.html
 ├── qc_passed_runs.csv
 └── qc_failed_runs.csv
 ```
+
+Each sample has its own `<sample>/<sample>_multiqc_report.html`, including samples
+that fail QC. Reports contain available QC stages plus shared run metadata and versions.
 
 Taxonomy filenames use `<sample>_<database>_<description>`. The database labels
 come from `--bold_label` (default `BOLD`) and `--midori2_label`
