@@ -51,10 +51,10 @@ nextflow_pipeline {
                     {
                         assert !path("${params.outdir}/multiqc_report.html").exists()
                         ['TEST', 'TEST2', 'ERRMINREADS', 'ERRSEQFUFAIL', 'ERRSFXHDFAIL'].each { sample ->
-                            assert path("${params.outdir}/${sample}/${sample}_multiqc_report.html").exists()
+                            assert path("${params.outdir}/${sample}/qc/${sample}_multiqc_report.html").exists()
                         }
                         ['TEST', 'TEST2'].each { sample ->
-                            def report = path("${params.outdir}/${sample}/${sample}_multiqc_report.html").text
+                            def report = path("${params.outdir}/${sample}/qc/${sample}_multiqc_report.html").text
                             def sections = ['fastqc_raw', 'fastp_initial', 'cutadapt_first_pass',
                                 'cutadapt_second_pass', 'fastqc_clean', 'fastp_beforehmm', 'dada2_qc']
                             def positions = sections.collect { report.indexOf("id=\"${it}\"") }
