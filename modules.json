@@ -40,6 +40,12 @@
             "installed_by": ["modules"],
             "patch": "modules/nf-core/seqkit/translate/seqkit-translate.diff"
           },
+          "seqtk/seq": {
+            "branch": "master",
+            "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
+            "installed_by": ["reads_qc"]
+            "patch": "modules/nf-core/seqtk/seq/seqtk-seq.diff
+          },
           "tabix/bgzip": {
             "branch": "master",
             "git_sha": "69fdb99a8affa55adfda16966aa4568e103dc1b6",
@@ -88,10 +94,22 @@
             "git_sha": "945bc3f876117a9034cd3a66bc37b19e42035ede",
             "installed_by": ["modules"]
           },
+          "cutadapt": {
+            "branch": "main",
+            "git_sha": "09af8ca976af68d2b82da95eb62416a10ed75613",
+            "installed_by": ["modules"],
+            "patch": "modules/ebi-metagenomics/cutadapt/cutadapt.diff"
+          },
           "downloadfromfire": {
             "branch": "main",
             "git_sha": "afc056e9aa0376982a10d458402e200c05d87609",
             "installed_by": ["modules"]
+          },
+          "krona/ktimporttext": {
+            "branch": "main",
+            "git_sha": "172e93318ac2e2db5f9885b07ffb80443e67848a",
+            "installed_by": ["modules"],
+            "patch": "modules/ebi-metagenomics/krona/ktimporttext/krona-ktimporttext.diff"
           },
           "librarystrategycheck": {
             "branch": "main",
