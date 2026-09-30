@@ -196,7 +196,7 @@ Taxonomy is assigned using VSEARCH. After optimization we found these settings g
  - Maxrejects - `1000`
  - Maxhits - `1000`
    
-Two Lowest Common Ancestor (LCA) scripts are then run on the VSEARCH output. A percentage identity threshold has to be met for each rank for it to be included in the LCA calculation. The `top` LCA script only includes hits with the highest percentage identity in its calculation. The `all` LCA script includes all hits above the percentage identity threshold. We've observed that the `top` results have increased precision, at the expense of recall; for the `all` results the opposite is true.
+Two Lowest Common Ancestor (LCA) scripts are then run on the VSEARCH output. A percentage identity threshold has to be met for each rank for it to be included in the LCA calculation. You can edit the percentage identity thresholds in `bin/top_lowest_common_ancestor.js` and `bin/all_lowest_common_ancestor.js`. The `top` LCA script only includes hits with the highest percentage identity in its calculation. The `all` LCA script includes all hits above the percentage identity threshold. We've observed that the `top` results have increased precision, at the expense of recall; for the `all` results the opposite is true.
 
 ### Optional input preparation
 
@@ -266,7 +266,6 @@ Example output structure for a sample (sample1):
 ```bash
 results/
 ├── sample1/
-│   ├── 
 │   ├── asv/
 │   │   ├── sample1_asv_read_counts.tsv.gz
 │   │   ├── sample1_asvs.fasta
@@ -275,14 +274,16 @@ results/
 │   │   ├── sample1_Pfam-A.domtbl
 │   │   └── sample1_Pfam-A.txt
 │   ├── primer-identification/
-│   │   └── sample1_F.fasta
-│   │   ├── sample1_first_pass_1_summ.tsv
-│   │   ├── sample1_first_pass_2_summ.tsv
 │   │   ├── sample1.first_pass.cutadapt.json
+│   │   ├── sample1.second_pass.cutadapt.json
+│   │   ├── sample1_F.fasta
 │   │   ├── sample1_F_RC.fasta
 │   │   ├── sample1_R.fasta
 │   │   ├── sample1_R_RC.fasta
-│   │   └── sample1.second_pass.cutadapt.json
+│   │   ├── sample1_first_pass_1_summ.tsv
+│   │   ├── sample1_first_pass_2_summ.tsv
+│   │   ├── sample1_second_pass_1_summ.tsv
+│   │   └── sample1_second_pass_2_summ.tsv
 │   ├── qc/
 │   │   ├── sample1_beforehmm_seqfu.tsv
 │   │   ├── sample1_beforehmm_suffix_header_err.tsv
@@ -292,25 +293,25 @@ results/
 │   │   └── sample1_suffix_header_err.json
 │   ├── taxonomy-summary/
 │   │   ├── BOLD/
-│   │   │   ├── sample1_BOLD_vsearch_raw_hits.tsv.gz
-│   │   │   ├── sample1_BOLD_vsearch_hits_with_accessions.tsv.gz
-│   │   │   ├── sample1_BOLD_vsearch_hits_for_lca.tsv.gz
+│   │   │   ├── sample1_BOLD_krona_lca_all_hits.html
+│   │   │   ├── sample1_BOLD_krona_lca_all_hits_counts.tsv.gz
+│   │   │   ├── sample1_BOLD_krona_lca_top_hits.html
+│   │   │   ├── sample1_BOLD_krona_lca_top_hits_counts.tsv.gz
 │   │   │   ├── sample1_BOLD_taxonomy_lca_all_hits.tsv.gz
 │   │   │   ├── sample1_BOLD_taxonomy_lca_top_hits.tsv.gz
-│   │   │   ├── sample1_BOLD_krona_lca_all_hits_counts.tsv.gz
-│   │   │   ├── sample1_BOLD_krona_lca_top_hits_counts.tsv.gz
-│   │   │   ├── sample1_BOLD_krona_lca_all_hits.html
-│   │   │   └── sample1_BOLD_krona_lca_top_hits.html
+│   │   │   ├── sample1_BOLD_vsearch_hits_for_lca.tsv.gz
+│   │   │   ├── sample1_BOLD_vsearch_hits_with_accessions.tsv.gz
+│   │   │   └── sample1_BOLD_vsearch_raw_hits.tsv.gz
 │   │   ├── MIDORI2/
-│   │   │   ├── sample1_MIDORI2_vsearch_raw_hits.tsv.gz
-│   │   │   ├── sample1_MIDORI2_vsearch_hits_with_accessions.tsv.gz
-│   │   │   ├── sample1_MIDORI2_vsearch_hits_for_lca.tsv.gz
+│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits.html
+│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits_counts.tsv.gz
+│   │   │   ├── sample1_MIDORI2_krona_lca_top_hits.html
+│   │   │   ├── sample1_MIDORI2_krona_lca_top_hits_counts.tsv.gz
 │   │   │   ├── sample1_MIDORI2_taxonomy_lca_all_hits.tsv.gz
 │   │   │   ├── sample1_MIDORI2_taxonomy_lca_top_hits.tsv.gz
-│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits_counts.tsv.gz
-│   │   │   ├── sample1_MIDORI2_krona_lca_top_hits_counts.tsv.gz
-│   │   │   ├── sample1_MIDORI2_krona_lca_all_hits.html
-│   │   │   └── sample1_MIDORI2_krona_lca_top_hits.html
+│   │   │   ├── sample1_MIDORI2_vsearch_hits_for_lca.tsv.gz
+│   │   │   ├── sample1_MIDORI2_vsearch_hits_with_accessions.tsv.gz
+│   │   │   └── sample1_MIDORI2_vsearch_raw_hits.tsv.gz
 ├── pipeline_info/
 │   ├── execution_report_YYYY-MM-DD_HH-mm-ss.html
 │   ├── execution_timeline_YYYY-MM-DD_HH-mm-ss.html
@@ -324,9 +325,9 @@ results/
 
 | Description | Contents |
 | --- | --- |
-| `vsearch_raw_hits.tsv.gz` | Original VSEARCH output, without a header. The columns are ASV, reference hit, percentage identity, query coverage, alignment length. The reference hit contains the accession, taxis and taxonomy. |
+| `vsearch_raw_hits.tsv.gz` | Original VSEARCH output, without a header. The columns are ASV, reference hit, percentage identity, query coverage, alignment length. The reference hit contains the accession, taxid and taxonomy. |
 | `vsearch_hits_with_accessions.tsv.gz` | Readable hits with the standard taxonomy ranks, retaining reference database accessions |
-| `vsearch_hits_for_lca.tsv.gz` | Individual hits with taxonomy, identity and query coverage for LCA script input |
+| `vsearch_hits_for_lca.tsv.gz` | Individual hits with the standard taxonomy ranks, percentage identity and query coverage for LCA script input |
 | `taxonomy_lca_all_hits.tsv.gz` | ASV assignments calculated from all hits above the percentage identity threshold at the selected rank |
 | `taxonomy_lca_top_hits.tsv.gz` | ASV assignments from highest-identity qualifying hits, above the percentage identity threshold at the selected rank |
 | `krona_lca_all_hits_counts.tsv.gz`, `krona_lca_top_hits_counts.tsv.gz` | Headerless, read-weighted counts grouped by taxonomy; includes unclassified reads |
@@ -352,6 +353,8 @@ are generated even when both database branches are disabled.
 Both final `taxonomy_lca_all_hits.tsv.gz` and `taxonomy_lca_top_hits.tsv.gz` files are
 headerless, with columns `ASV ID`, `taxonomy`, and `count`. The third column comes
 from the shared ASV read counts table.
+
+`sample1_first_pass_1_summ.tsv` and `sample1_first_pass_2_summ.tsv` contain summarised primer trimming locations for R1 and R2 of the first pass of cutadapt. `*_second_pass_*tsv` show the same for the second pass.  
 
 The MultiQC report contains results from the same sample at multiple stages through the pipeline. The following suffixes indicate these stages of the pipeline:
  - Raw - FastQC results for the raw reads
