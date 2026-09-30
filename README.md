@@ -16,7 +16,7 @@ Currently the pipeline supports analysis of Cytochrome C Oxidase subunit I (COI)
 
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/envident_schema.png">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/envident_schema.svg">
     <img alt="EBI-Metagenomics/envident" src="docs/images/envident_schema.svg" style="width: 80%;">
   </picture>
 </h1>
