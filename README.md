@@ -71,9 +71,9 @@ If not supplying your own primers the following is required:
 - Forward primer library formatted for PIMENTO - a FASTA file, ending with the suffix `_F.fasta`, with contig ids ending with F for forward strand, see [here](https://github.com/EBI-Metagenomics/PIMENTO/blob/main/pimento/standard_s/V3-V5.fasta) for an example
 - Reverse primer library formatted for PIMENTO - a FASTA file, ending with the suffix `_R.fasta`, with contig ids ending with R for reverse strand
 - A directory containing primer libraries prepared for cutadapt containing four FASTA files with the same sequences as provided for PIMENTO. The file names need to end with the suffixes listed below:
-  - `_F.fasta` - The forward primer sequences with formatting to allow for anchoring non-internal adaptors, for example XN{25}TGTAAAA, which allows for up to 25 bases before your primer. If you don't wish to do this anchoring you can just include your primer sequences
+  - `_F.fasta` - The forward primer sequences with formatting to allow for anchoring non-internal adaptors, for example `XN{25}TGTAAAA`, which allows for up to 25 bases before your primer. If you don't wish to do this anchoring you can just include your primer sequences
   - `_R.fasta` - The reverse primer sequences with formatting to allow for anchoring non-internal adaptors
-  - `_F_RC.fasta` - The reverse complement of the forward primers. If you wish to use similar anchoring for these the syntax is moved to the end, eg. GAGAAN{25}X.
+  - `_F_RC.fasta` - The reverse complement of the forward primers. If you wish to use similar anchoring for these the syntax is moved to the end, eg. `GAGAAN{25}X`.
   - `_R_RC.fasta` - The reverse complement of the reverse primer.
  
   Please note, primer sequences must use standard IUPAC nucleotide codes, including IUPAC ambiguity codes where applicable. An 'I' will be substituted with an 'N' automatically in both supplied and PIMENTO primer identification routes.
