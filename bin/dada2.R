@@ -61,6 +61,7 @@ if (is_paired){
 
 # Do some quality filtering
 filt_f = paste0("./", prefix, "_1_filt.fastq.gz")
+
 tryCatch(
   {
     if (is_paired){
@@ -72,7 +73,14 @@ tryCatch(
       print(paste0("The forward strand truncation point is: ", final_where_to_cut_f))
       out = filterAndTrim(path_f, filt_f, rm.phix=TRUE, maxEE=2, truncQ=2, truncLen=final_where_to_cut_f, compress=TRUE, multithread=TRUE)
     }
-  }, error = function(msg){
+  },
+  warning = function(msg){
+    if (grepl("No reads passed the filter", msg)) {
+      message(paste("Caught an error at the `filterAndTrim` stage:\n", msg))
+      quit()
+    }
+  },
+  error = function(msg){
     message(paste("Caught an error at the `filterAndTrim` stage:\n", msg))
     quit()
   }
