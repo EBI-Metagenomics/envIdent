@@ -77,6 +77,7 @@ If not supplying your own primers the following is required:
   - `_R_RC.fasta` - The reverse complement of the reverse primer.
  
   Please note, primer sequences must use standard IUPAC nucleotide codes, including IUPAC ambiguity codes where applicable. An 'I' will be substituted with an 'N' automatically in both supplied and PIMENTO primer identification routes.
+  
 
 ### Reference Databases
 
@@ -107,6 +108,8 @@ sample2,/path/to/sample2.fastq.gz,,TTCTCAACCAACCANAANGANATNGG,GCTCCTATTGATARWACA
 ```
 > [!NOTE]
 > EnvIdent has not yet been optimised for single-end reads, the parameters used as default may not be optimal
+> 
+> EnvIdent does not currently support FASTQ files with binned quality scores or paired-end reads with insufficient overlap for merging (e.g. where the amplicon is longer than approximately twice the read length).
 
 ### Basic execution
 
@@ -354,7 +357,9 @@ Both final `taxonomy_lca_all_hits.tsv.gz` and `taxonomy_lca_top_hits.tsv.gz` fil
 headerless, with columns `ASV ID`, `taxonomy`, and `count`. The third column comes
 from the shared ASV read counts table.
 
-`sample1_first_pass_1_summ.tsv` and `sample1_first_pass_2_summ.tsv` contain summarised primer trimming locations for R1 and R2 of the first pass of cutadapt. `*_second_pass_*tsv` show the same for the second pass.  
+`sample1_first_pass_1_summ.tsv` and `sample1_first_pass_2_summ.tsv` contain summarised primer trimming locations for R1 and R2 of the first pass of cutadapt. `*_second_pass_*tsv` show the same for the second pass.
+
+`sample1_Pfam-A.domtbl` is the Pfam-A HMM search domain-table output for identified COI sequences. `sample1_Pfam-A.txt` contains information on the proportion of reads matching the HMM model.
 
 The MultiQC report contains results from the same sample at multiple stages through the pipeline. The following suffixes indicate these stages of the pipeline:
  - Raw - FastQC results for the raw reads
