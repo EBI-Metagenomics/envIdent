@@ -77,9 +77,6 @@
                     "@id": "docs/usage.md"
                 },
                 {
-                    "@id": "docs/output.md"
-                },
-                {
                     "@id": ".nf-core.yml"
                 },
                 {
@@ -256,11 +253,6 @@
             "@id": "docs/usage.md",
             "@type": "File",
             "description": "Usage documentation"
-        },
-        {
-            "@id": "docs/output.md",
-            "@type": "File",
-            "description": "Output documentation"
         },
         {
             "@id": ".nf-core.yml",
