@@ -38,9 +38,6 @@
                     "@id": "docs/"
                 },
                 {
-                    "@id": "docs/images/"
-                },
-                {
                     "@id": "modules/"
                 },
                 {
@@ -194,11 +191,6 @@
             "@id": "docs/",
             "@type": "Dataset",
             "description": "Markdown files for documenting the pipeline"
-        },
-        {
-            "@id": "docs/images/",
-            "@type": "Dataset",
-            "description": "Images for the documentation files"
         },
         {
             "@id": "modules/",
